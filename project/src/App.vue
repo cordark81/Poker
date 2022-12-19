@@ -1,13 +1,13 @@
 <template>
-  
+  <div>
+    <WelcomeBanner />
+    <LoginUser />
+  </div>
 </template>
 
-<script>
-  export default {
-    
-  }
+<script setup>
+
+import WelcomeBanner from './components/WelcomeBanner.vue';
+import LoginUser from './components/LoginUser.vue';
+
 </script>
-
-<style lang="scss" scoped>
-
-</style>
