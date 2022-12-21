@@ -1,13 +1,6 @@
 <template>
-  <div>
-    <WelcomeBanner />
-    <LoginUser />
-  </div>
+  <router-view></router-view>
 </template>
 
 <script setup>
-
-import WelcomeBanner from './components/WelcomeBanner.vue';
-import LoginUser from './components/LoginUser.vue';
-
 </script>
