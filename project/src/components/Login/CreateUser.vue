@@ -37,6 +37,7 @@
                                 <div class="sm:flex sm:items-start">
                                     <div class="w-full text-center">
                                         <div>
+                                            <!--zona de introducir formulario-->
                                             <FormCreateUser @CloseModal="closeModal" />
                                         </div>
                                     </div>

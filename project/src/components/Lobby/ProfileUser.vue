@@ -1,11 +1,11 @@
 <template>
-    <div class="flex items-center justify-between p-4 bg-white  rounded-full mr-5 my-5">
+    <div class="flex items-center justify-between p-4 bg-white  rounded-2xl mr-20 my-5">
         <div class="flex items-center">
             <img src="../../assets/poker-king-beard-logo-design-260nw-2168601229.webp" alt="Avatar"
                 class="w-12 h-12 rounded-full">
             <div class="ml-4 text-gray-700 font-bold">{{ storeUser.name }}</div>
 
-            <button @click="logOut" class="ml-2 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none">Log
+            <button @click="logOut" class="ml-2 px-4 py-2 bg-red-500 text-white rounded-2xl hover:bg-red-600 focus:outline-none">Log
                 out</button>
         </div>
     </div>

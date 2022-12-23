@@ -50,7 +50,6 @@
             </div>
         </div>
     </section>
-
     <CreateUser v-show="dialog" @CloseModal="dialog = false" />
 </template>
 
@@ -58,18 +57,18 @@
 
 
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { userStore } from "../stores/user";
 import axios from "axios";
 import CreateUser from "./CreateUser.vue";
 import WelcomeBanner from "../Banners/WelcomeBanner.vue";
-import { useRouter } from "vue-router";
-import { userStore } from "../stores/user";
 
-const storeUser = userStore();
 
 const userName = ref();
 const password = ref();
 const dialog = ref();
 const router = useRouter();
+const storeUser = userStore();
 
 const checkUserPassword = async () => {
 

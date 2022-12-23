@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import App from "./App.vue";
 import Login from "./components/Login/LoginUser.vue"
 import Lobby from "./components/Lobby/Lobby.vue"
+import Room from "./components/Room/Room.vue"
 import "./index.css";
 import { createPinia } from 'pinia'
 
@@ -18,7 +19,11 @@ const routes = [
     path: "/Lobby",
     component: Lobby,
   },
- 
+  {
+    path: "/Room/:roomName",
+    name: "room",
+    component: Room,
+  }, 
 ];
 
 const router = createRouter({
