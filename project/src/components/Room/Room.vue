@@ -1,6 +1,7 @@
 <template>
     <div class="h-screen  bg-green-600">
-
+        <button @click="leaveRoom" class=" float-right bg-gray-300 mt-2 rounded-md shadow-lg w-16 h-8"
+            type="submit">Salir</button>
         <div class="absolute bottom-0 left-0 bg-slate-800 w-3/5 h-56 ">
             <section class="flex-1 p-4 ">
                 <div class="bg-white" v-for="message in messages" :key="message.id">
@@ -29,9 +30,10 @@
 
 import { userStore } from "../stores/user";
 import { ref, onMounted } from "vue";
-
+import { useRouter } from "vue-router";
 import io from 'socket.io-client'
 
+const router = useRouter();
 const storeUser = userStore();
 const currentUser = ref(storeUser.name);
 const text = ref("");
@@ -39,15 +41,19 @@ const socketInstance = ref();
 const messages = ref([]);
 
 onMounted(() => {
+
     join();
+
     const message = {
         id: new Date().getTime(),
         text: "A entrado en la sala!!!",
-        user: currentUser.value
+        user: currentUser.value,
+        room: router.currentRoute.value.params.roomName
     }
+
     messages.value.push(message);
 
-    socketInstance.value.emit("message", message);
+    socketInstance.value.emit("send message", message);
 
 })
 
@@ -55,7 +61,10 @@ const join = () => {
 
     socketInstance.value = io("http://localhost:3500")
 
-    socketInstance.value.on("message:received", (data) => {
+    socketInstance.value.emit('join room', router.currentRoute.value.params.roomName);
+
+    socketInstance.value.on("new message", (data) => {
+
         messages.value.push(data);
     });
 }
@@ -69,12 +78,18 @@ const addMessage = () => {
     const message = {
         id: new Date().getTime(),
         text: text.value,
-        user: currentUser.value
+        user: currentUser.value,
+        room: router.currentRoute.value.params.roomName
     };
     messages.value.push(message);
 
-    socketInstance.value.emit("message", message);
+    socketInstance.value.emit("send message", message);
 }
 
+/* sin usar 
+const leaveRoom = () => {
+    socketInstance.value.emit('leave room', router.currentRoute.value.params.roomName);
+}
+*/
 
 </script>

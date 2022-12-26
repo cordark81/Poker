@@ -34,9 +34,6 @@ const props = defineProps({
     gameType: String,
     countSeat: Number,
     range: Object,
-
-
-
 });
 
 const joinRoom = () => {
@@ -46,6 +43,7 @@ const joinRoom = () => {
             roomName: props.roomName
         }
     })
+    
 }
 </script>
 
