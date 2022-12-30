@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 db.json
+POKER/Server_Socket/node_modules
 
 # Editor directories and files
 .vscode/*
