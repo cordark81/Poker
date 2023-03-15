@@ -16,9 +16,9 @@
 
 import { useRouter } from "vue-router";
 import { userStore } from "../stores/user";
+import { ref } from "vue"
 
 const storeUser = userStore();
-
 const router = useRouter();
 
 const logOut = () => {

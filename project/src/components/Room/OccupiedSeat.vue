@@ -3,9 +3,8 @@
         <div class="flex items-center">
             <img src="../../assets/poker-king-beard-logo-design-260nw-2168601229.webp" alt="Avatar"
                 class="w-12 h-12 rounded-full">
-            <div class="ml-4 text-white font-bold">{{ userName }}</div>
-
-            <button @click="leave" class="ml-2 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none">Dejar</button>
+            <div class="ml-4 text-white text-lg font-bold">{{ userName }}</div>
+            <h1 v-if="inGame" class="ml-3 text-lg text-white" >{{ chips }}</h1>
         </div>
     </div>
 
@@ -13,26 +12,15 @@
 
 <script setup>
 
-import { useRouter } from "vue-router";
-import { userStore } from "../stores/user";
-
-const storeUser = userStore();
-
-const router = useRouter();
-
-const emits = defineEmits(['leaveSeat'])
-
-
 const props = defineProps({
-   userName:String,
-});
+    userName: String,
+    inGame: Boolean,
+    chips: Number,
 
-const leave = () => {
-    emits("leaveSeat");
-}
+});
 
 </script>
 
-<style  scoped>
+<style scoped>
 
 </style>
