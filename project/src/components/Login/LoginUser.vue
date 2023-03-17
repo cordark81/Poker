@@ -95,6 +95,17 @@ const checkUserPassword = async () => {
 
 }
 
+const generateJWT = (username) => {
+  // Incluir el nombre de usuario en el payload del token
+  const payload = { username };
+  // Clave secreta utilizada para firmar el token
+  const secret = "mi-clave-secreta";
+  // Opciones de configuración del token
+  const options = { expiresIn: "8h" };
+  // Generar el token utilizando la librería jsonwebtoken
+  return jwt.sign(payload, secret, options);
+}
+
 </script>
 
 <style scoped>
