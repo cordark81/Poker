@@ -38,7 +38,7 @@
                                     <div class="w-full text-center">
                                         <div>
                                             <!--zona de introducir formulario-->
-                                            <FormCreateUser @CloseModal="closeModal" />
+                                            <FormCreateUser @closeModal="closeModal" />
                                         </div>
                                     </div>
                                 </div>
@@ -55,11 +55,10 @@
 
 import FormCreateUser from './FormCreateUser.vue';
 
-const emits = defineEmits(["CloseModal"])
+const emits = defineEmits(["closeModal"])
 
 const closeModal = () => {
-    emits("CloseModal")
-
+    emits("closeModal")
 }
 
 </script>

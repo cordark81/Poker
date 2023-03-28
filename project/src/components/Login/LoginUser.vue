@@ -50,7 +50,7 @@
             </div>
         </div>
     </section>
-    <CreateUser v-show="dialog" @CloseModal="dialog = false" />
+    <CreateUser v-show="dialog" @closeModal="dialog = false" />
 </template>
 
 <script setup>
