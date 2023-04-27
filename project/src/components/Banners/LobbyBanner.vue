@@ -15,7 +15,7 @@
 
 import { ref } from "vue";
 import ProfileUser from '../Lobby/ProfileUser.vue'
-import CreateRoom from '../Room/CreateRoom.vue';
+import CreateRoom from '../Room/BtnCreateRoom.vue';
 
 const dialog = ref();
 

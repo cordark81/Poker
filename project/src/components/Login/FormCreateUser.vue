@@ -28,9 +28,9 @@
     GoogleAuthProvider,
     signInWithPopup,
   } from "firebase/auth";
-  import { auth } from "../utils/firebase";
+  import { auth } from "../../utils/firebase";
   import { useRouter } from "vue-router";
-  import { userStore } from "../stores/user.js"
+  import { userStore } from "../../stores/user";
   const emits = defineEmits(['closeModal'])
   const email = ref("");
   const password = ref("");
@@ -51,7 +51,7 @@
         user.value.contraseña
       );
       console.log(user.value.name)
-      store.setUserName(user.value.name);
+      store.setUserName(user.value.username);
       router.push("/Lobby");
     } catch (error) {
       console.log(error.code);
@@ -62,6 +62,7 @@
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      store.setUserName(user.value.correo);
       router.push("/Lobby");
     } catch (error) {
       alert(error.message);

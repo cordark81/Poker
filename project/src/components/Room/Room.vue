@@ -43,7 +43,7 @@
 
 <script setup>
 
-import { userStore } from "../stores/user";
+import { userStore } from "../../stores/user";
 import { ref, onMounted, onBeforeMount, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import io from 'socket.io-client'
@@ -53,7 +53,7 @@ import axios from "axios"
 
 const router = useRouter();
 const storeUser = userStore();
-const currentUser = ref(storeUser.name);
+const currentUser = ref(storeUser.userName);
 const text = ref("");
 const socketInstance = ref();
 const messages = ref([]);
@@ -82,7 +82,6 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
-
     const message = {
         id: new Date().getTime(),
         text: "A entrado en la sala!!!",
@@ -143,7 +142,6 @@ const leaveSeat = async (seatNumber) => {
         console.log(el)
         if (el.userName === currentUser.value) {
             acc = el.chips
-            console.log("hola")
             return acc;
         }
     }))
