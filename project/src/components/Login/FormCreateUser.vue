@@ -59,15 +59,21 @@
     }
   };
   const RegisterWithGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      store.setUserName(user.value.correo);
-      router.push("/Lobby");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const userName = user.displayName;
+    const photoURL = user.photoURL;
+    store.setUserName(userName);
+    store.setUserPhoto(photoURL); // Almacenar la imagen de perfil en un store o en otro lugar necesario
+    router.push("/Lobby");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+
 
   const closeModal = ()=>{
     emits("closeModal")
