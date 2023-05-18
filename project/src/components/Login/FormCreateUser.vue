@@ -66,7 +66,7 @@
     const userName = user.displayName;
     const photoURL = user.photoURL;
     store.setUserName(userName);
-    store.setUserPhoto(photoURL); // Almacenar la imagen de perfil en un store o en otro lugar necesario
+    store.setUserPhoto(photoURL); 
     router.push("/Lobby");
   } catch (error) {
     alert(error.message);

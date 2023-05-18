@@ -22,9 +22,6 @@ const router = useRouter();
 const logOut = () => {
     alert("desconectado")
     router.push('/')
-    commit("messages/setMessages",[]);
-    commit("messages/setMessagesListener",()=>{})
-
 }
 
 </script>
