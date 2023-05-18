@@ -5,6 +5,11 @@
       <div v-for="(seat, index) in seats" :key="index">
         <div>{{ seat.username }}</div>
         <div>{{ seat.chips }}</div>
+        <div v-if="seat.user">
+          <img class="w-10 h-10 rounded-full mr-2" :src="seat.photoUser" alt="User Photo" />
+          <div>{{ seat.user }}</div>
+        </div>
+        <button v-if="!seat.user" @click="sitInSeat(index)">Ocupar asiento</button>
       </div>
     </div>
 
@@ -32,14 +37,14 @@
 import { userStore } from "../../stores/user";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { database, ref as dbRef, onValue, push,get,set } from '../../utils/firebase';
+import { database, ref as dbRef, onValue, push, set } from '../../utils/firebase';
 
 const router = useRouter();
 const storeUser = userStore();
 const text = ref("");
 const messages = ref([]);
 const room = ref(router.currentRoute.value.params.roomName);
-const seats = ref(Array.from({ length: 5 }, () => ({ username: "", chips: 0 })));
+const seats = ref([]);
 
 onMounted(() => {
   const roomRef = dbRef(database, `rooms/${room.value}`);
@@ -47,7 +52,7 @@ onMounted(() => {
     onValue(roomRef, (snapshot) => {
       const roomData = snapshot.val();
       if (roomData) {
-        seats.value = roomData.seats || seats.value;
+        seats.value = roomData.seats;
         messages.value = Object.values(roomData.messages);
       }
     });
@@ -55,6 +60,17 @@ onMounted(() => {
     console.error("Error listening for room data:", error);
   }
 });
+
+const sitInSeat = (seatIndex) => {
+  const seat = seats.value[seatIndex];
+  if (!seat.user) {
+    seat.user = storeUser.userName;
+    seat.photoUser = storeUser.userPhoto;
+    // Actualizamos el asiento en la base de datos
+    const roomRef = dbRef(database, `rooms/${room.value}/seats/${seatIndex}`);
+    set(roomRef, seat);
+  }
+};
 
 const sendMessage = () => {
   const message = {
@@ -69,36 +85,4 @@ const sendMessage = () => {
     console.error("Error sending message:", error);
   }
 };
-
-// Función para inicializar los asientos de la sala en la base de datos
-const initializeSeats = async () => {
-  try {
-    const roomsRef = dbRef(database, "rooms");
-    const snapshot = await get(roomsRef);
-    const roomsData = snapshot.val();
-
-    for (const roomName in roomsData) {
-      if (roomsData.hasOwnProperty(roomName)) {
-        const roomRef = dbRef(database, `rooms/${roomName}`);
-        const seatsRef = dbRef(database, `rooms/${roomName}/seats`);
-        const seatsSnapshot = await get(seatsRef);
-        const seatsData = seatsSnapshot.val();
-
-        if (!seatsData) {
-          const seats = Array.from({ length: 5 }, (_, index) => ({
-            username: `Seat ${index + 1}`,
-            chips: 0,
-          }));
-          await set(seatsRef, seats);
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error initializing seats:", error);
-  }
-};
-
-initializeSeats();
-
-
 </script>
