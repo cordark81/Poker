@@ -1,6 +1,6 @@
 <template>
-    <h1 class="mb-10">Nuevo usuario</h1>
-    <form class="flex flex-col" @submit.prevent="checkUser">
+<h1 class="mb-10">Nuevo usuario</h1>
+    <form class="flex flex-col" @submit.prevent="register">
         <label for="name">Nombre:</label><br>
         <input v-model=user.name class="border border-blue-600  rounded" type="text" id="name" required><br>
         <label for="surname">Apellido:</label><br>
@@ -12,74 +12,70 @@
         <label for="contraseña">Contraseña:</label><br>
         <input v-model=user.contraseña class="border border-blue-600 rounded" type="password" id="contraseña"
             required><br>
-
         <div class="flex flex-row ">
             <button type="button" @click="closeModal"
                 class="mt-10 w-full justify-center rounded-md border border-transparent  bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-300 focus:outline-none">Cancelar</button>
             <button type="submit"
                 class="mt-10 w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-300 focus:outline-none">Aceptar</button>
         </div>
+        <button @click="RegisterWithGoogle">Register with Google</button>
     </form>
-</template>
-
-<script setup>
-
-import { ref } from "vue";
-import axios from "axios";
-
-const user = ref({ name: "", surname: "", correo: "", username: "", contraseña: "" });
-
-const emits = defineEmits(["CloseModal"])
-
-const closeModal = () => {
-    emits("CloseModal")
-    resetNewUser();
-}
-
-const checkUser = async () => {
-
-    let res = await axios.get(`http://localhost:3000/usuarios?username=${user.value.username}`);
-
-    if (res.data.length === 0) {
-        res = await axios.get(`http://localhost:3000/usuarios?correo=${user.value.correo}`)
-        if (res.data.length === 0) {
-            addUser();
-        } else {
-            alert("El correo ya existe");
-        }
-    } else {
-        alert("El usuario ya existe")
-    }
-}
-
-const addUser = async () => {
+  </template>
+  <script setup>
+  import { ref } from "vue";
+  import {
+    createUserWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+  } from "firebase/auth";
+  import { auth } from "../../utils/firebase";
+  import { useRouter } from "vue-router";
+  import { userStore } from "../../stores/user";
+  const emits = defineEmits(['closeModal'])
+  const email = ref("");
+  const password = ref("");
+  const router = useRouter();
+  const store = userStore();
+  const user = ref({
+    name:"",
+    surname:"",
+    correo:"",
+    username:"",
+    contraseña:""
+  })
+  const register = async () => {
     try {
-        await axios.post(`http://localhost:3000/usuarios/`, getUser());
-        alert("Usuario creado con éxito");
-        closeModal();
+      await createUserWithEmailAndPassword(
+        auth,
+        user.value.correo,
+        user.value.contraseña
+      );
+      console.log(user.value.name)
+      store.setUserName(user.value.username);
+      router.push("/Lobby");
     } catch (error) {
-        console.log(error);
-        alert("error al crear usuario");
+      console.log(error.code);
+      alert(error.message);
     }
-}
+  };
+  const RegisterWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const userName = user.displayName;
+    const photoURL = user.photoURL;
+    store.setUserName(userName);
+    store.setUserPhoto(photoURL); 
+    router.push("/Lobby");
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
-const getUser = () => {
-    return {
-        name: user.value.name, surname: user.value.surname, correo: user.value.correo,
-        username: user.value.username, contraseña: user.value.contraseña, fichas: 50000, nivel: 1, avatar: "../../assets/poker-king-beard-logo-design-260nw-2168601229.webp"
-    }
-}
 
-const resetNewUser = () => {
-    user.value.name = "";
-    user.value.surname = "";
-    user.value.correo = "";
-    user.value.username = "";
-    user.value.contraseña = "";
-}
 
-</script>
-
-<style  scoped>
-
-</style>
+  const closeModal = ()=>{
+    emits("closeModal")
+  }
+  </script>
