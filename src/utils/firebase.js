@@ -2,7 +2,7 @@ import { getDatabase } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
-import { ref, onValue,push,off,runTransaction,update,get,set } from 'firebase/database';
+import { ref, onValue,push,off,runTransaction,update,get,set ,onChildAdded} from 'firebase/database';
 import "firebase/database";
 
 
@@ -21,7 +21,7 @@ const db = getFirestore(app);
 const database = getDatabase(app);
 
 
-export { auth,db,onValue,push,off,get,set,runTransaction,update,getDatabase,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut};
+export { auth,db,onValue,push,off,get,set,onChildAdded ,runTransaction,update,getDatabase,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut};
 
 //Obtenemos los documentos de las colecciones (Rooms/Devices) de manera estática
 export const dameDocs = (ref)=> getDocs(collection(db,ref))
