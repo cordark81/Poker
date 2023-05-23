@@ -10,6 +10,7 @@
           <div>{{ seat.user }}</div>
         </div>
         <button v-if="!seat.user" @click="sitInSeat(index)">Ocupar asiento</button>
+        <button v-if="seat.user && seat.user === storeUser.userName" @click="standUpFromSeat(index)">Levantarse</button>
       </div>
     </div>
 
@@ -30,13 +31,21 @@
         </form>
       </div>
     </div>
+
+    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center">
+      <div class="bg-white p-4 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-2">Ya estás sentado</h2>
+        <p>Ya estás ocupando un asiento. Por favor, levántate del asiento actual antes de seleccionar otro.</p>
+        <button class="bg-gray-300 mt-4 px-4 py-2 rounded-md" @click="closeModal">Cerrar</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { userStore } from "../../stores/user";
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { database, ref as dbRef, onValue, push, set } from '../../utils/firebase';
 
 const router = useRouter();
@@ -45,6 +54,9 @@ const text = ref("");
 const messages = ref([]);
 const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
+const userEntered = ref(false);
+const selectedSeatIndex = ref(-1);
+const showModal = ref(false);
 
 onMounted(() => {
   const roomRef = dbRef(database, `rooms/${room.value}`);
@@ -62,13 +74,34 @@ onMounted(() => {
 });
 
 const sitInSeat = (seatIndex) => {
+  if (selectedSeatIndex.value === -1) {
+    const seat = seats.value[seatIndex];
+    if (!seat.user) {
+      seat.user = storeUser.userName;
+      seat.photoUser = storeUser.userPhoto;
+      userEntered.value = true; // Indica que el usuario ha entrado al chat
+      // Actualizamos el asiento en la base de datos
+      const roomRef = dbRef(database, `rooms/${room.value}/seats/${seatIndex}`);
+      set(roomRef, seat);
+      selectedSeatIndex.value = seatIndex;
+    } else {
+      showModal.value = true; // Mostramos el modal si el asiento está ocupado
+    }
+  } else {
+    showModal.value = true; // Mostramos el modal si el usuario intenta ocupar otro asiento
+  }
+};
+
+const standUpFromSeat = (seatIndex) => {
   const seat = seats.value[seatIndex];
-  if (!seat.user) {
-    seat.user = storeUser.userName;
-    seat.photoUser = storeUser.userPhoto;
+  if (seat.user === storeUser.userName) {
+    seat.user = null;
+    seat.photoUser = null;
+    userEntered.value = false; // Indica que el usuario ha salido del chat
     // Actualizamos el asiento en la base de datos
     const roomRef = dbRef(database, `rooms/${room.value}/seats/${seatIndex}`);
     set(roomRef, seat);
+    selectedSeatIndex.value = -1;
   }
 };
 
@@ -85,4 +118,26 @@ const sendMessage = () => {
     console.error("Error sending message:", error);
   }
 };
+
+const leaveRoom = () => {
+  if (userEntered.value) {
+    const seatIndex = findSeatIndexByUser(storeUser.userName);
+    if (seatIndex !== -1) {
+      standUpFromSeat(seatIndex);
+    }
+  }
+};
+
+const findSeatIndexByUser = (username) => {
+  return seats.value.findIndex((seat) => seat.user === username);
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+onBeforeRouteLeave((to, from, next) => {
+  leaveRoom();
+  next();
+});
 </script>
