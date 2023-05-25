@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col items-center justify-center">
     <h1 class="text-4xl font-bold mb-6">Registro de Usuario</h1>
-    <form class="w-96">
+    <form class="w-96" @submit.prevent="register">
       <div class="mb-6">
         <label for="correo" class="block text-gray-700 font-medium mb-2">Correo Electrónico:</label>
         <input v-model="user.correo" class="border border-gray-300 rounded-md py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500" type="email" id="correo" required placeholder="Ingrese su correo electrónico">
@@ -26,21 +26,32 @@
 <script setup>
 import { ref, defineEmits } from "vue";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../../utils/firebase";
+import { getDatabase, ref as dbRef, onValue, push, set, auth } from '../../utils/firebase';
 import { useRouter } from "vue-router";
 import { userStore } from "../../stores/user";
 
-const emits = defineEmits(['closeModal'])
+const emits = defineEmits(["closeModal"]);
 const user = ref({
   correo: "",
   username: "",
-  contraseña: ""
+  contraseña: "",
+  chips: 500
 });
 
 const register = async () => {
   try {
-    await createUserWithEmailAndPassword(auth, user.correo, user.contraseña);
-    store.setUserName(user.username);
+    const { user: authUser } = await createUserWithEmailAndPassword(auth, user.value.correo, user.value.contraseña);
+
+    // Añadir la información del usuario a Firebase Realtime Database
+    const db = getDatabase();
+    const userRef = dbRef(db, "users/" + authUser.uid);
+    await set(userRef, {
+      username: user.value.username,
+      chips: user.value.chips,
+      status: "online"
+    });
+
+    store.setUserName(user.value.username);
     router.push("/Lobby");
   } catch (error) {
     console.log(error.code);
@@ -52,9 +63,19 @@ const RegisterWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const userName = user.displayName;
-    const photoURL = user.photoURL;
+    const googleUser = result.user;
+    const userName = googleUser.displayName;
+    const photoURL = googleUser.photoURL;
+
+    // Añadir la información del usuario registrado con Google a Firebase Realtime Database
+    const db = getDatabase();
+    const userRef = dbRef(db, "users/" + googleUser.uid);
+    await set(userRef, {
+      username: userName,
+      chips: 500, // Establecer las fichas en 500
+      status: "online"
+    });
+
     store.setUserName(userName);
     store.setUserPhoto(photoURL); 
     router.push("/Lobby");
