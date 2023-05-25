@@ -17,7 +17,7 @@ export const userStore = defineStore("user", () => {
     localStorage.setItem("userPhoto", photoURL);
   };
 
-  // Recuperar userName y userPhoto del almacenamiento local al iniciar la tienda
+  // Recuperar userName, userPhoto y chips del almacenamiento local al iniciar la tienda
   if (localStorage.getItem("userName")) {
     userName.value = localStorage.getItem("userName");
   }

@@ -2,18 +2,30 @@
   <div class="h-screen bg-green-600">
     <h1 class="text-center text-5xl">Sala {{ room }}</h1>
     <div class="border border-slate-300 rounded-full h-2/4 w-2/4 flex flex-row justify-around mt-20 mx-auto">
-      <div v-for="(seat, index) in seats" :key="index">
-        <div>{{ seat.username }}</div>
-        <div>{{ seat.chips }}</div>
-        <div v-if="seat.user">
-          <img class="w-10 h-10 rounded-full mr-2" :src="seat.photoUser" alt="User Photo" />
-          <div>{{ seat.user }}</div>
+      <div class="flex flex-wrap">
+  <div v-for="(seat, index) in seats" :key="index" class="w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4 p-4">
+    <div class="bg-gray-100 shadow-lg rounded-lg p-6">
+      <div class="text-2xl font-semibold mb-4">{{ seat.username }}</div>
+      <div v-if="seat.user" class="flex items-center mb-4">
+        <div class="w-10 h-10 mr-2">
+          <img src="../../assets/moneda.png" alt="Poker Chip" class="w-10 h-10">
         </div>
-        <button v-if="!seat.user" @click="sitInSeat(index)">Ocupar asiento</button>
-        <button v-if="seat.user && seat.user === storeUser.userName" @click="standUpFromSeat(index)">Levantarse</button>
+        <div class="text-gray-600">{{ seat.chips }}</div>
       </div>
+      <div v-if="seat.user" class="flex items-center mb-4">
+        <img class="w-10 h-10 rounded-full mr-2" :src="seat.photoUser" alt="User Photo" />
+        <div class="text-gray-800">{{ seat.user }}</div>
+      </div>
+      <button v-if="!seat.user" @click="sitInSeat(index)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Ocupar asiento
+      </button>
+      <button v-if="seat.user && seat.user === storeUser.userName" @click="standUpFromSeat(index)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+        Levantarse
+      </button>
     </div>
-
+  </div>
+</div>
+    </div>
     <div class="absolute bottom-0 left-0 bg-slate-800 w-3/5 h-56 overflow-auto">
       <div>
         <div v-for="message in messages" :key="message.id">
@@ -118,15 +130,13 @@ const sendMessage = () => {
     console.error("Error sending message:", error);
   }
 };
-
 const leaveRoom = () => {
-  if (userEntered.value) {
-    const seatIndex = findSeatIndexByUser(storeUser.userName);
-    if (seatIndex !== -1) {
-      standUpFromSeat(seatIndex);
-    }
+  const seatIndex = findSeatIndexByUser(storeUser.userName);
+  if (seatIndex !== -1) {
+    standUpFromSeat(seatIndex);
   }
 };
+
 
 const findSeatIndexByUser = (username) => {
   return seats.value.findIndex((seat) => seat.user === username);
