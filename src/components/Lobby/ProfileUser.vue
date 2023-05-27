@@ -19,7 +19,7 @@
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user";
 import { ref, watchEffect } from "vue";
-import { getDatabase, ref as dbRef, onValue, auth } from "../../utils/firebase";
+import { onValue, auth,refDB } from "../../utils/firebase";
 
 const store = useUserStore();
 const router = useRouter();
@@ -35,15 +35,14 @@ const logOut = async() => {
   }
 };
 
-// watchEffect(() => {
-//   if (store.getCurrentUser) {
-//     const db = getDatabase();
-//     const userRef = dbRef(db, "users/" + auth.currentUser.uid + "/chips");
-//     onValue(userRef, (snapshot) => {
-//       userChips.value = snapshot.val();
-//     });
-//   }
-// });
+watchEffect(async() => {
+  if (store.user) {
+    const userRef = await refDB("users/" + auth.currentUser.uid + "/chips",0);
+    onValue(userRef, (snapshot) => {
+      userChips.value = snapshot.val();
+    });
+  }
+});
 
 </script>
 
