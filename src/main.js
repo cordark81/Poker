@@ -1,38 +1,15 @@
-import { createApp } from "vue";
-import { createRouter, createWebHashHistory } from "vue-router";
-import { createPinia } from "pinia";
-import App from "./App.vue";
-import Login from "./components/Login/LoginUser.vue";
-import Lobby from "./components/Lobby/Lobby.vue";
-import Room from "./components/Room/Room.vue";
+import { createApp } from 'vue'
+import App from './App.vue'
+import { createPinia } from 'pinia'
+import router from './router';
 import "./index.css";
 
-const pinia = createPinia();
 
-const routes = [
-  {
-    path: "/",
-    component: Login,
-  },
-  {
-    path: "/Lobby",
-    component: Lobby,
-  },
-  {
-    path: "/Room/:roomName",
-    name: "room",
-    component: Room,
-  },
-];
+const pinia = createPinia()
+const app = createApp(App)
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes,
-});
+app
+  .use(router)
+  .use(pinia)
 
-const app = createApp(App);
-
-app.use(pinia);
-app.use(router);
-
-app.mount("#app");
+app.mount('#app')

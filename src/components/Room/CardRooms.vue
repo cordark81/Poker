@@ -11,7 +11,7 @@
         <img class="w-20 h-20" src="../../assets/depositphotos_11531027-stock-illustration-poker-chip.png" alt="ficha">
       </div>
       <div class="text-white text-center text-3xl mt-2">
-        {{ range.min }}-{{ range.max }}
+        {{range}}
       </div>
       <div class="flex justify-center">
         <button @click="joinRoom"
@@ -31,7 +31,7 @@
     roomName: String,
     gameType: String,
     countSeat: Number,
-    range: Object,
+    range: Number,
   });
   
   const joinRoom = () => {
@@ -45,7 +45,7 @@
         const chips = snapshot.val();
 
         // Verificar si el usuario tiene suficientes fichas
-        if (chips >= props.range.min) {
+        if (chips >= props.range) {
           // El usuario tiene suficientes fichas, puedes unirlo a la sala
           router.push({
             name: "room",

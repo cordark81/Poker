@@ -16,52 +16,13 @@ const db = getFirestore(app);
 const database = getDatabase(app);
 
 
-export { auth,db,onValue,push,off,get,set,onChildAdded ,runTransaction,update,signInWithPopup,createUserWithEmailAndPassword,getDatabase,GoogleAuthProvider,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut};
+const userRef = (entrada,user)=>{set(ref(database,entrada), {
+  username: user.username,
+  chips: user.chips,
+  status: "online"
+})};
 
-//Obtenemos los documentos de las colecciones (Rooms/Devices) de manera estática
-export const dameDocs = (ref)=> getDocs(collection(db,ref))
+const refDB = entrada => ref(database,entrada) 
 
-//Obtenemos los documentos filtrados por campo y valor
-export const dameDocsFiltro = async (ref, campo, valor) => {
-  const querySnapshot = await getDocs(query(collection(db, ref), where(campo,"==", valor)));
-  //Esto retorna un array vacío si no encuentra resultados en la query
-  return querySnapshot.empty ? [] : querySnapshot.docs.map((doc) => doc.data());
-}
+export { auth,db,refDB,onValue,push,off,get,set,onChildAdded ,runTransaction,update,signInWithPopup,createUserWithEmailAndPassword,getDatabase,GoogleAuthProvider,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut,userRef};
 
-// Actualiza los documentos filtrados por campo y valor con un objeto de datos nuevo
-export const actualizaDocsFiltro = async (ref, campo, valor, newData) => {
-  const querySnapshot = await getDocs(query(collection(db, ref), where(campo, "==", valor)))
-  querySnapshot.forEach((doc) => {
-    updateDoc(doc.ref, newData)
-  })
-}
-
-export const borraDocsFiltro = async (ref, campo, valor) => {
-  const querySnapshot = await getDocs(query(collection(db, ref), where(campo, '==', valor)))
-  querySnapshot.forEach((doc) => {
-    deleteDoc(doc.ref)
-  })
-}
-
-
-//Obtenemos los documentos de las colecciones (Room/Devices) de manera dinámica
-export const giveCollection = (ref, callback) => onSnapshot(collection(db,ref), callback)
-
-
-//Añadimos un nuevo documento a las colecciones
-export const anadir = (ref, reserva) => addDoc(collection(db,ref),reserva)
-
-//Eliminamos un documento
-export const borraDoc = (ref, id) => deleteDoc(doc(db,ref,id))
-
-//Buscamos un documento para su posterior modificación
-export const dameDoc = (ref,id) => getDoc(doc(db,ref,id))
-
-//Actualizamos un documento entero
-export const actualizaDoc = (ref,id,objeto) => setDoc(doc(db,ref,id), objeto)
-
-//Actualizamos un campo de un documento
-export const actualizaFieldDoc = (ref, id, objeto) =>updateDoc(doc(db,ref,id),objeto)
-
-//Cambios de documento
-export const onCambioDoc = (ref, id, callback) => onSnapshot(doc(db, ref, id), callback)
