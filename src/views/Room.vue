@@ -55,13 +55,13 @@
 </template>
 
 <script setup>
-import { userStore } from "../../stores/user";
+import { useUserStore } from "../stores/user";
 import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
-import { database, ref as dbRef, onValue, push, set } from '../../utils/firebase';
+import { database, ref as dbRef, onValue, push, set } from '../utils/firebase';
 
 const router = useRouter();
-const storeUser = userStore();
+const storeUser = useUserStore();
 const text = ref("");
 const messages = ref([]);
 const room = ref(router.currentRoute.value.params.roomName);

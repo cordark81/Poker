@@ -7,7 +7,7 @@
           <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
             Para empezar a jugar
           </h1>
-          <form class="space-y-4 md:space-y-6" @submit.prevent="checkUserPassword">
+          <form class="space-y-4 md:space-y-6" @submit.prevent="doLogin">
             <div>
               <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico</label>
               <input
@@ -33,20 +33,7 @@
               />
             </div>
             <div class="flex items-center justify-between">
-              <div class="flex items-start">
-                <div class="flex items-center h-5">
-                  <input
-                    id="remember"
-                    aria-describedby="remember"
-                    type="checkbox"
-                    class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                  />
-                </div>
-                <div class="ml-3 text-sm">
-                  <label for="remember" class="text-gray-500 dark:text-gray-300">Recuérdame</label>
-                </div>
-              </div>
-              <a @click="openForgotPasswordModal" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">¿Olvidaste la contraseña?</a>
+              <a @click="showForgotPasswordModal=true" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">¿Olvidaste la contraseña?</a>
             </div>
             <button
               type="submit"
@@ -81,10 +68,9 @@
         <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-primary-300 rounded-lg dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Enviar</button>
       </div>
     </form>
-    <button @click="closeForgotPasswordModal" class="mt-4 text-sm font-medium text-red-500 hover:text-red-600 focus:outline-none dark:text-red-500 dark:hover:text-red-600">Cerrar</button>
+    <button @click="showForgotPasswordModal=false" class="mt-4 text-sm font-medium text-red-500 hover:text-red-600 focus:outline-none dark:text-red-500 dark:hover:text-red-600">Cerrar</button>
   </div>
 </div>
-
     <CreateUser v-show="dialog" @closeModal="dialog = false" />
   </section>
 </template>
@@ -92,74 +78,49 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { userStore } from "../../stores/user";
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
-import CreateUser from "./CreateUser.vue";
-import WelcomeBanner from "../Banners/WelcomeBanner.vue";
+import { useUserStore } from "../stores/user";
+import CreateUser from "../components/Login/CreateUser.vue";
+import WelcomeBanner from "../components/Banners/WelcomeBanner.vue";
 
 const email = ref("");
 const password = ref("");
 const dialog = ref(false);
 const router = useRouter();
-const store = userStore();
+const store = useUserStore();
 const forgotPasswordEmail = ref("");
 const showForgotPasswordModal = ref(false);
 
-const checkUserPassword = async () => {
-  try {
-    const auth = getAuth();
-    const { user } = await signInWithEmailAndPassword(auth, email.value, password.value);
-    if (user) {
-      store.setUserName(user.displayName);
-      store.setUserPhoto(user.photoURL);
-      router.push("/Lobby");
-    } else {
-      alert("No se pudo iniciar sesión");
-    }
-    email.value = "";
-    password.value = "";
-  } catch (error) {
-    console.log(error);
-    alert("No se encuentra el usuario introducido");
+const resetFields = ()=>password.value=email.value=""
+
+const doLogin = async () => {
+  try{
+    await store.doLogin(email.value,password.value);
+    console.log("Estas logeado")
+    resetFields()
+    router.push("/Lobby");
+  }catch(error){
+    console.log(error.message)
+    resetFields()
   }
 };
+
 
 const loginWithGoogle = async () => {
   try {
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
-    const { user } = await signInWithPopup(auth, provider);
-    if (user) {
-      store.setUserName(user.displayName);
-      store.setUserPhoto(user.photoURL);
-      router.push("/Lobby");
-    } else {
-      alert("No se pudo iniciar sesión");
-    }
+    await store.loginWithGoogle();
+    router.push("/Lobby");
   } catch (error) {
-    console.log(error);
-    alert("No se pudo iniciar sesión con Google");
+   console.log(error.message);
   }
-};
-
-const openForgotPasswordModal = () => {
-  showForgotPasswordModal.value = true;
-};
-
-const closeForgotPasswordModal = () => {
-  showForgotPasswordModal.value = false;
 };
 
 const submitForgotPassword = async () => {
   try {
-    const auth = getAuth();
-    const userEmail = forgotPasswordEmail.value; // Obtener el valor del correo electrónico del campo de entrada
-    await sendPasswordResetEmail(auth, userEmail);
-    alert("Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada, incluida la carpeta de spam.");
-    closeForgotPasswordModal();
+    await store.doReset(forgotPasswordEmail.value);
+    console.log("Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada, incluida la carpeta de spam.");
+    showForgotPasswordModal.value=false;
   } catch (error) {
-    console.log(error);
-    alert("No se pudo enviar el correo electrónico de restablecimiento de contraseña. Por favor, verifica tu dirección de correo electrónico.");
+    console.log(error.message);
   }
 };
 </script>
