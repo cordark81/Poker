@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center">
+  <div class="flex flex-col items-center justify-center ">
     <h1 class="text-4xl font-bold mb-6">Registro de Usuario</h1>
     <form class="w-96" @submit.prevent="register">
       <div class="mb-6">
@@ -26,6 +26,7 @@
 import { ref, defineEmits } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user";
+import { userRef } from "../../utils/firebase";
 
 
 const store = useUserStore();
