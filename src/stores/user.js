@@ -1,30 +1,104 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
+  signOut,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged,
+  updateEmail,
+  updatePassword
+} from "@firebase/auth";
 
-export const userStore = defineStore("user", () => {
-  const userName = ref("");
-  const userPhoto = ref("");
+export const useUserStore = defineStore("userStore", () => {
+  const user = ref(null);
 
-  const setUserName = (name) => {
-    userName.value = name;
-    // Guardar userName en el almacenamiento local
-    localStorage.setItem("userName", name);
+  const isLoggedIn = computed(() => user.value !== null);
+
+  const loginWithGoogle = async () => {
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+      const { user } = await signInWithPopup(auth, provider);
+      if (user) {
+        user.value = auth.currentUser;
+      } else {
+        alert("No se pudo iniciar sesión");
+      }
   };
 
-  const setUserPhoto = (photoURL) => {
-    userPhoto.value = photoURL;
-    // Guardar userPhoto en el almacenamiento local
-    localStorage.setItem("userPhoto", photoURL);
+  const doLogin = async (email, password) => {
+    const auth = getAuth();
+    await setPersistence(auth, browserLocalPersistence);
+    await signInWithEmailAndPassword(getAuth(), email, password);
+    user.value = auth.currentUser;
   };
 
-  // Recuperar userName, userPhoto y chips del almacenamiento local al iniciar la tienda
-  if (localStorage.getItem("userName")) {
-    userName.value = localStorage.getItem("userName");
+  const doRegister = async (name, email, password) => {
+    const auth = getAuth();
+    await createUserWithEmailAndPassword(auth, email, password);
+    user.value = auth.currentUser;
+    await updateProfile(user.value, {
+      displayName: name,
+    });
+  };
+
+  const doLogout = async () => {
+    await signOut(getAuth());
+    user.value = null;
+  };
+
+  const updateProfileUser = async (name,email,password) =>{
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (name){
+      await updateProfile(user,{
+        displayName: name,
+      })
+    }
+    if (email){
+      await updateEmail(user, email)
+    }
+    if (password){
+      await updatePassword(user,password)
+    }
   }
 
-  if (localStorage.getItem("userPhoto")) {
-    userPhoto.value = localStorage.getItem("userPhoto");
+  const getCurrentUser = () => {
+    return new Promise((resolve, reject) => {
+      const unsubcribe = onAuthStateChanged(
+        getAuth(),
+        (users) => {
+          unsubcribe();
+          user.value = users;
+          resolve(users);
+        },
+        reject
+      );
+    });
+  };
+
+  const doReset = async(email) =>{
+    await sendPasswordResetEmail(getAuth(),email)    
   }
 
-  return { setUserName, setUserPhoto, userName, userPhoto };
+
+
+  return {
+    user,
+    isLoggedIn,
+    doLogin,
+    loginWithGoogle,
+    doRegister,
+    doLogout,
+    getCurrentUser,
+    updateProfileUser,
+    doReset
+  };
 });

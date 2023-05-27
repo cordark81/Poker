@@ -15,9 +15,9 @@
   <script setup>
   import { onBeforeMount, ref } from 'vue';
   import { onSnapshot, collection } from "firebase/firestore";
-  import { db } from "../../utils/firebase";
-  import LobbyBanner from '../Banners/LobbyBanner.vue';
-  import CardRooms from '../Room/CardRooms.vue';
+  import { db } from "../utils/firebase";
+  import LobbyBanner from "../components/Banners/LobbyBanner.vue"
+  import CardRooms from "../components/Room/CardRooms.vue"
   
   const rooms = ref([]);
   
