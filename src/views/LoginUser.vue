@@ -2,21 +2,21 @@
   <div class="background-login flex flex-col items-center pt-72 h-screen">
     <WelcomeBanner class="fixed top-0" />
     <div
-      class="bg-black text-white w-4/5 bg-white rounded-lg shadow-2xl border-2 border-amber-400 dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+      class="bg-black text-white w-4/5 rounded-lg shadow-2xl border-2 border-amber-400 dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
       <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-        <h1 class="text-xl  text-white font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        <h1 class="text-xl  text-white font-bold leading-tight tracking-tight md:text-2xl dark:text-white">
           Para empezar a jugar
         </h1>
         <form class="space-y-4 md:space-y-6" @submit.prevent="doLogin">
           <div>
-            <label for="email" class=" text-white block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo
+            <label for="email" class=" text-white block mb-2 text-sm font-medium dark:text-white">Correo
               electrónico</label>
             <input v-model="email" type="email" name="email" id="email"
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Correo electrónico" required />
           </div>
           <div>
-            <label for="password" class=" text-white block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contraseña</label>
+            <label for="password" class="text-white block mb-2 text-sm font-medium dark:text-white">Contraseña</label>
             <input v-model="password" type="password" name="password" id="password" placeholder="••••••••"
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               required />
