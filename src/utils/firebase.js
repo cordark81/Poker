@@ -27,5 +27,7 @@ const userRef = (entrada,user)=>{set(ref(database,entrada), {
   status: "online"
 })};
 
-export { auth,db,onValue,push,off,get,set,onChildAdded ,runTransaction,update,signInWithPopup,createUserWithEmailAndPassword,getDatabase,GoogleAuthProvider,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut,userRef};
+const refDB = entrada => ref(database,entrada) 
+
+export { auth,db,refDB,onValue,push,off,get,set,onChildAdded ,runTransaction,update,signInWithPopup,createUserWithEmailAndPassword,getDatabase,GoogleAuthProvider,database,ref,getFirestore,doc,onSnapshot,getDoc,collection,onAuthStateChanged,signOut,userRef};
 

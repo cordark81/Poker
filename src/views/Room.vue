@@ -8,7 +8,7 @@
       <div class="text-2xl font-semibold mb-4">{{ seat.username }}</div>
       <div v-if="seat.user" class="flex items-center mb-4">
         <div class="w-10 h-10 mr-2">
-          <img src="../../assets/moneda.png" alt="Poker Chip" class="w-10 h-10">
+          <img src="../assets/moneda.png" alt="Poker Chip" class="w-10 h-10">
         </div>
         <div class="text-gray-600">{{ seat.chips }}</div>
       </div>
@@ -16,34 +16,17 @@
         <img class="w-10 h-10 rounded-full mr-2" :src="seat.photoUser" alt="User Photo" />
         <div class="text-gray-800">{{ seat.user }}</div>
       </div>
-      <button v-if="!seat.user" @click="sitInSeat(index)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      <button v-if="!seat.user" @click="sitIn(index)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         Ocupar asiento
       </button>
-      <button v-if="seat.user && seat.user === storeUser.userName" @click="standUpFromSeat(index)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+      <button v-if="seat.user && seat.user === storeUser.user.displayName" @click="standUpSeat(index)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
         Levantarse
       </button>
     </div>
   </div>
 </div>
     </div>
-    <div class="absolute bottom-0 left-0 bg-slate-800 w-3/5 h-56 overflow-auto">
-      <div>
-        <div v-for="message in messages" :key="message.id">
-          <div class="flex items-center mb-2">
-            <img class="w-10 h-10 rounded-full mr-2" :src="message.photoUser" alt="User Photo" />
-            <b class="text-white">{{ message.user }}:</b>
-            <span class="ml-2">{{ message.text }}</span>
-          </div>
-        </div>
-        <form class="mb-4 border-t border-gray-300" @submit.prevent="sendMessage">
-          <input v-model="text" class="border rounded-lg rounded-tl-none rounded-tr-none w-full py-2 px-4 outline-none" type="text" placeholder="Escribe tu mensaje aquí" />
-          <div class="container">
-            <button class="float-right bg-gray-300 mt-2 rounded-md shadow-lg w-16 h-8" type="submit">Enviar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
+    <Chat :room="room"/>
     <div v-if="showModal" class="fixed inset-0 flex items-center justify-center">
       <div class="bg-white p-4 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold mb-2">Ya estás sentado</h2>
@@ -56,28 +39,27 @@
 
 <script setup>
 import { useUserStore } from "../stores/user";
+import { useSeatsStore } from "../stores/seats";
 import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
-import { database, ref as dbRef, onValue, push, set } from '../utils/firebase';
+import { onValue, refDB } from '../utils/firebase';
+import Chat from "../components/Chat/Chat.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();
-const text = ref("");
-const messages = ref([]);
+const storeSeat = useSeatsStore();
 const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
-const userEntered = ref(false);
 const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 
 onMounted(() => {
-  const roomRef = dbRef(database, `rooms/${room.value}`);
+  const roomRef = refDB(`rooms/${room.value}`);
   try {
     onValue(roomRef, (snapshot) => {
       const roomData = snapshot.val();
       if (roomData) {
         seats.value = roomData.seats;
-        messages.value = Object.values(roomData.messages);
       }
     });
   } catch (error) {
@@ -85,55 +67,31 @@ onMounted(() => {
   }
 });
 
-const sitInSeat = (seatIndex) => {
-  if (selectedSeatIndex.value === -1) {
-    const seat = seats.value[seatIndex];
-    if (!seat.user) {
-      seat.user = storeUser.userName;
-      seat.photoUser = storeUser.userPhoto;
-      userEntered.value = true; // Indica que el usuario ha entrado al chat
-      // Actualizamos el asiento en la base de datos
-      const roomRef = dbRef(database, `rooms/${room.value}/seats/${seatIndex}`);
-      set(roomRef, seat);
-      selectedSeatIndex.value = seatIndex;
-    } else {
-      showModal.value = true; // Mostramos el modal si el asiento está ocupado
-    }
-  } else {
-    showModal.value = true; // Mostramos el modal si el usuario intenta ocupar otro asiento
+const sitIn = (seatIndex)=>{
+  try{
+  const obj = storeSeat.sitInSeat(seatIndex,selectedSeatIndex.value,seats.value,room.value);
+  if(obj.selected!==-1){
+  selectedSeatIndex.value = obj.selected;
+  showModal.value = obj.modal;
   }
-};
-
-const standUpFromSeat = (seatIndex) => {
-  const seat = seats.value[seatIndex];
-  if (seat.user === storeUser.userName) {
-    seat.user = null;
-    seat.photoUser = null;
-    userEntered.value = false; // Indica que el usuario ha salido del chat
-    // Actualizamos el asiento en la base de datos
-    const roomRef = dbRef(database, `rooms/${room.value}/seats/${seatIndex}`);
-    set(roomRef, seat);
-    selectedSeatIndex.value = -1;
+  }catch(error){
+    console.log(error.message)
   }
-};
+}
 
-const sendMessage = () => {
-  const message = {
-    text: text.value,
-    user: storeUser.userName,
-    photoUser: storeUser.userPhoto
-  };
+const standUpSeat = (seatIndex) => {
   try {
-    push(dbRef(database, `rooms/${room.value}/messages`), message);
-    text.value = "";
+    selectedSeatIndex.value = storeSeat.standUpFromSeat(seatIndex,seats.value,room.value)
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.log(error.message)
   }
 };
+
+
 const leaveRoom = () => {
-  const seatIndex = findSeatIndexByUser(storeUser.userName);
+  const seatIndex = findSeatIndexByUser(storeUser.user.displayName);
   if (seatIndex !== -1) {
-    standUpFromSeat(seatIndex);
+    standUpSeat(seatIndex);
   }
 };
 

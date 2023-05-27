@@ -6,7 +6,7 @@
           :roomName="room.roomName"
           :gameType="room.gameType"
           :countSeat="room.seat"
-          :range="room.range"
+          :range="room.enterChips"
         />
       </div>
     </div>
