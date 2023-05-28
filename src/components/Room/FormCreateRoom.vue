@@ -52,6 +52,7 @@ const resetNewRoom = () => {
     gameType.value = "";
 }
 
+//pendiente de migrar la funcionalidad de firebase
 const createRoom = async () => {
     try {
         // Envía la información del formulario al servicio de creación de salas de poker
