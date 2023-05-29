@@ -2,21 +2,21 @@
   <div class="background-login flex flex-col items-center pt-72 h-screen">
     <WelcomeBanner class="fixed top-0" />
     <div
-      class="bg-black text-white w-4/5 bg-white rounded-lg shadow-2xl border-2 border-amber-400 dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+      class="bg-black text-white w-4/5 rounded-lg shadow-2xl border-2 border-amber-400 dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
       <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-        <h1 class="text-xl  text-white font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        <h1 class="text-xl  text-white font-bold leading-tight tracking-tight md:text-2xl dark:text-white">
           Para empezar a jugar
         </h1>
         <form class="space-y-4 md:space-y-6" @submit.prevent="doLogin">
           <div>
-            <label for="email" class=" text-white block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo
+            <label for="email" class=" text-white block mb-2 text-sm font-medium dark:text-white">Correo
               electrónico</label>
             <input v-model="email" type="email" name="email" id="email"
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Correo electrónico" required />
           </div>
           <div>
-            <label for="password" class=" text-white block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contraseña</label>
+            <label for="password" class="text-white block mb-2 text-sm font-medium dark:text-white">Contraseña</label>
             <input v-model="password" type="password" name="password" id="password" placeholder="••••••••"
               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               required />
@@ -45,10 +45,10 @@
       </div>
     </div>
   </div>
-  <div v-if="showForgotPasswordModal" class="fixed top-0 left-0 flex items-center justify-center w-screen h-screen z-50">
-  <div class="w-5/6 sm:w-4/5 md:w-3/4 lg:w-1/2 xl:w-1/3 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6 border-2 border-black">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Recuperar contraseña</h2>
-    <p class="text-gray-700 dark:text-gray-300">Ingresa tu correo electrónico para recibir instrucciones sobre cómo
+  <div v-show="showForgotPasswordModal" class="background-forgot-password fixed top-0 left-0 flex items-center justify-center w-screen h-screen z-50">
+  <div class="w-5/6 sm:w-4/5 md:w-3/4 lg:w-1/2 xl:w-1/3 bg-black rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6 border-2 border-amber-400">
+    <h2 class="text-2xl font-bold mb-4 text-white dark:text-white">Recuperar contraseña</h2>
+    <p class="text-white dark:text-gray-300">Ingresa tu correo electrónico para recibir instrucciones sobre cómo
       restablecer tu contraseña. El correo puede llegar a la carpeta de spam, así que asegúrate de revisarla también.
     </p>
     <form @submit.prevent="submitForgotPassword" class="mt-4">
@@ -120,7 +120,13 @@ const submitForgotPassword = async () => {
 
 <style scoped>
 .background-login {
-  background-image: url("../assets/background-login.jpeg");
+  background-image: url("../assets/images/background-login.jpeg");
+  background-size: cover;
+  background-position: center;
+}
+
+.background-forgot-password {
+  background-image: url("../assets/images/palos.jpg");
   background-size: cover;
   background-position: center;
 }
