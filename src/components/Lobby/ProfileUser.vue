@@ -18,8 +18,8 @@
   <div class="flex justify-center items-center border-2 border-amber-500 rounded-3xl profileUser ">
     <div class="h-56 w-72 absolute flex justify-center items-center">
       
-      <img v-if="store.user.photoURL" class="object-cover h-28 w-28 rounded-full" :src="store.user.photoURL" alt="profile" />
-      <img v-else class="object-cover h-28 w-28 rounded-full" src="../../assets/images/poker-king-beard-logo-design-260nw-2168601229.webp" alt="profile" />
+      <img v-if="store.user.photoURL" class="object-cover h-28 w-28 rounded-full border-2 border-black" :src="store.user.photoURL" alt="profile" />
+      <img v-else class="object-cover h-28 w-28 rounded-full border-2 border-black" src="../../assets/images/poker-king-beard-logo-design-260nw-2168601229.webp" alt="profile" />
     </div>
 
     <div class="

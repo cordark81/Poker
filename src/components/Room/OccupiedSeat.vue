@@ -2,7 +2,7 @@
     <div class=" w-52 h-28 Seat rounded-2xl border-2 border-amber-400 flex flex-row justify-between">
         <div class="flex w-10">
             <div class="w-52">
-                <button type="button" @click="leaveSeat()"
+                <button  v-if="seat.user && seat.user === storeUser.user.displayName" type="button" @click="leaveSeat()"
                     class="ml-1 mt-1 px-2  bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">Dejar</button>
             </div>
         </div>
@@ -23,6 +23,10 @@
 <script setup>
 
 import {defineEmits} from 'vue'
+import { useUserStore } from "../../stores/user";
+
+
+const storeUser = useUserStore();
 
 const emits = defineEmits(["leaveSeat"]);
 

@@ -14,14 +14,8 @@
       </div>
     </div>
     <Chat :room="room" />
-    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center">
-      <div class="bg-white p-4 rounded-lg shadow-lg">
-        <h2 class="text-xl font-semibold mb-2">Ya estás sentado</h2>
-        <p>Ya estás ocupando un asiento. Por favor, levántate del asiento actual antes de seleccionar otro.</p>
-        <button class="bg-gray-300 mt-4 px-4 py-2 rounded-md" @click="closeModal">Cerrar</button>
-      </div>
-    </div>
   </div>
+  <ModalInSeat v-show="showModal" @closeModal="showModal=false"/>
 </template>
 
 <script setup>
@@ -33,6 +27,7 @@ import { onValue, refDB } from '../utils/firebase';
 import Chat from "../components/Chat/Chat.vue";
 import Seats from "../components/Room/Seats.vue"
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
+import ModalInSeat from '../components/Modals/ModalInSeat.vue'
 
 const router = useRouter();
 const storeUser = useUserStore();
