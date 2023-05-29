@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user';
 import Login from "../views/LoginUser.vue";
 import Lobby from "../views/Lobby.vue";
 import Room from "../views/Room.vue";
-import { useUserStore } from '../stores/user';
+import ModalNoAccess from "../components/Modals/ModalNoAccess.vue"
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,8 +26,14 @@ const router = createRouter({
       component: Room,
       meta:{
         requiresAuth:true
-      }
+      },
+      
     },
+    {
+      path: "/noAccess",
+      name: "noAccess",
+      component: ModalNoAccess,
+    }
   //   { 
   //     path: '/:pathMatch(.*)*', 
   //     component: () => import(/* webpackChunkName: "NoPageFound" */ '@/shared/pages/NoPageFound.vue')
@@ -40,8 +48,8 @@ router.beforeEach(async (to, from, next) => {
     if (await store.getCurrentUser()) {
       next();
     } else {
-      alert("No tienes acceso");
-      next("/");
+      next("/noAccess")
+      
     }
   } else {
     next();

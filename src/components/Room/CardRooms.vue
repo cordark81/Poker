@@ -1,25 +1,17 @@
 <template>
-  <div class="rounded-lg shadow-2xl bg-green-600">
+  <div class="rounded-lg shadow-2xl background-cards">
     <div class="bg-black text-white text-center text-3xl py-2 rounded-t-lg">
-      {{ roomName }}
+      {{ roomName }} - {{ range }}
     </div>
     <div class="bg-amber-900 text-yellow-500 text-base flex flex-col text-center px-2 py-1">
-      <div>{{ gameType }}</div>
       <div>{{ countSeat }} asientos libres</div>
     </div>
-    <div class="flex justify-center mt-5">
-      <img class="w-20 h-20" src="../../assets/depositphotos_11531027-stock-illustration-poker-chip.png" alt="ficha">
-    </div>
-    <div class="text-white text-center text-3xl mt-2">
-      {{ range }}
-    </div>
-    <div class="flex justify-center">
+    <div class="flex h-2/3 items-end justify-center">
       <button @click="joinRoom"
-        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">Unirse a
+        class=" w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">Unirse a
         la sala</button>
     </div>
   </div>
- 
 </template>
 
   
@@ -73,6 +65,11 @@ const joinRoom = () => {
   });
 };
 </script>
-
-<style scoped></style>
+<style scoped>
+.background-cards {
+  background-image: url("../../assets/images/as.avif");
+  background-size: cover;
+  background-position: center;
+}
+</style>
   

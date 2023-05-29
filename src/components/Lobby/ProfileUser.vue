@@ -17,7 +17,9 @@
 <template>
   <div class="flex justify-center items-center border-2 border-amber-500 rounded-3xl profileUser ">
     <div class="h-56 w-72 absolute flex justify-center items-center">
-      <img class="object-cover h-28 w-28 rounded-full" :src="store.user.photoURL" alt="profile" />
+      
+      <img v-if="store.user.photoURL" class="object-cover h-28 w-28 rounded-full" :src="store.user.photoURL" alt="profile" />
+      <img v-else class="object-cover h-28 w-28 rounded-full" src="../../assets/images/poker-king-beard-logo-design-260nw-2168601229.webp" alt="profile" />
     </div>
 
     <div class="
@@ -47,7 +49,7 @@
       ">
         <div class="w-full h-1/2 flex justify-between items-center px-3 pt-2">
           <div class="flex flex-col justify-center items-center">
-            <img src="../../assets/moneda.png" alt="Chips" class="h-12 w-12">
+            <img src="../../assets/images/depositphotos_11531027-stock-illustration-poker-chip.png" alt="Chips" class="h-12 w-12">
             <h1 class="text-black text-2xl">{{userChips}}</h1>
           </div>
           <div class="ml-2 flex flex-col justify-center items-center ">
@@ -100,7 +102,7 @@ watchEffect(async () => {
 
 <style scoped>
 .profileUser {
-  background-image: url("../../assets/palos.jpg");
+  background-image: url("../../assets/images/palos.jpg");
   background-size: cover;
   background-position: center;
 }

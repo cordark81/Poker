@@ -43,14 +43,14 @@ const getRooms = () => {
   
 <style scoped>
 .background-login {
-  background-image: url("../assets/background-login.jpeg");
+  background-image: url("../assets/images/background-login.jpeg");
   background-size: cover;
   background-position: center;
 }
 
 
 .createsRooms {
-  background-image: url("../assets/palos.jpg");
+  background-image: url("../assets/images/palos.jpg");
   background-size: cover;
   background-position: center;
 }

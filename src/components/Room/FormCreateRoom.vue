@@ -73,6 +73,3 @@ const createRoom = async () => {
 
 </script>
 
-<style scoped>
-
-</style>

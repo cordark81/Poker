@@ -17,7 +17,3 @@ const dialog = ref();
 
 </script>
 
-
-
-<style scoped>
-</style>

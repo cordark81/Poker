@@ -47,7 +47,7 @@ const closeModal = () => {
 
 <style  scoped>
 .background-img {
-  background-image: url("../../assets/palos.jpg");
+  background-image: url("../../assets/images/palos.jpg");
   background-size: cover;
   background-position: center;
 }
