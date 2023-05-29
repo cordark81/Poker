@@ -52,7 +52,7 @@
           </div>
           <div class="ml-2 flex flex-col justify-center items-center ">
             <button @click="logOut"
-              class="text-sm items-center p-2 bg-black text-white rounded-2xl hover:bg-gray-800 focus:outline-none">
+              class="z-50 text-sm items-center p-2 bg-black text-white rounded-2xl hover:bg-gray-800 focus:outline-none">
               Log out
             </button>
           </div>

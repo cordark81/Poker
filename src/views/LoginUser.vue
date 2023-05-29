@@ -45,10 +45,10 @@
       </div>
     </div>
   </div>
-  <div v-if="showForgotPasswordModal" class="fixed top-0 left-0 flex items-center justify-center w-screen h-screen z-50">
-  <div class="w-5/6 sm:w-4/5 md:w-3/4 lg:w-1/2 xl:w-1/3 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6 border-2 border-black">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Recuperar contraseña</h2>
-    <p class="text-gray-700 dark:text-gray-300">Ingresa tu correo electrónico para recibir instrucciones sobre cómo
+  <div v-show="showForgotPasswordModal" class="background-forgot-password fixed top-0 left-0 flex items-center justify-center w-screen h-screen z-50">
+  <div class="w-5/6 sm:w-4/5 md:w-3/4 lg:w-1/2 xl:w-1/3 bg-black rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6 border-2 border-amber-400">
+    <h2 class="text-2xl font-bold mb-4 text-white dark:text-white">Recuperar contraseña</h2>
+    <p class="text-white dark:text-gray-300">Ingresa tu correo electrónico para recibir instrucciones sobre cómo
       restablecer tu contraseña. El correo puede llegar a la carpeta de spam, así que asegúrate de revisarla también.
     </p>
     <form @submit.prevent="submitForgotPassword" class="mt-4">
@@ -121,6 +121,12 @@ const submitForgotPassword = async () => {
 <style scoped>
 .background-login {
   background-image: url("../assets/background-login.jpeg");
+  background-size: cover;
+  background-position: center;
+}
+
+.background-forgot-password {
+  background-image: url("../assets/palos.jpg");
   background-size: cover;
   background-position: center;
 }

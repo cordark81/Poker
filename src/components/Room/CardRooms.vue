@@ -15,15 +15,19 @@
     </div>
     <div class="flex justify-center">
       <button @click="joinRoom"
-        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">Unirse a la sala</button>
+        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">Unirse a
+        la sala</button>
     </div>
   </div>
+ 
 </template>
 
   
 <script setup>
+import { defineEmits } from 'vue'
 import { useRouter } from "vue-router";
 import { ref as rtdbRef, database, onValue, auth, onAuthStateChanged } from "../../utils/firebase";
+
 
 const router = useRouter();
 
@@ -33,6 +37,9 @@ const props = defineProps({
   countSeat: Number,
   range: Number,
 });
+
+const emits = defineEmits("closeModal, openModal");
+
 
 const joinRoom = () => {
   const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,7 +62,8 @@ const joinRoom = () => {
           });
         } else {
           // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
-          alert(`No tienes suficientes fichas para unirte a esta sala. Tienes ${chips} fichas.`);
+          emits("openModal")
+
         }
       });
 
@@ -66,7 +74,5 @@ const joinRoom = () => {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
   
