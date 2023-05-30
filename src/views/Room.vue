@@ -11,6 +11,7 @@
             <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
           </div>
         </div>
+        <Comprobar_con_lib />
       </div>
     </div>
     <Chat :room="room" />
@@ -23,11 +24,13 @@ import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
 import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
-import { onValue, refDB } from '../utils/firebase';
+import { onValue, refDB } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
+
 import Seats from "../components/Room/Seats.vue"
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from '../components/Modals/ModalInSeat.vue'
+import Comprobar_con_lib from "../components/GameLogic/Comprobar_con_lib.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();
@@ -73,25 +76,23 @@ const standUpSeat = (seatIndex) => {
   }
 };
 
-
 const leaveRoom = () => {
-  const seatIndex = findSeatIndexByUser(storeUser.user.displayName);
-  if (seatIndex !== -1) {
-    standUpSeat(seatIndex);
-  }
+	const seatIndex = findSeatIndexByUser(storeUser.user.displayName);
+	if (seatIndex !== -1) {
+		standUpSeat(seatIndex);
+	}
 };
 
-
 const findSeatIndexByUser = (username) => {
-  return seats.value.findIndex((seat) => seat.user === username);
+	return seats.value.findIndex((seat) => seat.user === username);
 };
 
 const closeModal = () => {
-  showModal.value = false;
+	showModal.value = false;
 };
 
 onBeforeRouteLeave((to, from, next) => {
-  leaveRoom();
-  next();
+	leaveRoom();
+	next();
 });
 </script>
