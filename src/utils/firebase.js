@@ -39,7 +39,6 @@ const firebaseConfig = {
 	//Aqui se añade la conexión a base de datos
 };
 
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
