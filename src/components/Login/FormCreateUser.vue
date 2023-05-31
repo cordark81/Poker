@@ -28,35 +28,39 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user";
 import { userRef } from "../../utils/firebase";
 
-
 const store = useUserStore();
 const router = useRouter();
 
-const resetFields =()=>user.value.correo=user.value.username=user.value.contraseña=""
+const resetFields = () =>
+	(user.value.correo = user.value.username = user.value.contraseña = "");
 
 const emits = defineEmits(["closeModal"]);
 const user = ref({
-  correo: "",
-  username: "",
-  contraseña: "",
-  chips: 500
+	correo: "",
+	username: "",
+	contraseña: "",
+	chips: 500,
 });
 
 const register = async () => {
-  try {
-   await store.doRegister(user.value.username,user.value.correo,user.value.contraseña);
-    userRef("users/"+store.user.uid,user.value);
-    router.push("/Lobby");
-    resetFields()
-    console.log("Esta registrado");
-  } catch (error) {
-    console.log(error.message);
-    resetFields()
-  }
+	try {
+		await store.doRegister(
+			user.value.username,
+			user.value.correo,
+			user.value.contraseña
+		);
+		userRef("users/" + store.user.uid, user.value);
+		router.push("/Lobby");
+		resetFields();
+		console.log("Esta registrado");
+	} catch (error) {
+		console.log(error.message);
+		resetFields();
+	}
 };
 
 const closeModal = () => {
-  emits("closeModal");
-  resetFields()
+	emits("closeModal");
+	resetFields();
 };
 </script>

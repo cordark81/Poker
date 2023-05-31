@@ -1,19 +1,3 @@
-<!--<template> en proceso de eliminacion
-  <div class="flex items-center justify-center p-4 bg-white mx-auto rounded-2xl mb-6 md:my-auto md:mx-auto md:w-64 md:h-24">
-    <div class="flex items-center mb-4 sm:mb-0">
-      <img :src="store.user.photoURL" alt="Perfil" class="md:hidden lg:block h-20 w-20 rounded-full object-cover">
-      <div class="ml-4">
-        <div class="text-gray-700 font-bold">{{ store.user.displayName }}</div>
-        <div class="flex items-center text-gray-700">
-          <span class="mr-2">Monedas:</span>
-          <span class="font-bold">{{ userChips }}</span>
-          <img src="../../assets/moneda.png" alt="Chips" class="h-6 w-6">
-        </div>
-      </div>
-    </div>
-    <button @click="logOut" class="ml-2 px-4 py-2 mb-5  md:w-12 md:h-18  md:ml-5 bg-red-500 text-white rounded-2xl hover:bg-red-600 focus:outline-none">Log out</button>
-  </div>
-</template>-->
 <template>
   <div class="flex justify-center items-center border-2 border-amber-500 rounded-3xl profileUser ">
     <div class="h-56 w-72 absolute flex justify-center items-center">
