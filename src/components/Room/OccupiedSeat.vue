@@ -1,4 +1,5 @@
 <template>
+
 	<div>
 		<CardsHand v-if="mostrar" :index="index" class="flex justify-center" />
 		<div
@@ -38,6 +39,8 @@
 			</div>
 		</div>
 	</div>
+
+
 </template>
 
 <script setup>
