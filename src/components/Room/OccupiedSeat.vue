@@ -33,7 +33,7 @@
 					<h1 class="text-white mt-5">{{ seat.user }}</h1>
 				</div>
 				<div class="flex justify-center w-36 mb-5">
-					<h1 class="text-red-600 font-bold">{{ seat.chips }}</h1>
+					<h1 class="text-red-600 font-bold">{{ chips }}</h1>
 				</div>
 			</div>
 		</div>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
+import { ref, defineEmits } from "vue";
 import { useUserStore } from "../../stores/user";
 import CardsHand from "../GameLogic/CardsHand.vue";
 import { useCardsStore } from "../../stores/cards";
@@ -58,6 +58,8 @@ const props = defineProps({
 	index: Number,
 	mostrar: Boolean,
 });
+
+const chips = ref(400);
 </script>
 
 <style scoped>

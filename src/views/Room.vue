@@ -22,6 +22,7 @@
 						<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
 					</div>
 				</div>
+				<button :disabled="tableEmpty" @click="probarRepartir">Repartir</button>
 				<button @click="storeCards.gamePhase('flop')">Flop</button>
 				<button @click="storeCards.gamePhase('turn')">Turn</button>
 				<button @click="storeCards.gamePhase('river')">River</button>
@@ -35,16 +36,16 @@
 			</div>
 		</div>
 		<Chat :room="room" />
+		<GameConsole />
 	</div>
 	<ModalInSeat v-show="showModal" @closeModal="showModal = false" />
-	<button @click="probarRepartir">Repartir</button>
 </template>
 
 <script setup>
 import { useCardsStore } from "../stores/cards";
 import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUpdated } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { onValue, refDB } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
@@ -53,6 +54,7 @@ import Seats from "../components/Room/Seats.vue";
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
 import CardsTable from "../components/GameLogic/CardsTable.vue";
+import GameConsole from "../components/GameLogic/GameConsole.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();
@@ -64,6 +66,8 @@ const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 
 const repartidas = ref(false);
+
+let tableEmpty = ref(true);
 
 onMounted(() => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -77,6 +81,16 @@ onMounted(() => {
 	} catch (error) {
 		console.error("Error listening for room data:", error);
 	}
+});
+
+onUpdated(() => {
+	let count = 0;
+	seats.value.forEach((element) => {
+		if (element.user) {
+			count++;
+		}
+	});
+	count === 3 ? (tableEmpty.value = false) : (tableEmpty.value = true);
 });
 
 const probarRepartir = () => {
