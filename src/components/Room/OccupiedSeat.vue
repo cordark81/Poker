@@ -1,5 +1,5 @@
 <template>
-    <div class=" w-52 h-28 Seat rounded-2xl border-2 border-amber-400 flex flex-row justify-between">
+    <div class=" w-52 h-28 Seat rounded-full border-2 border-amber-400 flex flex-row justify-between">
         <div class="flex w-10">
             <div class="w-52">
                 <button  v-if="seat.user && seat.user === storeUser.user.displayName" type="button" @click="leaveSeat()"
