@@ -1,7 +1,12 @@
 <template>
 
 	<div>
-		<CardsHand v-if="mostrar" :index="index" class="flex justify-center" />
+		<CardsHand
+			v-if="mostrar"
+			:index="index"
+			:hand="seat.hand"
+			class="flex justify-center"
+		/>
 		<div
 			class="w-52 h-28 Seat rounded-full border-2 border-amber-400 flex flex-row justify-between"
 		>
@@ -34,7 +39,8 @@
 					<h1 class="text-white mt-5">{{ seat.user }}</h1>
 				</div>
 				<div class="flex justify-center w-36 mb-5">
-					<h1 class="text-red-600 font-bold">{{ seat.chips }}</h1>
+					<h1 class="text-red-600 font-bold">{{ chips }}</h1>
+					<p class="text-white font-bold">{{ seat.dealer }}</p>
 				</div>
 			</div>
 		</div>
@@ -44,7 +50,7 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
+import { ref, defineEmits } from "vue";
 import { useUserStore } from "../../stores/user";
 import CardsHand from "../GameLogic/CardsHand.vue";
 import { useCardsStore } from "../../stores/cards";
@@ -61,6 +67,8 @@ const props = defineProps({
 	index: Number,
 	mostrar: Boolean,
 });
+
+const chips = ref(400);
 </script>
 
 <style scoped>
