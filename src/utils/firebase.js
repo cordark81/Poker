@@ -36,13 +36,7 @@ import {
 import "firebase/database";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyBp0vfvEX9QvT5-lSlebe7tMz0Pp7fjvPs",
-	authDomain: "pokerzone-eb346.firebaseapp.com",
-	databaseURL: "https://pokerzone-eb346-default-rtdb.firebaseio.com",
-	projectId: "pokerzone-eb346",
-	storageBucket: "pokerzone-eb346.appspot.com",
-	messagingSenderId: "411361893439",
-	appId: "1:411361893439:web:eb87953ba9fc39f69a2c8a"
+	
 };
 
 const app = initializeApp(firebaseConfig);
