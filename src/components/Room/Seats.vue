@@ -1,34 +1,26 @@
 <template>
-    <div v-if="seating">
-        <button @click="playerJoin"
-            class="bg-slate-600 hover:bg-slate-700 text-white rounded-full w-32 h-16 opacity-75">Asiento
-            libre</button>
+    <div class="Seat w-52 h-28 rounded-2xl flex items-end justify-center border-2 border-amber-400">
+        <button @click="occupeSeat"
+            class="mb-2 bg-transparent hover:bg-red-700 text-white text-sm py-2 px-4 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">Sentarse</button>
     </div>
-    <OccupiedSeat v-else :chips="chips" :userName="userName" :inGame="inGame" @leaveSeat="emits('leaveSeat')" />
 </template>
 
 <script setup>
 
-import OccupiedSeat from "./OccupiedSeat.vue"
+import {defineEmits} from 'vue'
 
-const emits = defineEmits(['PlayerJoin','leaveSeat']);
+const emits = defineEmits(["occupeSeat"]);
 
-const props = defineProps({
-    
-    userName: String,
-    seating: Boolean,
-    inGame: Boolean,
-    chips: Number,
-
-})
-
-const playerJoin = () => {
-    
-    emits("PlayerJoin")
-}
+const occupeSeat = () => emits("occupeSeat")
 
 </script>
 
 <style scoped>
-
+.Seat {
+    background-image: url("../../assets/images/asiento.jpg");
+    background-size: cover;
+    background-position: center;
+}
 </style>
+  
+

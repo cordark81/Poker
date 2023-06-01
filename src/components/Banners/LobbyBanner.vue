@@ -1,16 +1,12 @@
 <template>
-    <div class="flex justify-between bg-black">
-        <div class="m-10">
-            <button @click="dialog=true" class="w-28 h-16 bg-red-500  hover:bg-red-600 rounded-3xl shadow-lg text-white ml-10">Crear sala</button>
+    <div class="flex flex-col md:flex-row justify-around items-center bg-black flex-wrap">
+        <div class=" flex mt-4 sm:mt-0">
+            <h1 class="text-5xl text-white text-center p-2 sm:p-4 font-bold">Lobby</h1>
         </div>
-        <div class="ml-auto mr-auto">
-            <h1 class="text-3xl text-white text-center p-9 mt-3 font-bold">Lobby</h1>
-        </div>
-        <ProfileUser />
+        <ProfileUser class=" flex md-mr-10  h-48 w-96 my-5" />
     </div>
-    <CreateRoom v-show="dialog"  @CloseModal="dialog = false"/> 
-</template>
-
+    <CreateRoom v-show="dialog" @CloseModal="dialog = false" />
+</template>    
 <script setup>
 
 import { ref } from "vue";
@@ -21,8 +17,3 @@ const dialog = ref();
 
 </script>
 
-
-
-<style scoped>
-
-</style>
