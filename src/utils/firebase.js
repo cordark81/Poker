@@ -36,8 +36,7 @@ import {
 import "firebase/database";
 
 const firebaseConfig = {
-
-	
+	//Aqui se añade la conexión a base de datos
 };
 
 

@@ -12,31 +12,23 @@
 				<div v-if="seat.user" class="">
 					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" />
 				</div>
+				<div>
+					<CardsTable />
 				<div v-else>
 					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
 				</div>
 			</div>
+      <button @click="probarRepartir">Repartir</button>
+				<button @click="storeCards.gamePhase('flop')">Flop</button>
+				<button @click="storeCards.gamePhase('turn')">Turn</button>
+				<button @click="storeCards.gamePhase('river')">River</button>
+				<button @click="storeCards.ditchDealer(seats, room)">Sortear</button>
+				<button @click="storeCards.deleteDealer(seats, room)">
+					Eliminar sorteo
+				</button>
 		</div>
-		<div class="flex justify-center items-center h-32">
-			<button @click="probarRepartir">Repartir</button>
-			<button @click="storeCards.gamePhase('flop')">Flop</button>
-			<button @click="storeCards.gamePhase('turn')">Turn</button>
-			<button @click="storeCards.gamePhase('river')">River</button>
-			<button @click="storeCards.check(storeCards.dealtCards)">
-				Comprobar
-			</button>
-			<button class="ml-2 bg-red-500" @click="testLotery()"> Sortear Dealer</button>
-			<button class="ml-2 bg-red-500" @click="testIzqu()"> mover
-				izquierda</button>
-			<div>
-				<CardsTable />
-			</div>
-
-			<p>{{ storeCards.winner }}</p>
-		</div>
-
-
 		<Chat class="flex flex-col" :room="room" />
+		<GameConsole />
 	</div>
 	<ModalInSeat v-show="showModal" @closeModal="showModal = false" />
 </template>
@@ -45,7 +37,7 @@
 import { useCardsStore } from "../stores/cards";
 import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUpdated } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { onValue, refDB,numberSeats,updateNumberSeats } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
@@ -53,6 +45,7 @@ import Seats from "../components/Room/Seats.vue";
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
 import CardsTable from "../components/GameLogic/CardsTable.vue";
+import GameConsole from "../components/GameLogic/GameConsole.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();
@@ -64,6 +57,8 @@ const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 const repartidas = ref(false);
 const playersTest = ref([{ name: "edu-0", dealer: "" }, { name: "angel-1", dealer: "" }, { name: "ivan-2", dealer: "" }]);
+
+//let tableEmpty = ref(true);
 
 onMounted(() => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -80,18 +75,19 @@ onMounted(() => {
 	}
 });
 
-const testLotery = () => {
 
-	storeCards.ditchDealer(playersTest.value)
-}
-
-const testIzqu = () =>{
-	console.log(playersTest.value)
-	storeCards.moverEtiquetasIzquierda(playersTest.value)
-	
-}
-
-
+onUpdated(() => {
+	let count = 0;
+	seats.value.forEach((element) => {
+		if (element.user) {
+			count++;
+		}
+	});
+	if (count === 3) {
+		//probarRepartir();
+		//storeCards.ditchDealer(seats.value, room.value);
+	}
+});
 
 const styleSitInTable = (index) => {
 	if (index == 1) {
@@ -104,9 +100,9 @@ const styleSitInTable = (index) => {
 
 }
 
+
 const probarRepartir = () => {
-	storeCards.dealingCards(seats.value);
-	console.log(storeCards.dealtCards[1].hand);
+	storeCards.dealingCards(seats.value, room.value);
 	repartidas.value = true;
 };
 
@@ -185,7 +181,6 @@ const leaveRoom = () => {
 const findSeatIndexByUser = (username) => {
 	return seats.value.findIndex((seat) => seat.user === username);
 };
-
 
 onBeforeRouteLeave((to, from, next) => {
 	leaveRoom();
