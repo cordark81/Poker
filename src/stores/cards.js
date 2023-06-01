@@ -220,7 +220,33 @@ export const useCardsStore = defineStore("cardsStore", () => {
 		});
 	};
 
-	return {
+  function moverEtiquetasIzquierda(array) {
+    const newArray = [...array]; // Crear una copia del array para no modificar el original
+
+    const dealerIndex = newArray.findIndex((item) => item.dealer === "dealer");
+    const sbIndex = (dealerIndex + newArray.length - 1) % newArray.length;
+    const bbIndex = (dealerIndex + newArray.length - 2) % newArray.length;
+
+    const dealerValue = newArray[dealerIndex].dealer;
+    const sbValue = newArray[sbIndex].dealer;
+    const bbValue = newArray[bbIndex].dealer;
+
+    for (let i = 0; i < newArray.length; i++) {
+      const newIndex = (i + 1) % newArray.length;
+
+      if (i === dealerIndex) {
+        newArray[newIndex].dealer = dealerValue;
+      } else if (i === sbIndex) {
+        newArray[newIndex].dealer = sbValue;
+      } else if (i === bbIndex) {
+        newArray[newIndex].dealer = bbValue;
+      }
+    }
+
+    console.log(newArray);
+  }
+
+ 	return {
 		cartas_mesa,
 		winner,
 		dealingCards,

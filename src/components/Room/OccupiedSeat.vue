@@ -1,4 +1,5 @@
 <template>
+
 	<div>
 		<CardsHand
 			v-if="mostrar"
@@ -7,7 +8,7 @@
 			class="flex justify-center"
 		/>
 		<div
-			class="w-52 h-28 Seat rounded-2xl border-2 border-amber-400 flex flex-row justify-between"
+			class="w-52 h-28 Seat rounded-full border-2 border-amber-400 flex flex-row justify-between"
 		>
 			<div class="flex w-10">
 				<div class="w-52">
@@ -44,6 +45,8 @@
 			</div>
 		</div>
 	</div>
+
+
 </template>
 
 <script setup>

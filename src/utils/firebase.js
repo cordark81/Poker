@@ -37,13 +37,8 @@ import "firebase/database";
 
 const firebaseConfig = {
 	//Aqui se añade la conexión a base de datos
-	apiKey: "AIzaSyBp0vfvEX9QvT5-lSlebe7tMz0Pp7fjvPs",
-	authDomain: "pokerzone-eb346.firebaseapp.com",
-	projectId: "pokerzone-eb346",
-	storageBucket: "pokerzone-eb346.appspot.com",
-	messagingSenderId: "411361893439",
-	appId: "1:411361893439:web:eb87953ba9fc39f69a2c8a",
 };
+
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -60,7 +55,14 @@ const userRef = (entrada, user) => {
 
 const refDB = (entrada) => ref(database, entrada);
 
+const numberSeats = (ref)=>getDocs(collection(db,ref))
+
+export const updateNumberSeats = (ref, id, objeto) => updateDoc(doc(db, ref, id), objeto)
+
+
+
 export {
+	numberSeats,
 	auth,
 	db,
 	refDB,

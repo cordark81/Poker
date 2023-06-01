@@ -3,7 +3,7 @@
 		<div v-for="card in hand" :key="card">
 			<img
 				:src="'../../src/assets/cards/' + card + '.png'"
-				class="w-16 h-24 mr-2"
+				class="w-12 h-20 mr-2"
 			/>
 		</div>
 	</div>

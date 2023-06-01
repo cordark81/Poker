@@ -1,28 +1,24 @@
 <template>
-	<div class="h-screen bg-green-600">
-		<h1 class="text-center font-extrabold pt-5 text-5xl">Sala {{ room }}</h1>
-		<div
-			class="border border-slate-300 rounded-full h-2/4 w-2/4 flex flex-row items-center justify-center mt-20 mx-auto"
-		>
-			<div class="flex justify-center flex-wrap gap-16">
-				<div
-					v-for="(seat, index) in seats"
-					:key="index"
-					class="flex w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-				>
-					<div v-if="seat.user" class="">
-						<OccupiedSeat
-							@leaveSeat="standUpSeat(index)"
-							:seat="seat"
-							:index="index"
-							:mostrar="repartidas"
-						/>
-					</div>
-					<div v-else class="">
-						<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
-					</div>
+	<div class="h-screen bg-green-600 background-table">
+		<div class=" w-1/5 text-center flex">
+			<h1
+				class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
+				Sala {{ room }}</h1>
+		</div>
+
+		<div class="flex justify-center items-center flex-wrap h-96">
+			<div v-for="(seat, index) in seats" :key="index"
+				class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4" :class="styleSitInTable(index)">
+				<div v-if="seat.user" class="">
+					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" />
 				</div>
-				<button @click="probarRepartir">Repartir</button>
+				<div>
+					<CardsTable />
+				<div v-else>
+					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
+				</div>
+			</div>
+      <button @click="probarRepartir">Repartir</button>
 				<button @click="storeCards.gamePhase('flop')">Flop</button>
 				<button @click="storeCards.gamePhase('turn')">Turn</button>
 				<button @click="storeCards.gamePhase('river')">River</button>
@@ -30,13 +26,8 @@
 				<button @click="storeCards.deleteDealer(seats, room)">
 					Eliminar sorteo
 				</button>
-				<div>
-					<CardsTable />
-				</div>
-				<p>{{ storeCards.winner }}</p>
-			</div>
 		</div>
-		<Chat :room="room" />
+		<Chat class="flex flex-col" :room="room" />
 		<GameConsole />
 	</div>
 	<ModalInSeat v-show="showModal" @closeModal="showModal = false" />
@@ -48,9 +39,8 @@ import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
 import { ref, onMounted, onUpdated } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
-import { onValue, refDB } from "../utils/firebase";
+import { onValue, refDB,numberSeats,updateNumberSeats } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
-
 import Seats from "../components/Room/Seats.vue";
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
@@ -65,8 +55,8 @@ const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
 const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
-
 const repartidas = ref(false);
+const playersTest = ref([{ name: "edu-0", dealer: "" }, { name: "angel-1", dealer: "" }, { name: "ivan-2", dealer: "" }]);
 
 //let tableEmpty = ref(true);
 
@@ -77,12 +67,14 @@ onMounted(() => {
 			const roomData = snapshot.val();
 			if (roomData) {
 				seats.value = roomData.seats;
+				checkIndex(seats.value);
 			}
 		});
 	} catch (error) {
 		console.error("Error listening for room data:", error);
 	}
 });
+
 
 onUpdated(() => {
 	let count = 0;
@@ -97,35 +89,83 @@ onUpdated(() => {
 	}
 });
 
+const styleSitInTable = (index) => {
+	if (index == 1) {
+		return "items-end pb-40"
+	} else if (index == 2) {
+		return "items-end pl-10"
+	} else {
+		return "items-end pr-10"
+	}
+
+}
+
+
 const probarRepartir = () => {
 	storeCards.dealingCards(seats.value, room.value);
 	repartidas.value = true;
 };
 
-const sitIn = (seatIndex) => {
-	try {
-		const obj = storeSeat.sitInSeat(
-			seatIndex,
-			selectedSeatIndex.value,
-			seats.value,
-			room.value
-		);
-		if (obj.selected !== -1) {
-			selectedSeatIndex.value = obj.selected;
-			showModal.value = obj.modal;
-		}
-	} catch (error) {
-		console.log(error.message);
-	}
+const checkIndex = (seats) => {
+  seats.forEach((seat, index) => {
+    if (seat.user === storeUser.user.displayName) {
+      selectedSeatIndex.value = index;
+    }
+  });
 };
 
-const standUpSeat = (seatIndex) => {
+
+const sitIn = async (seatIndex) => {
+    try {
+        const obj = storeSeat.sitInSeat(
+            seatIndex,
+            selectedSeatIndex.value,
+            seats.value,
+            room.value
+        );
+        if (obj.selected !== -1) {
+            selectedSeatIndex.value = obj.selected;
+            showModal.value = obj.modal;
+            const number = await numberSeats("Rooms");
+            let seat = 0;
+            let docId = 0;
+            number.docs.forEach((doc) => {
+                const element = doc.data();
+                if (element.roomName === room.value) {
+					console.log("Asientos",element.seat)
+                    seat = element.seat-=1;
+                    docId = doc.id;
+                }
+            });
+            updateNumberSeats("Rooms", docId, { seat: seat });
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
+
+
+const standUpSeat = async(seatIndex) => {
 	try {
 		selectedSeatIndex.value = storeSeat.standUpFromSeat(
 			seatIndex,
 			seats.value,
 			room.value
 		);
+		const number = await numberSeats("Rooms");
+            let seat = 0;
+            let docId = 0;
+            number.docs.forEach((doc) => {
+                const element = doc.data();
+                if (element.roomName === room.value) {
+					console.log("Asientos",element.seat)
+                    seat = element.seat+=1;
+                    docId = doc.id;
+                }
+            });
+            updateNumberSeats("Rooms", docId, { seat: seat });
+		
 	} catch (error) {
 		console.log(error.message);
 	}
@@ -146,4 +186,20 @@ onBeforeRouteLeave((to, from, next) => {
 	leaveRoom();
 	next();
 });
+
+
 </script>
+
+<style scoped>
+.background-table {
+	background-image: url("../assets/images/poker-table-green-cloth-on-dark-background-illustration-free-vector.jpg");
+	background-size: cover;
+	background-position: center;
+}
+
+.background-room {
+	background-image: url("../assets/images/31_copia.webp");
+	background-size: cover;
+	background-position: center;
+}
+</style>
