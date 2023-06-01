@@ -36,6 +36,7 @@ const getRooms = () => {
       });
     });
     rooms.value = newRooms;
+    console.log(rooms.value)
   });
 };
 

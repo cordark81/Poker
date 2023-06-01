@@ -46,9 +46,8 @@ import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
 import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
-import { onValue, refDB } from "../utils/firebase";
+import { onValue, refDB,numberSeats,updateNumberSeats } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
-
 import Seats from "../components/Room/Seats.vue";
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
@@ -72,6 +71,7 @@ onMounted(() => {
 			const roomData = snapshot.val();
 			if (roomData) {
 				seats.value = roomData.seats;
+				checkIndex(seats.value);
 			}
 		});
 	} catch (error) {
@@ -85,30 +85,66 @@ const probarRepartir = () => {
 	repartidas.value = true;
 };
 
-const sitIn = (seatIndex) => {
-	try {
-		const obj = storeSeat.sitInSeat(
-			seatIndex,
-			selectedSeatIndex.value,
-			seats.value,
-			room.value
-		);
-		if (obj.selected !== -1) {
-			selectedSeatIndex.value = obj.selected;
-			showModal.value = obj.modal;
-		}
-	} catch (error) {
-		console.log(error.message);
-	}
+const checkIndex = (seats) => {
+  seats.forEach((seat, index) => {
+    if (seat.user === storeUser.user.displayName) {
+      selectedSeatIndex.value = index;
+    }
+  });
 };
 
-const standUpSeat = (seatIndex) => {
+
+const sitIn = async (seatIndex) => {
+    try {
+        const obj = storeSeat.sitInSeat(
+            seatIndex,
+            selectedSeatIndex.value,
+            seats.value,
+            room.value
+        );
+        if (obj.selected !== -1) {
+            selectedSeatIndex.value = obj.selected;
+            showModal.value = obj.modal;
+            const number = await numberSeats("Rooms");
+            let seat = 0;
+            let docId = 0;
+            number.docs.forEach((doc) => {
+                const element = doc.data();
+                if (element.roomName === room.value) {
+					console.log("Asientos",element.seat)
+                    seat = element.seat-=1;
+                    docId = doc.id;
+                }
+            });
+            updateNumberSeats("Rooms", docId, { seat: seat });
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
+
+
+const standUpSeat = async(seatIndex) => {
 	try {
 		selectedSeatIndex.value = storeSeat.standUpFromSeat(
 			seatIndex,
 			seats.value,
 			room.value
 		);
+		const number = await numberSeats("Rooms");
+            let seat = 0;
+            let docId = 0;
+            number.docs.forEach((doc) => {
+                const element = doc.data();
+                if (element.roomName === room.value) {
+					console.log("Asientos",element.seat)
+                    seat = element.seat+=1;
+                    docId = doc.id;
+                }
+            });
+            updateNumberSeats("Rooms", docId, { seat: seat });
+		
 	} catch (error) {
 		console.log(error.message);
 	}
