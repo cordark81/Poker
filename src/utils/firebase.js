@@ -36,8 +36,10 @@ import {
 import "firebase/database";
 
 const firebaseConfig = {
+
 	
 };
+
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
