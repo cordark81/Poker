@@ -10,14 +10,8 @@
 </template>
 
 <script setup>
-import { useCardsStore } from "../../stores/cards";
-import { ref, onMounted } from "vue";
-
 const props = defineProps({
 	index: Number,
+	hand: Array,
 });
-
-const storeCards = useCardsStore();
-
-const hand = ref(storeCards.dealtCards[props.index].hand);
 </script>

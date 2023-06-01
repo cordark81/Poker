@@ -22,12 +22,13 @@
 						<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
 					</div>
 				</div>
-				<button :disabled="tableEmpty" @click="probarRepartir">Repartir</button>
+				<button @click="probarRepartir">Repartir</button>
 				<button @click="storeCards.gamePhase('flop')">Flop</button>
 				<button @click="storeCards.gamePhase('turn')">Turn</button>
 				<button @click="storeCards.gamePhase('river')">River</button>
-				<button @click="storeCards.check(storeCards.dealtCards)">
-					Comprobar
+				<button @click="storeCards.ditchDealer(seats, room)">Sortear</button>
+				<button @click="storeCards.deleteDealer(seats, room)">
+					Eliminar sorteo
 				</button>
 				<div>
 					<CardsTable />
@@ -67,7 +68,7 @@ const showModal = ref(false);
 
 const repartidas = ref(false);
 
-let tableEmpty = ref(true);
+//let tableEmpty = ref(true);
 
 onMounted(() => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -90,12 +91,14 @@ onUpdated(() => {
 			count++;
 		}
 	});
-	count === 3 ? (tableEmpty.value = false) : (tableEmpty.value = true);
+	if (count === 3) {
+		//probarRepartir();
+		//storeCards.ditchDealer(seats.value, room.value);
+	}
 });
 
 const probarRepartir = () => {
-	storeCards.dealingCards(seats.value);
-	console.log(storeCards.dealtCards[1].hand);
+	storeCards.dealingCards(seats.value, room.value);
 	repartidas.value = true;
 };
 
@@ -137,10 +140,6 @@ const leaveRoom = () => {
 
 const findSeatIndexByUser = (username) => {
 	return seats.value.findIndex((seat) => seat.user === username);
-};
-
-const closeModal = () => {
-	showModal.value = false;
 };
 
 onBeforeRouteLeave((to, from, next) => {

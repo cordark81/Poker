@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
+import { refDB, set } from "../utils/firebase";
 
 export const useCardsStore = defineStore("cardsStore", () => {
 	const cards = ref([
@@ -57,18 +58,17 @@ export const useCardsStore = defineStore("cardsStore", () => {
 		"Qs",
 		"Ks",
 	]);
-	const dealtCards = ref([]);
+	/*const dealtCards = ref([]);*/
 	let cartas_partida = cards.value;
 	let cartas_mesa = ref([]);
 	const results = ref([]);
 	const winner = ref("");
 
-	const addCards = (cardHand, player, room) =>
-		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });
+	/*const addCards = (cardHand, player, room) =>
+		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
-	const dealingCards = (seats) => {
-		seats.forEach((element) => {
-			console.log("repartir");
+	const dealingCards = (seats, room) => {
+		seats.forEach((element, index) => {
 			let cardsHand = [];
 			let pos = Math.floor(Math.random() * cartas_partida.length);
 			cardsHand.push(cartas_partida[pos]);
@@ -76,8 +76,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
 			pos = Math.floor(Math.random() * cartas_partida.length);
 			cardsHand.push(cartas_partida[pos]);
 			cartas_partida.splice(pos, 1);
+			element.hand = cardsHand;
+			const roomRef = refDB(`rooms/${room}/seats/${index}`);
+			set(roomRef, element);
 
-			addCards(cardsHand, element.user, "clubs");
+			//addCards(cardsHand, element.user, "clubs");
 		});
 	};
 
@@ -186,12 +189,44 @@ export const useCardsStore = defineStore("cardsStore", () => {
 		}
 	};
 
+	const ditchDealer = (seats, room) => {
+		console.log("hola");
+		const raffleWinner = Math.floor(Math.random() * seats.length);
+
+		//Asignaciones segun el sorteo a los insices correspondientes
+		seats[raffleWinner].dealer = "dealer";
+		seats[(raffleWinner + 1) % seats.length].dealer = "sb";
+		seats[(raffleWinner + 2) % seats.length].dealer = "bb";
+
+		//Declaracion de los diferentes asientos
+		let dealer = seats[raffleWinner];
+		let sb = seats[(raffleWinner + 1) % seats.length];
+		let bb = seats[(raffleWinner + 2) % seats.length];
+
+		//Insercion en la base de datos despues de hacer el sorteo
+		let roomRef = refDB(`rooms/${room}/seats/${raffleWinner}`);
+		set(roomRef, dealer);
+		roomRef = refDB(`rooms/${room}/seats/${(raffleWinner + 1) % seats.length}`);
+		set(roomRef, sb);
+		roomRef = refDB(`rooms/${room}/seats/${(raffleWinner + 2) % seats.length}`);
+		set(roomRef, bb);
+	};
+
+	const deleteDealer = (seats, room) => {
+		seats.forEach((seat, index) => {
+			seat.dealer = "";
+			let roomRef = refDB(`rooms/${room}/seats/${index}`);
+			set(roomRef, seat);
+		});
+	};
+
 	return {
-		dealtCards,
 		cartas_mesa,
 		winner,
 		dealingCards,
 		gamePhase,
 		check,
+		ditchDealer,
+		deleteDealer,
 	};
 });
