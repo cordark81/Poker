@@ -36,7 +36,7 @@ import {
 import "firebase/database";
 
 const firebaseConfig = {
-	//Aqui se añade la conexión a base de datos
+	
 };
 
 const app = initializeApp(firebaseConfig);
@@ -54,7 +54,14 @@ const userRef = (entrada, user) => {
 
 const refDB = (entrada) => ref(database, entrada);
 
+const numberSeats = (ref)=>getDocs(collection(db,ref))
+
+export const updateNumberSeats = (ref, id, objeto) => updateDoc(doc(db, ref, id), objeto)
+
+
+
 export {
+	numberSeats,
 	auth,
 	db,
 	refDB,
