@@ -19,16 +19,17 @@
 				<div>
 					<CardsTable />
 				</div>
+				<button @click="storeCards.asignChipsInGame(room,index)">pruebas</button>
 			</div>
 			<Chat class="flex flex-col" :room="room" />
 			<GameConsole />
 		</div>
-		<div class="bg-white">
+		<div class="bg-white w-96 flex justify-center">
 			<button @click="probarRepartir">Repartir</button>
 			<button @click="storeCards.gamePhase('flop')">Flop</button>
 			<button @click="storeCards.gamePhase('turn')">Turn</button>
 			<button @click="storeCards.gamePhase('river')">River</button>
-			<button @click="storeCards.ditchDealer(seats, room)">Sortear</button>
+		
 			<button @click="storeCards.deleteDealer(seats, room)">
 				Eliminar sorteo
 			</button>
@@ -41,7 +42,7 @@
 import { useCardsStore } from "../stores/cards";
 import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
-import { ref, onMounted, onUpdated } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import {
 	onValue,
@@ -66,14 +67,6 @@ const seats = ref([]);
 const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 const repartidas = ref(false);
-const playersTest = ref([
-	{ name: "edu-0", dealer: "" },
-	{ name: "angel-1", dealer: "" },
-	{ name: "ivan-2", dealer: "" },
-]);
-
-const playerSit = ref();
-
 
 onMounted(() => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -85,31 +78,25 @@ onMounted(() => {
 				checkIndex(seats.value);
 			}
 		});
-	} catch (error) {
-		console.error("Error listening for room data:", error);
-	}
-	/*
-	try {
-		onPlayersSit("PYFfl5lJcsMBAT2maAfX", callback =>{
-			
-		});
 
+		onPlayersSit("Rooms", room.value, roomData => {
+
+			if (roomData.data().seat === 0) {
+				storeCards.ditchDealer(seats.value, room.value);
+				storeCards.dealingCards(seats.value, room.value);
+				repartidas.value = true;
+
+			} else {
+				console.log("faltan jugadores");
+				storeCards.deleteDealer(seats.value, room.value);
+				storeCards.resetCards(seats.value, room.value);
+			}
+
+
+		});
 	} catch (error) {
 		console.log(error.message);
-	}*/
-});
-
-onUpdated(() => {
-	/*let count = 0;
-	seats.value.forEach((element) => {
-		if (element.user) {
-			count++;
-		}
-	});
-	if (count === 3) {
-		//probarRepartir();
-		//storeCards.ditchDealer(seats.value, room.value);
-	}*/
+	}
 });
 
 const styleSitInTable = (index) => {
@@ -120,11 +107,6 @@ const styleSitInTable = (index) => {
 	} else {
 		return "items-end pr-10";
 	}
-};
-
-const probarRepartir = () => {
-	storeCards.dealingCards(seats.value, room.value);
-	repartidas.value = true;
 };
 
 const checkIndex = (seats) => {
@@ -146,7 +128,7 @@ const sitIn = async (seatIndex) => {
 		if (obj.selected !== -1) {
 			selectedSeatIndex.value = obj.selected;
 			showModal.value = obj.modal;
-			
+
 			const number = await numberSeats("Rooms", room.value);
 			let seat = number.data().seat - 1;
 			updateNumberSeats("Rooms", room.value, { seat: seat });

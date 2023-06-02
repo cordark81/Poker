@@ -63,11 +63,10 @@ const refDB = (entrada) => ref(database, entrada);
 
 const numberSeats = (ref,id) => getDoc(doc(db, ref,id));
 
-
 const updateNumberSeats = (ref, id, objeto) =>
 	updateDoc(doc(db, ref, id), objeto);
 
-const onPlayersSit = (ref, callback) => onSnapshot(collection(db, ref), callback)
+const onPlayersSit = (ref,id, callback) => onSnapshot(doc(db, ref,id), callback)
 
 export {
 	onPlayersSit,
