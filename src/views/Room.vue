@@ -2,24 +2,43 @@
 	<div class="h-screen bg-green-600 background-table">
 		<div class="w-1/5 text-center flex">
 			<h1
-				class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
+				class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
+			>
 				Sala {{ room }}
 			</h1>
 		</div>
 
 		<div class="flex justify-center items-center flex-wrap h-96">
-			<div v-for="(seat, index) in seats" :key="index"
-				class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4" :class="styleSitInTable(index)">
+			<div
+				v-for="(seat, index) in seats"
+				:key="index"
+				class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
+				:class="styleSitInTable(index)"
+			>
 				<div v-if="seat.user" class="">
-					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" />
+					<OccupiedSeat
+						@leaveSeat="standUpSeat(index)"
+						:seat="seat"
+						:index="index"
+						:mostrar="repartidas"
+						:room="room"
+					/>
 				</div>
 				<div v-else>
-					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
+					<Seats
+						v-if="!seat.user"
+						@occupeSeat="sitIn(index)"
+						:room="room"
+						:index="index"
+					/>
 				</div>
 				<div>
 					<CardsTable />
 				</div>
-				<button @click="storeCards.asignChipsInGame(room,index)">pruebas</button>
+				<button @click="storeCards.asignChipsInGame(room, index)">
+					pruebas
+				</button>
+				<button @click="storeCards.collectChips(room, index)">pruebas2</button>
 			</div>
 			<Chat class="flex flex-col" :room="room" />
 			<GameConsole />
@@ -29,7 +48,7 @@
 			<button @click="storeCards.gamePhase('flop')">Flop</button>
 			<button @click="storeCards.gamePhase('turn')">Turn</button>
 			<button @click="storeCards.gamePhase('river')">River</button>
-		
+
 			<button @click="storeCards.deleteDealer(seats, room)">
 				Eliminar sorteo
 			</button>
@@ -79,20 +98,16 @@ onMounted(() => {
 			}
 		});
 
-		onPlayersSit("Rooms", room.value, roomData => {
-
+		onPlayersSit("Rooms", room.value, (roomData) => {
 			if (roomData.data().seat === 0) {
 				storeCards.ditchDealer(seats.value, room.value);
 				storeCards.dealingCards(seats.value, room.value);
 				repartidas.value = true;
-
 			} else {
 				console.log("faltan jugadores");
 				storeCards.deleteDealer(seats.value, room.value);
 				storeCards.resetCards(seats.value, room.value);
 			}
-
-
 		});
 	} catch (error) {
 		console.log(error.message);
