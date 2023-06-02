@@ -2,26 +2,16 @@
 	<div class="h-screen bg-green-600 background-table">
 		<div class="w-1/5 text-center flex">
 			<h1
-				class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
-			>
+				class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
 				Sala {{ room }}
 			</h1>
 		</div>
 
 		<div class="flex justify-center items-center flex-wrap h-96">
-			<div
-				v-for="(seat, index) in seats"
-				:key="index"
-				class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-				:class="styleSitInTable(index)"
-			>
+			<div v-for="(seat, index) in seats" :key="index"
+				class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4" :class="styleSitInTable(index)">
 				<div v-if="seat.user" class="">
-					<OccupiedSeat
-						@leaveSeat="standUpSeat(index)"
-						:seat="seat"
-						:index="index"
-						:mostrar="repartidas"
-					/>
+					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" />
 				</div>
 				<div v-else>
 					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" />
@@ -29,16 +19,17 @@
 				<div>
 					<CardsTable />
 				</div>
+				<button @click="storeCards.asignChipsInGame(room,index)">pruebas</button>
 			</div>
 			<Chat class="flex flex-col" :room="room" />
 			<GameConsole />
 		</div>
-		<div class="bg-white">
+		<div class="bg-white w-96 flex justify-center">
 			<button @click="probarRepartir">Repartir</button>
 			<button @click="storeCards.gamePhase('flop')">Flop</button>
 			<button @click="storeCards.gamePhase('turn')">Turn</button>
 			<button @click="storeCards.gamePhase('river')">River</button>
-			<button @click="storeCards.ditchDealer(seats, room)">Sortear</button>
+		
 			<button @click="storeCards.deleteDealer(seats, room)">
 				Eliminar sorteo
 			</button>
@@ -51,13 +42,14 @@
 import { useCardsStore } from "../stores/cards";
 import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
-import { ref, onMounted, onUpdated } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import {
 	onValue,
 	refDB,
 	numberSeats,
 	updateNumberSeats,
+	onPlayersSit,
 } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
 import Seats from "../components/Room/Seats.vue";
@@ -75,13 +67,6 @@ const seats = ref([]);
 const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 const repartidas = ref(false);
-const playersTest = ref([
-	{ name: "edu-0", dealer: "" },
-	{ name: "angel-1", dealer: "" },
-	{ name: "ivan-2", dealer: "" },
-]);
-
-//let tableEmpty = ref(true);
 
 onMounted(() => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -93,21 +78,24 @@ onMounted(() => {
 				checkIndex(seats.value);
 			}
 		});
-	} catch (error) {
-		console.error("Error listening for room data:", error);
-	}
-});
 
-onUpdated(() => {
-	let count = 0;
-	seats.value.forEach((element) => {
-		if (element.user) {
-			count++;
-		}
-	});
-	if (count === 3) {
-		//probarRepartir();
-		//storeCards.ditchDealer(seats.value, room.value);
+		onPlayersSit("Rooms", room.value, roomData => {
+
+			if (roomData.data().seat === 0) {
+				storeCards.ditchDealer(seats.value, room.value);
+				storeCards.dealingCards(seats.value, room.value);
+				repartidas.value = true;
+
+			} else {
+				console.log("faltan jugadores");
+				storeCards.deleteDealer(seats.value, room.value);
+				storeCards.resetCards(seats.value, room.value);
+			}
+
+
+		});
+	} catch (error) {
+		console.log(error.message);
 	}
 });
 
@@ -119,11 +107,6 @@ const styleSitInTable = (index) => {
 	} else {
 		return "items-end pr-10";
 	}
-};
-
-const probarRepartir = () => {
-	storeCards.dealingCards(seats.value, room.value);
-	repartidas.value = true;
 };
 
 const checkIndex = (seats) => {
@@ -145,18 +128,10 @@ const sitIn = async (seatIndex) => {
 		if (obj.selected !== -1) {
 			selectedSeatIndex.value = obj.selected;
 			showModal.value = obj.modal;
-			const number = await numberSeats("Rooms");
-			let seat = 0;
-			let docId = 0;
-			number.docs.forEach((doc) => {
-				const element = doc.data();
-				if (element.roomName === room.value) {
-					console.log("Asientos", element.seat);
-					seat = element.seat -= 1;
-					docId = doc.id;
-				}
-			});
-			updateNumberSeats("Rooms", docId, { seat: seat });
+
+			const number = await numberSeats("Rooms", room.value);
+			let seat = number.data().seat - 1;
+			updateNumberSeats("Rooms", room.value, { seat: seat });
 		}
 	} catch (error) {
 		console.log(error.message);
@@ -170,18 +145,9 @@ const standUpSeat = async (seatIndex) => {
 			seats.value,
 			room.value
 		);
-		const number = await numberSeats("Rooms");
-		let seat = 0;
-		let docId = 0;
-		number.docs.forEach((doc) => {
-			const element = doc.data();
-			if (element.roomName === room.value) {
-				console.log("Asientos", element.seat);
-				seat = element.seat += 1;
-				docId = doc.id;
-			}
-		});
-		updateNumberSeats("Rooms", docId, { seat: seat });
+		const number = await numberSeats("Rooms", room.value);
+		let seat = number.data().seat + 1;
+		updateNumberSeats("Rooms", room.value, { seat: seat });
 	} catch (error) {
 		console.log(error.message);
 	}
