@@ -1,10 +1,10 @@
 <template>
-
 	<div>
 		<CardsHand
 			v-if="mostrar"
 			:index="index"
 			:hand="seat.hand"
+			:user="seat.user"
 			class="flex justify-center"
 		/>
 		<div
@@ -39,14 +39,12 @@
 					<h1 class="text-white mt-5">{{ seat.user }}</h1>
 				</div>
 				<div class="flex justify-center w-36 mb-5">
-					<h1 class="text-red-600 font-bold">{{ chips }}</h1>
+					<h1 class="text-red-600 font-bold">{{ seat.chipsInGame }}</h1>
 					<p class="text-white font-bold">{{ seat.dealer }}</p>
 				</div>
 			</div>
 		</div>
 	</div>
-
-
 </template>
 
 <script setup>
@@ -60,9 +58,13 @@ const storeCards = useCardsStore();
 
 const emits = defineEmits(["leaveSeat"]);
 
-const leaveSeat = () => emits("leaveSeat");
+const leaveSeat = () => {
+	storeCards.collectChips(props.room, props.index);
+	emits("leaveSeat");
+};
 
 const props = defineProps({
+	room: String,
 	seat: Object,
 	index: Number,
 	mostrar: Boolean,
