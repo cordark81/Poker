@@ -50,7 +50,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const database = getDatabase(app);
 
-
 const userRef = (entrada, user) => {
 	set(ref(database, entrada), {
 		username: user.username,
@@ -61,12 +60,13 @@ const userRef = (entrada, user) => {
 
 const refDB = (entrada) => ref(database, entrada);
 
-const numberSeats = (ref,id) => getDoc(doc(db, ref,id));
+const numberSeats = (ref, id) => getDoc(doc(db, ref, id));
 
 const updateNumberSeats = (ref, id, objeto) =>
 	updateDoc(doc(db, ref, id), objeto);
 
-const onPlayersSit = (ref,id, callback) => onSnapshot(doc(db, ref,id), callback)
+const onPlayersSit = (ref, id, callback) =>
+	onSnapshot(doc(db, ref, id), callback);
 
 export {
 	onPlayersSit,

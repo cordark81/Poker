@@ -4,6 +4,7 @@
 			v-if="mostrar"
 			:index="index"
 			:hand="seat.hand"
+			:user="seat.user"
 			class="flex justify-center"
 		/>
 		<div
@@ -57,9 +58,13 @@ const storeCards = useCardsStore();
 
 const emits = defineEmits(["leaveSeat"]);
 
-const leaveSeat = () => emits("leaveSeat");
+const leaveSeat = () => {
+	storeCards.collectChips(props.room, props.index);
+	emits("leaveSeat");
+};
 
 const props = defineProps({
+	room: String,
 	seat: Object,
 	index: Number,
 	mostrar: Boolean,
