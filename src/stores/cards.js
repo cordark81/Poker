@@ -58,8 +58,8 @@ export const useCardsStore = defineStore("cardsStore", () => {
     "Ks",
   ]);
   /*const dealtCards = ref([]);*/
-  let cartas_partida = cards.value;
-  let cartas_mesa = ref([]);
+  let gameCards = cards.value;
+  let tableCards = ref([]);
   const results = ref([]);
   const winner = ref("");
 
@@ -69,12 +69,12 @@ export const useCardsStore = defineStore("cardsStore", () => {
   const dealingCards = (seats, room) => {
     seats.forEach((element, index) => {
       let cardsHand = [];
-      let pos = Math.floor(Math.random() * cartas_partida.length);
-      cardsHand.push(cartas_partida[pos]);
-      cartas_partida.splice(pos, 1);
-      pos = Math.floor(Math.random() * cartas_partida.length);
-      cardsHand.push(cartas_partida[pos]);
-      cartas_partida.splice(pos, 1);
+      let pos = Math.floor(Math.random() * gameCards.length);
+      cardsHand.push(gameCards[pos]);
+      gameCards.splice(pos, 1);
+      pos = Math.floor(Math.random() * gameCards.length);
+      cardsHand.push(gameCards[pos]);
+      gameCards.splice(pos, 1);
       element.hand = cardsHand;
       const roomRef = refDB(`rooms/${room}/seats/${index}`);
       set(roomRef, element);
@@ -96,7 +96,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
     let evalueCardsPlayer = [];
 
     for (const element of cardsPlayers) {
-      const prueba = await evaluate(element.hand.concat(cartas_mesa.value));
+      const prueba = await evaluate(element.hand.concat(tableCards.value));
       evalueCardsPlayer.push({
         evaluacion: prueba,
         nameUser: element.nameUser,
@@ -151,11 +151,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
   };
 
   return {
-    
-    winner,   
+    gameCards,
+    tableCards,
+    winner,
     dealingCards,
     resetCards,
     checkCards,
-
   };
 });

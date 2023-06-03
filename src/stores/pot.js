@@ -1,26 +1,51 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { useGameStore } from "./game";
 
+//Necesario usar bucle for ya que el forEach generaba una callback que hacia que las funciones bet no fuesen secuenciales
 export const usePotStore = defineStore("potStore", () => {
-	const pot = ref(0);
-	const chips = ref(400);
+  const storeGame = useGameStore();
 
-	const bet = (playerBet) => {
-		chips.value -= playerBet;
-		pot.value += playerBet;
-		console.log("Chips:" + chips.value);
-		console.log("Pot: " + pot.value);
-	};
+  const initialPot = async (seats, room) => {
+    for (let index = 0; index < seats.length; index++) {
+      const seat = seats[index];
+      if (seat.dealer === "bb") {
+        await bet(10, room, index, false, seats);
+      } else if (seat.dealer === "sb") {
+        await bet(5, room, index, false, seats);
+      }
+    }
+  };
 
-	const raise = () => {};
+  //Funcion dinamica para distintos grados de apuesta
+  const bet = async (chips, room, index, betInGame, seats) => {
+    //Referencia rutas a base de datos dinamica
+    const chipsRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+    const potRoomRef = refDB(`rooms/${room}/pot`);
+    const potPlayerRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
 
-	const resetChips = () => {
-		chips.value = 400;
-		pot.value = 0;
-	};
+    let chipsInGame = await getDB(chipsRef);
+    let updatePot = await getDB(potRoomRef);
+    let potPlayer = await getDB(potPlayerRef);
 
-	return {
-		bet,
-		resetChips,
-	};
+    //Operaciones
+    chipsInGame -= chips;
+    updatePot += chips;
+    potPlayer += chips;
+
+    //Actualizacion de la base de datos
+    set(chipsRef, chipsInGame);
+    set(potRoomRef, updatePot);
+    set(potPlayerRef, potPlayer);
+
+    if (betInGame) {
+      storeGame.moveTurnLeft(seats, room);
+    }
+  };
+
+  return {
+    initialPot,
+    bet,
+  };
 });
