@@ -50,16 +50,16 @@
 <script setup>
 import { ref, defineEmits } from "vue";
 import { useUserStore } from "../../stores/user";
+import { useGameStore } from "../../stores/game";
 import CardsHand from "../GameLogic/CardsHand.vue";
-import { useCardsStore } from "../../stores/cards";
 
 const storeUser = useUserStore();
-const storeCards = useCardsStore();
+const storeGame = useGameStore();
 
 const emits = defineEmits(["leaveSeat"]);
 
 const leaveSeat = () => {
-	storeCards.collectChips(props.room, props.index);
+	storeGame.collectChips(props.room, props.index);
 	emits("leaveSeat");
 };
 

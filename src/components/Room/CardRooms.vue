@@ -46,14 +46,16 @@ const joinRoom = () => {
         // Verificar si el usuario tiene suficientes fichas
         if (chips >= props.range) {
           // El usuario tiene suficientes fichas, puedes unirlo a la sala
-         window.open(`/room/${props.roomName}`, "_blank", "toolbar=no,location=no,menubar=no,status=no");
           
+               
         } else {
           // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
           emits("openModal")
 
         }
       });
+      //problema al meterlo en el on value // migrar a get!!!!!!!!!!!!!!!!!!!
+      window.open(`/room/${props.roomName}`, "_blank", "toolbar=no,location=no,menubar=no,status=no");
 
       // Desuscribirse de los cambios de autenticación
       unsubscribe();

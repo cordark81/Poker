@@ -13,9 +13,9 @@
 
 <script setup>
 import { defineEmits } from "vue";
-import { useCardsStore } from "../../stores/cards";
+import { useGameStore } from "../../stores/game";
 
-const storeCards = useCardsStore();
+const storeGame = useGameStore();
 
 const emits = defineEmits(["occupeSeat"]);
 
@@ -26,7 +26,7 @@ const props = defineProps({
 
 const occupeSeat = () => {
 	emits("occupeSeat");
-	storeCards.asignChipsInGame(props.room, props.index);
+	storeGame.asignChipsInGame(props.room, props.index);
 };
 </script>
 
