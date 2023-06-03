@@ -35,19 +35,25 @@
         <div>
           <CardsTable />
         </div>
+        <div>
+          <GameConsole
+            :room="room"
+            :index="index"
+            :seats="seats"
+            class="bg-white h-5 mb-32 mr-10"
+          />
+        </div>
       </div>
       <Chat class="flex flex-col" :room="room" />
-      <GameConsole />
     </div>
     <div class="bg-white w-96 flex justify-center">
-      <button @click="probarRepartir">Repartir</button>
+      <button @click="storeGame.evaluateMaxPot(seats, room)">
+        Comprobar check
+      </button>
       <button @click="storeCards.gamePhase('flop')">Flop</button>
       <button @click="storeCards.gamePhase('turn')">Turn</button>
       <button @click="storeCards.gamePhase('river')">River</button>
 
-      <button @click="storeCards.deleteDealer(seats, room)">
-        Eliminar sorteo
-      </button>
       <div class="bg-red-600 ml-6">
         <p class="text-white">{{ potRoom }}</p>
       </div>
@@ -116,6 +122,8 @@ onMounted(async () => {
         }
         if (seats.value[selectedSeatIndex.value].dealer === "dealer") {
           storeCards.dealingCards(seats.value, room.value);
+          storeGame.firstTurnPlayer(seats.value, room.value, "turn");
+          storeGame.evaluateMaxPot(seats.value, room.value);
           repartidas.value = true;
         }
       } else {
