@@ -1,8 +1,11 @@
 import { defineStore } from "pinia";
-import axios from "axios";
 import { refDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { useCardsStore } from "./cards";
+import axios from "axios";
 
 export const useGameStore = defineStore("gameStore", () => {
+  const storeCards = useCardsStore();
+
   const gamePhase = (phase) => {
     switch (phase) {
       case "flop":
@@ -10,17 +13,14 @@ export const useGameStore = defineStore("gameStore", () => {
         for (let i = 0; i < 3; i++) {
           drawCardTable();
         }
-        console.log(cartas_partida);
         break;
       case "turn":
         console.log("TURN");
         drawCardTable();
-        console.log(cartas_partida);
         break;
       case "river":
         console.log("RIVER");
         drawCardTable();
-        console.log(cartas_partida);
         break;
       default:
         break;
@@ -28,10 +28,9 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const drawCardTable = () => {
-    const pos = Math.floor(Math.random() * cartas_partida.length);
-    cartas_mesa.value.push(cartas_partida[pos]);
-    console.log(cartas_mesa.value);
-    cartas_partida.splice(pos, 1);
+    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
+    storeCards.tableCards.push(storeCards.gameCards[pos]);
+    storeCards.gameCards.splice(pos, 1);
   };
 
   const evaluate = async (mano) => {
@@ -156,6 +155,71 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   };
 
+  //Añadimos el parametro route para poder usar la funcion en varias situaciones
+  const firstTurnPlayer = (seats, room, route) => {
+    const newArray = [...seats];
+
+    const bbIndex = newArray.findIndex((item) => item.dealer === "bb");
+    const turnIndex = (bbIndex + newArray.length + 1) % newArray.length;
+
+    const ref = refDB(`rooms/${room}/seats/${turnIndex}/${route}`);
+    set(ref, "*");
+    if (route === "maxPot") {
+      const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
+      set(turnRef, "*");
+    }
+  };
+
+  const evaluateMaxPot = (seats, room) => {
+    if (verifySimilarPots(seats)) {
+      firstTurnPlayer(seats, room, "maxPot");
+    } else {
+      //Saca el indice del pot mas alto
+      const maxPotIndex = seats.reduce(
+        (maxIndex, seat, currentIndex) =>
+          seat.potPlayer > seats[maxIndex].potPlayer ? currentIndex : maxIndex,
+        0
+      );
+      const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+      set(turnRef, "*");
+    }
+  };
+
+  const verifySimilarPots = (seats) => {
+    console.log(seats);
+    let areEqual = true;
+    let firstPot = null;
+
+    seats.forEach((seat) => {
+      if (firstPot === null) {
+        firstPot = seat.potPlayer;
+      } else {
+        if (seat.potPlayer !== firstPot) {
+          areEqual = false;
+        }
+      }
+    });
+
+    return areEqual;
+  };
+
+  const moveTurnLeft = (seats, room) => {
+    const turnIndex = seats.findIndex((item) => item.turn === "*");
+    const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
+
+    const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
+    const newTurnRef = refDB(`rooms/${room}/seats/${newTurnIndex}/turn`);
+
+    set(turnRef, "");
+    set(newTurnRef, "*");
+  };
+
+  const evaluateMaxPotLeft = (seats, room) => {
+    const turnIndex = seats.findIndex((item) => item.turn === "*");
+    const maxPotIndex = (turnIndex + seats.length + 1) % seats.length;
+    const maxPotRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+  };
+
   return {
     gamePhase,
     evaluate,
@@ -163,5 +227,9 @@ export const useGameStore = defineStore("gameStore", () => {
     deleteDealer,
     asignChipsInGame,
     collectChips,
+    firstTurnPlayer,
+    evaluateMaxPot,
+    verifySimilarPots,
+    moveTurnLeft,
   };
 });
