@@ -107,5 +107,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     checkConsole,
     raiseConsole,
     allInConsole,
+    phaseChangeWithoutBet,
   };
 });

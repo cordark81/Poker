@@ -11,14 +11,15 @@
       <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
         :class="styleSitInTable(index)">
         <div v-if="seat.user" class="">
-          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" :handCards="seat.hand"/>
+          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room" :handCards="seat.hand" />
         </div>
         <div v-else>
           <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn ==='*' && seat.user===storeUser.user.displayName" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
+          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName"
+            @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
         </div>
       </div>
@@ -80,7 +81,6 @@ const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
 const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
-const repartidas = ref(false);
 const potRoom = ref(0);
 const tableCards = ref([]);
 
@@ -111,7 +111,6 @@ onMounted(async () => {
             storeCards.dealingCards(seats.value, room.value);
             storeGame.firstTurnPlayer(seats.value, room.value, "turn");
             storeGame.evaluateMaxPot(seats.value, room.value);
-            repartidas.value = true;
             set(roomPhaseRef, "preflop");
           }
         }
@@ -192,17 +191,30 @@ const findSeatIndexByUser = (username) => {
 
 const logicCallConsole = async (seatsF, room, index) => {
   await storeConsole.callConsole(seatsF, room, index);
-  
+
   if (storeGame.verifySimilarPots(seats.value)) {
-    const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
-    const phaseGame = await getDB(roomPhaseRef);
-    
-    if (phaseGame === "preflop") {
-      set(roomPhaseRef, "flop");
-      storeGame.gamePhase("flop", room);
-      storePot.resetPotPlayer(seats.value, room);
-      storePot.resetMaxPot(seats.value, room);
-      storeGame.firstTurnPlayer(seats.value, room, "maxPot");
+    const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+    const phaseInGame = await getDB(phaseInGameRef);
+
+    if (phaseInGame === "preflop") {
+      storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
+    } else if (phaseInGame === "flop") {
+      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats.value, room);
+      console.log(maxPotLeft);
+      if (maxPotLeft === "*") {
+        storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
+      } else {
+        storeGame.moveTurnLeft(seats.value, room);
+      }
+    } else if (phaseInGame === "turn") {
+      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats.value, room);
+      console.log(maxPotLeft);
+      if (maxPotLeft === "*") {
+        storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
+      } else {
+        storeGame.moveTurnLeft(seats.value, room);
+      }
+    } else if (phaseInGame === "river") {
     }
   }
 };
