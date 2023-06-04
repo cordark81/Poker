@@ -5,6 +5,7 @@
       :index="index"
       :hand="seat.hand"
       :user="seat.user"
+      :handCards="handCards"
       class="flex justify-center"
     />
     <div
@@ -69,6 +70,7 @@ const props = defineProps({
   seat: Object,
   index: Number,
   mostrar: Boolean,
+  handCards: Array,
 });
 
 const chips = ref(400);

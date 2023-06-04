@@ -11,14 +11,14 @@
       <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
         :class="styleSitInTable(index)">
         <div v-if="seat.user" class="">
-          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" />
+          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" :handCards="seat.hand"/>
         </div>
         <div v-else>
           <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
         </div>
 
         <div>
-          <GameConsole @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
+          <GameConsole v-if="seat.turn ==='*' && seat.user===storeUser.user.displayName" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
         </div>
       </div>
@@ -67,6 +67,7 @@ import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
 import CardsTable from "../components/GameLogic/CardsTable.vue";
 import GameConsole from "../components/GameLogic/GameConsole.vue";
+import CardsHand from "../components/GameLogic/CardsHand.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();

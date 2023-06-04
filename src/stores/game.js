@@ -134,7 +134,7 @@ export const useGameStore = defineStore("gameStore", () => {
       }
     } catch (error) {
       // Manejo de errores
-      console.error(error);
+      console.error(error.message);
     }
   };
 

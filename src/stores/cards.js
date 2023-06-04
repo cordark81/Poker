@@ -166,6 +166,8 @@ export const useCardsStore = defineStore("cardsStore", () => {
     set(deckSpadesRef,cards.value)
   }
 
+  
+
   return {
     gameCards,
     tableCards,

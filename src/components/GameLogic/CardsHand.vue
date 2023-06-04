@@ -1,6 +1,6 @@
 <template>
 	<div class="flex">
-		<div v-for="card in hand" :key="card">
+		<div v-for="card in handCards" :key="card">
 			<img
 				v-if="user === storeUser.user.displayName"
 				:src="'../../src/assets/cards/' + card + '.png'"
@@ -24,5 +24,6 @@ const props = defineProps({
 	index: Number,
 	hand: Array,
 	user: String,
+	handCards:Array,
 });
 </script>
