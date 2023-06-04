@@ -79,7 +79,6 @@ export const usePotStore = defineStore("potStore", () => {
 
   return {
     initialPot,
-    bet,
     potMax,
     resetPot,
     resetPotPlayer,

@@ -154,6 +154,18 @@ export const useCardsStore = defineStore("cardsStore", () => {
     set(tableCardsRef, []);
   };
 
+  // Para recargar las barajas en la base de datos en caso de corrupción
+  const upDecksFirebase = () =>{
+    const deckClubsRef = refDB(`rooms/Clubs/deck`);
+    const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
+    const deckHeartRef = refDB(`rooms/Heart/deck`);
+    const deckSpadesRef = refDB(`rooms/Spades/deck`);
+    set(deckClubsRef,cards.value)
+    set(deckDiamondsRef,cards.value)
+    set(deckHeartRef,cards.value)
+    set(deckSpadesRef,cards.value)
+  }
+
   return {
     gameCards,
     tableCards,
@@ -162,5 +174,6 @@ export const useCardsStore = defineStore("cardsStore", () => {
     deleteCards,
     checkCards,
     deleteCardsTable,
+    upDecksFirebase,
   };
 });

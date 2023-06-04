@@ -2,45 +2,24 @@
   <div class="h-screen bg-green-600 background-table">
     <div class="w-1/5 text-center flex">
       <h1
-        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
-      >
+        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
         Sala {{ room }}
       </h1>
     </div>
 
     <div class="flex justify-center items-center flex-wrap h-96">
-      <div
-        v-for="(seat, index) in seats"
-        :key="index"
-        class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-        :class="styleSitInTable(index)"
-      >
+      <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
+        :class="styleSitInTable(index)">
         <div v-if="seat.user" class="">
-          <OccupiedSeat
-            @leaveSeat="standUpSeat(index)"
-            :seat="seat"
-            :index="index"
-            :mostrar="repartidas"
-            :room="room"
-          />
+          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" />
         </div>
         <div v-else>
-          <Seats
-            v-if="!seat.user"
-            @occupeSeat="sitIn(index)"
-            :room="room"
-            :index="index"
-          />
+          <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
         </div>
 
         <div>
-          <GameConsole
-            @logicCall="logicCallConsole(seats, room, index)"
-            :room="room"
-            :index="index"
-            :seats="seats"
-            class="bg-white h-5 mb-32 mr-10"
-          />
+          <GameConsole @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
+            class="bg-white h-5 mb-32 mr-10" />
         </div>
       </div>
 
@@ -127,7 +106,6 @@ onMounted(async () => {
           if (selectedSeatIndex.value === 2) {
             storeGame.ditchDealer(seats.value, room.value);
             await storePot.initialPot(seats.value, room.value);
-            console.log(seats.value);
             set(roomDealerRef, true);
             storeCards.dealingCards(seats.value, room.value);
             storeGame.firstTurnPlayer(seats.value, room.value, "turn");
@@ -213,11 +191,11 @@ const findSeatIndexByUser = (username) => {
 
 const logicCallConsole = async (seatsF, room, index) => {
   await storeConsole.callConsole(seatsF, room, index);
-  console.log(seats.value);
+  
   if (storeGame.verifySimilarPots(seats.value)) {
     const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
     const phaseGame = await getDB(roomPhaseRef);
-    console.log(phaseGame);
+    
     if (phaseGame === "preflop") {
       set(roomPhaseRef, "flop");
       storeGame.gamePhase("flop", room);

@@ -12,8 +12,6 @@
 </template>
 
 <script setup>
-import { useCardsStore } from "../../stores/cards";
-const storeCards = useCardsStore();
 
 const props = defineProps({
   tableCards: Array,

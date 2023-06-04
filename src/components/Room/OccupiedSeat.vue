@@ -41,7 +41,7 @@
         <div class="flex justify-center w-36 mb-5">
           <h1 class="text-red-600 font-bold">{{ seat.chipsInGame }}</h1>
           <p class="text-white font-bold">{{ seat.dealer }}</p>
-          <p class="text-red-600 font-bold">{{ seat.potPlayer }}</p>
+          <p v-if="seat.potPlayer!==0" class="text-red-600 font-bold">{{ seat.potPlayer }}</p>
         </div>
       </div>
     </div>
