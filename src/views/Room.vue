@@ -190,7 +190,7 @@ const findSeatIndexByUser = (username) => {
 };
 
 const logicCallConsole = async (seatsF, room, index) => {
-  await storeConsole.callConsole(seatsF, room, index);
+  await storeConsole.ajustBet(seatsF, room, index, 1);
 
   if (storeGame.verifySimilarPots(seats.value)) {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
@@ -199,23 +199,13 @@ const logicCallConsole = async (seatsF, room, index) => {
     if (phaseInGame === "preflop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
-      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats.value, room);
-      console.log(maxPotLeft);
-      if (maxPotLeft === "*") {
-        storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
-      } else {
-        storeGame.moveTurnLeft(seats.value, room);
-      }
+      storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
     } else if (phaseInGame === "turn") {
-      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats.value, room);
-      console.log(maxPotLeft);
-      if (maxPotLeft === "*") {
-        storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
-      } else {
-        storeGame.moveTurnLeft(seats.value, room);
-      }
+      storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
     }
+  } else {
+    storeGame.moveTurnLeft(seats.value, room);
   }
 };
 

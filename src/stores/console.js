@@ -42,12 +42,10 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     storeGame.firstTurnPlayer(seats, room, "maxPot");
     set(phaseInGameRef, phase);
   };
-
+  /*pendiente de eliminar
   const callConsole = async (seats, room, index) => {
-    ajustBet(seats, room, index, 1);
-    //si es call de potplayer iguales no hace esto cambiar logica
-    storeGame.moveTurnLeft(seats, room, index);
-  };
+    ajustBet(seats, room, index, 1);    
+  };*/
 
   const foldConsole = async (seat, room, index) => {
     // actualiza a 0 la apuesta del jugador, elimina las cartas de esta ronda
@@ -103,7 +101,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
   return {
     foldConsole,
-    callConsole,
     checkConsole,
     raiseConsole,
     allInConsole,
