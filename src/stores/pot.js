@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
-import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { refDB, getDB, set } from "../utils/firebase";
 import { useGameStore } from "./game";
 
 //Necesario usar bucle for ya que el forEach generaba una callback que hacia que las funciones bet no fuesen secuenciales
@@ -44,8 +43,46 @@ export const usePotStore = defineStore("potStore", () => {
     }
   };
 
+  // true para sacar el jugador que tiene el pot maximo
+  // false para sacer el index del jugador con el pot maximo
+  const potMax = (seats, potOrIndex) => {
+    if (potOrIndex) {
+      const maxPot = Math.max(...seats.map((seat) => seat.potPlayer));
+      return maxPot;
+    }
+    const maxIndex = seats.reduce(
+      (maxIndex, seat, currentIndex) =>
+        seat.potPlayer > seats[maxIndex].potPlayer ? currentIndex : maxIndex,
+      0
+    );
+    return maxIndex;
+  };
+
+  const resetPotPlayer = (seats, room) => {
+    seats.forEach((seat, index) => {
+      const roomRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+      set(roomRef, 0);
+    });
+  };
+
+  const resetPot = (room) => {
+    const roomRef = refDB(`rooms/${room}/pot`);
+    set(roomRef, 0);
+  };
+
+  const resetMaxPot = (seats, room) => {
+    seats.forEach((seat, index) => {
+      const roomRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
+      set(roomRef, "");
+    });
+  };
+
   return {
     initialPot,
     bet,
+    potMax,
+    resetPot,
+    resetPotPlayer,
+    resetMaxPot,
   };
 });
