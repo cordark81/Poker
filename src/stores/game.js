@@ -79,6 +79,12 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
+  const mooveTurnleft = async (seats, room, index) => {
+    const indexLeft = seats[(index + 1) % seats.length];
+    const turnRef = refDB(`rooms/${room}/seats/${indexLeft}/turn`);
+    await set(turnRef, "*");
+  };
+
   function moverEtiquetasIzquierda(array) {
     const newArray = [...array]; // Crear una copia del array para no modificar el original
 
@@ -179,9 +185,6 @@ export const useGameStore = defineStore("gameStore", () => {
     console.log(maxPotIndex);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, "*");
-    /*const pruebaRef = refDB(`rooms/${room}/seats/${maxPotIndex}`);
-    const prueba = await getDB(pruebaRef);
-    console.log(prueba);*/
   };
 
   const verifySimilarPots = (seats) => {
@@ -214,8 +217,8 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const evaluateMaxPotLeft = (seats, room) => {
     const turnIndex = seats.findIndex((item) => item.turn === "*");
-    const maxPotIndex = (turnIndex + seats.length + 1) % seats.length;
-    const maxPotRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+    const maxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
+    const maxPotRef = refDB(`rooms/${room}/seats/${maxPotIndexLeft}/maxPot`);
     const maxpot = getDB(maxPotRef);
 
     return maxpot;
@@ -232,6 +235,7 @@ export const useGameStore = defineStore("gameStore", () => {
     storePot.resetPot(room);
     deleteDealer(seats, room);
     resetTurn(seats, room);
+    resetFolds(seats,room)
 
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
@@ -251,6 +255,13 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
+  const resetFolds = (seats, room) => {
+    seats.forEach((seat, index) => {
+      const roomRef = refDB(`rooms/${room}/seats/${index}/fold`);
+      set(roomRef, "");
+    });
+  };
+
   return {
     gamePhase,
     evaluate,
@@ -266,5 +277,7 @@ export const useGameStore = defineStore("gameStore", () => {
     resetGame,
     resetTurn,
     resetChipsInGame,
+    mooveTurnleft,
+    resetFolds
   };
 });
