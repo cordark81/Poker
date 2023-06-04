@@ -2,60 +2,45 @@
   <div class="h-screen bg-green-600 background-table">
     <div class="w-1/5 text-center flex">
       <h1
-        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
-      >
+        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
         Sala {{ room }}
       </h1>
     </div>
 
     <div class="flex justify-center items-center flex-wrap h-96">
-      <div
-        v-for="(seat, index) in seats"
-        :key="index"
-        class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-        :class="styleSitInTable(index)"
-      >
+      <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
+        :class="styleSitInTable(index)">
         <div v-if="seat.user" class="">
-          <OccupiedSeat
-            @leaveSeat="standUpSeat(index)"
-            :seat="seat"
-            :index="index"
-            :mostrar="repartidas"
-            :room="room"
-          />
+          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" />
         </div>
         <div v-else>
-          <Seats
-            v-if="!seat.user"
-            @occupeSeat="sitIn(index)"
-            :room="room"
-            :index="index"
-          />
+          <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
         </div>
+
         <div>
-          <CardsTable />
-        </div>
-        <div>
-          <GameConsole
-            :room="room"
-            :index="index"
-            :seats="seats"
-            class="bg-white h-5 mb-32 mr-10"
-          />
+          <GameConsole @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
+            class="bg-white h-5 mb-32 mr-10" />
         </div>
       </div>
+
       <Chat class="flex flex-col" :room="room" />
     </div>
-    <div class="bg-white w-96 flex justify-center">
-      <button @click="storeGame.evaluateMaxPot(seats, room)">
-        Comprobar check
-      </button>
-      <button @click="storeCards.gamePhase('flop')">Flop</button>
-      <button @click="storeCards.gamePhase('turn')">Turn</button>
-      <button @click="storeCards.gamePhase('river')">River</button>
+    <div>
+      <CardsTable class="flex justify-center" />
+    </div>
+    <div class="flex justify-center mt-36
+    ">
+      <div class="bg-white w-96 flex justify-center">
+        <button @click="storePot.potMax(seats, false)">
+          Comprobar maxpot
+        </button>
+        <button @click="storeCards.gamePhase('flop')">Flop</button>
+        <button @click="storeCards.gamePhase('turn')">Turn</button>
+        <button @click="storeCards.gamePhase('river')">River</button>
 
-      <div class="bg-red-600 ml-6">
-        <p class="text-white">{{ potRoom }}</p>
+        <div class="bg-red-600 ml-6">
+          <p class="text-white">{{ potRoom }}</p>
+        </div>
       </div>
     </div>
     <ModalInSeat v-show="showModal" @closeModal="showModal = false" />
@@ -68,6 +53,7 @@ import { useUserStore } from "../stores/user";
 import { useSeatsStore } from "../stores/seats";
 import { useGameStore } from "../stores/game";
 import { usePotStore } from "../stores/pot";
+import { useConsoleStore } from "../stores/console";
 import { ref, onMounted } from "vue";
 import { useRouter, onBeforeRouteLeave } from "vue-router";
 import {
@@ -92,6 +78,7 @@ const storeSeat = useSeatsStore();
 const storeCards = useCardsStore();
 const storeGame = useGameStore();
 const storePot = usePotStore();
+const storeConsole = useConsoleStore();
 const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
 const selectedSeatIndex = ref(-1);
@@ -113,6 +100,7 @@ onMounted(async () => {
 
     const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
     const ditchDealerDone = await getDB(roomDealerRef);
+    const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
     onPlayersSit("Rooms", room.value, (roomData) => {
       if (roomData.data().seat === 0) {
         if (ditchDealerDone === false) {
@@ -124,13 +112,12 @@ onMounted(async () => {
           storeCards.dealingCards(seats.value, room.value);
           storeGame.firstTurnPlayer(seats.value, room.value, "turn");
           storeGame.evaluateMaxPot(seats.value, room.value);
+          set(roomPhaseRef, "preflop");
           repartidas.value = true;
         }
       } else {
         console.log("faltan jugadores");
-        storeGame.deleteDealer(seats.value, room.value);
-        storeCards.resetCards(seats.value, room.value);
-        set(roomDealerRef, false);
+        storeGame.resetGame(seats.value, room.value)
       }
     });
   } catch (error) {
@@ -203,10 +190,30 @@ const findSeatIndexByUser = (username) => {
   return seats.value.findIndex((seat) => seat.user === username);
 };
 
+const logicCallConsole = async (seatsF, room, index) => {
+
+  await storeConsole.callConsole(seatsF, room, index);
+  console.log(seats.value);
+  if (storeGame.verifySimilarPots(seats.value)) {
+    const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
+    const phaseGame = await getDB(roomPhaseRef);
+    console.log(phaseGame);
+    if (phaseGame === "preflop") {
+      set(roomPhaseRef, "flop");
+      storeGame.gamePhase("flop");
+      storePot.resetPotPlayer(seats.value, room);
+      storePot.resetMaxPot(seats.value, room);
+      storeGame.firstTurnPlayer(seats.value, room, "maxPot");
+    }
+  }
+}
+
 onBeforeRouteLeave((to, from, next) => {
   leaveRoom();
   next();
 });
+
+
 </script>
 
 <style scoped>

@@ -1,10 +1,10 @@
 <template>
 	<div>
 		<div class="flex">
-			<div v-for="carta in storeCards.cartas_mesa">
+			<div v-for="carta in storeCards.tableCards">
 				<img
 					:src="'../../src/assets/cards/' + carta + '.png'"
-					class="w-16 h-24"
+					class="w-16 h-24 ml-10"
 				/>
 			</div>
 		</div>
