@@ -1,21 +1,20 @@
 <template>
   <div class="absolute bottom-0 right-0 w-64 h-64">
-    <div class="bg-red-500"><input v-model="chips" /></div>
-    <button>Check</button>
+    <button class="bg-orange-500" @click="storeConsole.checkConsole(seats,room)">Check</button>
     <button class="bg-green-500" @click="logicCall()">Call</button>
-    <button @click="storePot.bet(chips, room, index, true, seats)">Bet</button>
-    <button>Fold</button>
-    <button>All-In</button>
+    <button class="bg-blue-500" @click="storeConsole.raiseConsole(seats,room,index)">Raise</button>
+    <button class="bg-red-500" @click="storeConsole.foldConsole(seats,room,index)">Fold</button>
+    <button class="bg-yellow-500" @click="storeConsole.allInConsole(room,index)">All-In</button>
   </div>
 </template>
 
 <script setup>
-import { usePotStore } from "../../stores/pot";
-import { ref } from "vue";
 
-const storePot = usePotStore();
+import { useConsoleStore } from "../../stores/console";
+import { useCardsStore } from "../../stores/cards"
 
-const chips = ref();
+const storeConsole = useConsoleStore();
+const storeCards = useCardsStore();
 
 const props = defineProps({
   room: String,
@@ -28,6 +27,8 @@ const emits = defineEmits(["logicCall"]);
 const logicCall = () => {
   emits("logicCall");
 };
+
+
 </script>
 
 <style lang="scss" scoped></style>

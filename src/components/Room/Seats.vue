@@ -12,10 +12,8 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
-import { useGameStore } from "../../stores/game";
 
-const storeGame = useGameStore();
+import { defineEmits } from "vue";
 
 const emits = defineEmits(["occupeSeat"]);
 
