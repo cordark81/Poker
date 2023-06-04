@@ -2,41 +2,58 @@
   <div class="h-screen bg-green-600 background-table">
     <div class="w-1/5 text-center flex">
       <h1
-        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
+        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
+      >
         Sala {{ room }}
       </h1>
     </div>
 
     <div class="flex justify-center items-center flex-wrap h-96">
-      <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-        :class="styleSitInTable(index)">
+      <div
+        v-for="(seat, index) in seats"
+        :key="index"
+        class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
+        :class="styleSitInTable(index)"
+      >
         <div v-if="seat.user" class="">
-          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :mostrar="repartidas" :room="room" />
+          <OccupiedSeat
+            @leaveSeat="standUpSeat(index)"
+            :seat="seat"
+            :index="index"
+            :mostrar="repartidas"
+            :room="room"
+          />
         </div>
         <div v-else>
-          <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
+          <Seats
+            v-if="!seat.user"
+            @occupeSeat="sitIn(index)"
+            :room="room"
+            :index="index"
+          />
         </div>
 
         <div>
-          <GameConsole @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
-            class="bg-white h-5 mb-32 mr-10" />
+          <GameConsole
+            @logicCall="logicCallConsole(seats, room, index)"
+            :room="room"
+            :index="index"
+            :seats="seats"
+            class="bg-white h-5 mb-32 mr-10"
+          />
         </div>
       </div>
 
       <Chat class="flex flex-col" :room="room" />
     </div>
     <div>
-      <CardsTable class="flex justify-center" />
+      <CardsTable class="flex justify-center" :tableCards="tableCards" />
     </div>
-    <div class="flex justify-center mt-36
-    ">
+    <div class="flex justify-center">
       <div class="bg-white w-96 flex justify-center">
-        <button @click="storePot.potMax(seats, false)">
-          Comprobar maxpot
+        <button @click="storeGame.evaluateMaxPot(seats, room)">
+          Prueba Maxpot
         </button>
-        <button @click="storeCards.gamePhase('flop')">Flop</button>
-        <button @click="storeCards.gamePhase('turn')">Turn</button>
-        <button @click="storeCards.gamePhase('river')">River</button>
 
         <div class="bg-red-600 ml-6">
           <p class="text-white">{{ potRoom }}</p>
@@ -85,6 +102,7 @@ const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 const repartidas = ref(false);
 const potRoom = ref(0);
+const tableCards = ref([]);
 
 onMounted(async () => {
   const roomRef = refDB(`rooms/${room.value}`);
@@ -94,6 +112,7 @@ onMounted(async () => {
       if (roomData) {
         seats.value = roomData.seats;
         potRoom.value = roomData.pot;
+        tableCards.value = roomData.tableCards;
         checkIndex(seats.value);
       }
     });
@@ -101,23 +120,25 @@ onMounted(async () => {
     const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
     const ditchDealerDone = await getDB(roomDealerRef);
     const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
-    onPlayersSit("Rooms", room.value, (roomData) => {
+    onPlayersSit("Rooms", room.value, async (roomData) => {
       if (roomData.data().seat === 0) {
         if (ditchDealerDone === false) {
-          storeGame.ditchDealer(seats.value, room.value);
-          storePot.initialPot(seats.value, room.value);
-          set(roomDealerRef, true);
-        }
-        if (seats.value[selectedSeatIndex.value].dealer === "dealer") {
-          storeCards.dealingCards(seats.value, room.value);
-          storeGame.firstTurnPlayer(seats.value, room.value, "turn");
-          storeGame.evaluateMaxPot(seats.value, room.value);
-          set(roomPhaseRef, "preflop");
-          repartidas.value = true;
+          checkIndex(seats.value);
+          if (selectedSeatIndex.value === 2) {
+            storeGame.ditchDealer(seats.value, room.value);
+            await storePot.initialPot(seats.value, room.value);
+            console.log(seats.value);
+            set(roomDealerRef, true);
+            storeCards.dealingCards(seats.value, room.value);
+            storeGame.firstTurnPlayer(seats.value, room.value, "turn");
+            storeGame.evaluateMaxPot(seats.value, room.value);
+            repartidas.value = true;
+            set(roomPhaseRef, "preflop");
+          }
         }
       } else {
         console.log("faltan jugadores");
-        storeGame.resetGame(seats.value, room.value)
+        storeGame.resetGame(seats.value, room.value);
       }
     });
   } catch (error) {
@@ -191,7 +212,6 @@ const findSeatIndexByUser = (username) => {
 };
 
 const logicCallConsole = async (seatsF, room, index) => {
-
   await storeConsole.callConsole(seatsF, room, index);
   console.log(seats.value);
   if (storeGame.verifySimilarPots(seats.value)) {
@@ -200,20 +220,18 @@ const logicCallConsole = async (seatsF, room, index) => {
     console.log(phaseGame);
     if (phaseGame === "preflop") {
       set(roomPhaseRef, "flop");
-      storeGame.gamePhase("flop");
+      storeGame.gamePhase("flop", room);
       storePot.resetPotPlayer(seats.value, room);
       storePot.resetMaxPot(seats.value, room);
       storeGame.firstTurnPlayer(seats.value, room, "maxPot");
     }
   }
-}
+};
 
 onBeforeRouteLeave((to, from, next) => {
   leaveRoom();
   next();
 });
-
-
 </script>
 
 <style scoped>
