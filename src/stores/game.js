@@ -174,6 +174,7 @@ export const useGameStore = defineStore("gameStore", () => {
   const evaluateMaxPot = (seats, room) => {
     //Saca el indice del pot mas alto
     const maxPotIndex = storePot.potMax(seats, false);
+    console.log(maxPotIndex);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, "*");
   };
