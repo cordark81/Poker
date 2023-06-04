@@ -1,12 +1,11 @@
 <template>
   <div class="absolute bottom-0 right-0 w-64 h-64">
-    <div><input v-model="chips" /></div>
+    <div class="bg-red-500"><input v-model="chips" /></div>
     <button>Check</button>
+    <button class="bg-green-500" @click="logicCall()">Call</button>
     <button @click="storePot.bet(chips, room, index, true, seats)">Bet</button>
     <button>Fold</button>
-    <button>Raise</button>
     <button>All-In</button>
-    <button @click="storePot.resetChips">Reset chips</button>
   </div>
 </template>
 
@@ -24,7 +23,11 @@ const props = defineProps({
   seats: Array,
 });
 
-//Añadirlo en el template v-if="seat.user === storeUser.user.displayName && seat.turn === '*'"
+const emits = defineEmits(["logicCall"]);
+
+const logicCall = () => {
+  emits("logicCall");
+};
 </script>
 
 <style lang="scss" scoped></style>

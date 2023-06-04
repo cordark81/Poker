@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
-import { refDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
 import { useCardsStore } from "./cards";
+import { usePotStore } from "./pot";
 import axios from "axios";
 
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
+  const storePot = usePotStore();
 
   const gamePhase = (phase) => {
     switch (phase) {
@@ -70,9 +72,8 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const deleteDealer = (seats, room) => {
     seats.forEach((seat, index) => {
-      seat.dealer = "";
-      let roomRef = refDB(`rooms/${room}/seats/${index}`);
-      set(roomRef, seat);
+      const roomRef = refDB(`rooms/${room}/seats/${index}/dealer`);
+      set(roomRef, "");
     });
   };
 
@@ -154,7 +155,7 @@ export const useGameStore = defineStore("gameStore", () => {
       console.log("Error:", error);
     }
   };
-
+  //Preparado para el comienzo de la segunda fase
   //Añadimos el parametro route para poder usar la funcion en varias situaciones
   const firstTurnPlayer = (seats, room, route) => {
     const newArray = [...seats];
@@ -171,22 +172,13 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const evaluateMaxPot = (seats, room) => {
-    if (verifySimilarPots(seats)) {
-      firstTurnPlayer(seats, room, "maxPot");
-    } else {
-      //Saca el indice del pot mas alto
-      const maxPotIndex = seats.reduce(
-        (maxIndex, seat, currentIndex) =>
-          seat.potPlayer > seats[maxIndex].potPlayer ? currentIndex : maxIndex,
-        0
-      );
-      const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
-      set(turnRef, "*");
-    }
+    //Saca el indice del pot mas alto
+    const maxPotIndex = storePot.potMax(seats, false);
+    const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+    set(turnRef, "*");
   };
 
   const verifySimilarPots = (seats) => {
-    console.log(seats);
     let areEqual = true;
     let firstPot = null;
 
@@ -218,6 +210,38 @@ export const useGameStore = defineStore("gameStore", () => {
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const maxPotIndex = (turnIndex + seats.length + 1) % seats.length;
     const maxPotRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+    const maxpot = getDB(maxPotRef);
+
+    return maxpot;
+  };
+
+  const resetGame = (seats, room) => {
+    const roomDealerRef = refDB(`rooms/${room}/ditchDealerDone`);
+    const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
+
+    storeCards.deleteCards(seats, room);
+    storePot.resetMaxPot(seats, room);
+    storePot.resetPotPlayer(seats, room);
+    storePot.resetPot(room);
+    deleteDealer(seats, room);
+    resetTurn(seats, room);
+
+    set(roomDealerRef, false);
+    set(roomPhaseRef, "offGame");
+  };
+
+  const resetTurn = (seats, room) => {
+    seats.forEach((seat, index) => {
+      const roomRef = refDB(`rooms/${room}/seats/${index}/turn`);
+      set(roomRef, "");
+    });
+  };
+
+  const resetChipsInGame = (seats, room) => {
+    seats.forEach((seat, index) => {
+      const roomRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+      set(roomRef, 0);
+    });
   };
 
   return {
@@ -231,5 +255,9 @@ export const useGameStore = defineStore("gameStore", () => {
     evaluateMaxPot,
     verifySimilarPots,
     moveTurnLeft,
+    evaluateMaxPotLeft,
+    resetGame,
+    resetTurn,
+    resetChipsInGame,
   };
 });

@@ -46,8 +46,7 @@ const joinRoom = () => {
         // Verificar si el usuario tiene suficientes fichas
         if (chips >= props.range) {
           // El usuario tiene suficientes fichas, puedes unirlo a la sala
-          
-               
+                    
         } else {
           // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
           emits("openModal")

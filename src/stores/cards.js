@@ -81,11 +81,10 @@ export const useCardsStore = defineStore("cardsStore", () => {
     });
   };
 
-  const resetCards = (seats, room) => {
+  const deleteCards = (seats, room) => {
     seats.forEach((element, index) => {
-      const roomRef = refDB(`rooms/${room}/seats/${index}`);
-      element.hand = [];
-      set(roomRef, element);
+      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+      set(roomRef, []);
     });
   };
 
@@ -155,7 +154,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
     tableCards,
     winner,
     dealingCards,
-    resetCards,
+    deleteCards,
     checkCards,
   };
 });
