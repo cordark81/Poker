@@ -8,31 +8,33 @@ export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
 
-  const gamePhase = (phase) => {
+  const gamePhase = (phase, room) => {
     switch (phase) {
       case "flop":
         console.log("FLOP");
         for (let i = 0; i < 3; i++) {
-          drawCardTable();
+          drawCardTable(room);
         }
         break;
       case "turn":
         console.log("TURN");
-        drawCardTable();
+        drawCardTable(room);
         break;
       case "river":
         console.log("RIVER");
-        drawCardTable();
+        drawCardTable(room);
         break;
       default:
         break;
     }
   };
 
-  const drawCardTable = () => {
+  const drawCardTable = (room) => {
     const pos = Math.floor(Math.random() * storeCards.gameCards.length);
     storeCards.tableCards.push(storeCards.gameCards[pos]);
     storeCards.gameCards.splice(pos, 1);
+    const tableCardsRef = refDB(`rooms/${room}/tableCards`);
+    set(tableCardsRef, storeCards.tableCards);
   };
 
   const evaluate = async (mano) => {
@@ -177,6 +179,9 @@ export const useGameStore = defineStore("gameStore", () => {
     console.log(maxPotIndex);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, "*");
+    /*const pruebaRef = refDB(`rooms/${room}/seats/${maxPotIndex}`);
+    const prueba = await getDB(pruebaRef);
+    console.log(prueba);*/
   };
 
   const verifySimilarPots = (seats) => {
@@ -221,6 +226,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
 
     storeCards.deleteCards(seats, room);
+    storeCards.deleteCardsTable(room);
     storePot.resetMaxPot(seats, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetPot(room);
