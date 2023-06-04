@@ -149,6 +149,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
     }
   };
 
+  const deleteCardsTable = (room) => {
+    const tableCardsRef = refDB(`rooms/${room}/tableCards`);
+    set(tableCardsRef, []);
+  };
+
   return {
     gameCards,
     tableCards,
@@ -156,5 +161,6 @@ export const useCardsStore = defineStore("cardsStore", () => {
     dealingCards,
     deleteCards,
     checkCards,
+    deleteCardsTable,
   };
 });
