@@ -87,15 +87,15 @@ export const useGameStore = defineStore("gameStore", () => {
 
   function moveDealerLeft(seats, room) {
     const dealerIndex = seats.findIndex((item) => item.dealer === "dealer");
-    const sbIndex = (dealerIndex + seats.lengh - 1) % seats.lengh;
-    const bbIndex = (dealerIndex + seats.lengh - 2) % seats.lengh;
+    const sbIndex = (dealerIndex + seats.length - 1) % seats.length;
+    const bbIndex = (dealerIndex + seats.length - 2) % seats.length;
 
     const dealerValue = seats[dealerIndex].dealer;
     const sbValue = seats[sbIndex].dealer;
     const bbValue = seats[bbIndex].dealer;
 
-    for (let i = 0; i < seats.lengh; i++) {
-      const newIndex = (i + 1) % seats.lengh;
+    for (let i = 0; i < seats.length; i++) {
+      const newIndex = (i + 1) % seats.length;
 
       if (i === dealerIndex) {
         const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
@@ -166,11 +166,13 @@ export const useGameStore = defineStore("gameStore", () => {
   };
   //Preparado para el comienzo de la segunda fase
   //Añadimos el parametro route para poder usar la funcion en varias situaciones
-  const firstTurnPlayer = (seats, room, route) => {
-    const seats = [...seats];
+  const firstTurnPlayer = (seat, room, route) => {
+    console.log(seat);
+    const seats = seat;
+    console.log(seats);
 
     const bbIndex = seats.findIndex((item) => item.dealer === "bb");
-    const turnIndex = (bbIndex + seats.lengh + 1) % seats.lengh;
+    const turnIndex = (bbIndex + seats.length + 1) % seats.length;
 
     const ref = refDB(`rooms/${room}/seats/${turnIndex}/${route}`);
     set(ref, "*");
@@ -275,7 +277,7 @@ export const useGameStore = defineStore("gameStore", () => {
     resetFolds(seats,room);
     resetTurn(seats,room);
     moveDealerLeft(seats, room);
-    firstTurnPlayer(seats.value, room.value, "turn");
+    //firstTurnPlayer(seats.value, room.value, "turn");
     await storePot.initialPot(seats.value, room.value);
     evaluateMaxPot(seats.value, room.value);
     storeCards.dealingCards(seats,room);
