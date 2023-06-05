@@ -85,7 +85,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await set(turnRef, "*");
   };
 
-  function moveDealerLeft(seats, room) {
+  const moveDealerLeft = async (seats, room) => {
     const dealerIndex = seats.findIndex((item) => item.dealer === "dealer");
     const sbIndex = (dealerIndex + seats.length - 1) % seats.length;
     const bbIndex = (dealerIndex + seats.length - 2) % seats.length;
@@ -166,7 +166,7 @@ export const useGameStore = defineStore("gameStore", () => {
   };
   //Preparado para el comienzo de la segunda fase
   //Añadimos el parametro route para poder usar la funcion en varias situaciones
-  const firstTurnPlayer = (seat, room, route) => {
+  const firstTurnPlayer = async (seat, room, route) => {
     console.log(seat);
     const seats = seat;
     console.log(seats);
@@ -182,10 +182,9 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   };
 
-  const evaluateMaxPot = (seats, room) => {
+  const evaluateMaxPot = async (seats, room) => {
     //Saca el indice del pot mas alto
     const maxPotIndex = storePot.potMax(seats, false);
-    console.log(maxPotIndex);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, "*");
   };
@@ -244,7 +243,7 @@ export const useGameStore = defineStore("gameStore", () => {
     set(roomPhaseRef, "offGame");
   };
 
-  const resetTurn = (seats, room) => {
+  const resetTurn = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/turn`);
       set(roomRef, "");
@@ -258,7 +257,7 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
-  const resetFolds = (seats, room) => {
+  const resetFolds = async(seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/fold`);
       set(roomRef, "");
@@ -266,21 +265,23 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const resetGameWithWinner = async (seats, room, indexWinner) => {
-    const phaseGameRef = refDB(`rooms/${room}/phaseGame`)
-    
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`)    
+    const seatRef = refDB(`rooms/${room}/seats`)
+
     storeCards.deleteCards(seats, room);
-    //barajar
-    storePot.potToPlayerWin(room, indexWinner);
-    storePot.resetPot(room);
-    storePot.resetMaxPot(seats, room);
-    storeCards.resetDeck();
-    resetFolds(seats,room);
-    resetTurn(seats,room);
-    moveDealerLeft(seats, room);
-    //firstTurnPlayer(seats.value, room.value, "turn");
-    await storePot.initialPot(seats.value, room.value);
-    evaluateMaxPot(seats.value, room.value);
-    storeCards.dealingCards(seats,room);
+    await storePot.potToPlayerWin(room, indexWinner);
+    await storePot.resetPot(room);
+    await storePot.resetMaxPot(seats, room);
+    await storeCards.resetDeck();
+    await resetFolds(seats,room);
+    await resetTurn(seats,room);
+    await moveDealerLeft(seats, room);
+    await firstTurnPlayer(seats, room, "turn");
+    const newSeats = await getDB(seatRef);
+    console.log(newSeats);
+    await storePot.initialPot(newSeats, room);
+    await evaluateMaxPot(newSeats, room);
+    await storeCards.dealingCards(newSeats,room);
     set(phaseGameRef, "preflop");
   };
 

@@ -66,11 +66,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
   /*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
-  const resetDeck = () =>{
+  const resetDeck = async () =>{
     gameCards = cards.value;
   }
 
-  const dealingCards = (seats, room) => {
+  const dealingCards = async (seats, room) => {
     seats.forEach((element, index) => {
       let cardsHand = [];
       let pos = Math.floor(Math.random() * gameCards.length);
@@ -80,8 +80,8 @@ export const useCardsStore = defineStore("cardsStore", () => {
       cardsHand.push(gameCards[pos]);
       gameCards.splice(pos, 1);
       element.hand = cardsHand;
-      const roomRef = refDB(`rooms/${room}/seats/${index}`);
-      set(roomRef, element);
+      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+      set(roomRef, element.hand);
     });
   };
 
