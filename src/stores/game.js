@@ -78,12 +78,12 @@ export const useGameStore = defineStore("gameStore", () => {
       set(roomRef, "");
     });
   };
-
+  /* pendiente de borrar
   const mooveTurnleft = async (seats, room, index) => {
     const indexLeft = seats[(index + 1) % seats.length];
     const turnRef = refDB(`rooms/${room}/seats/${indexLeft}/turn`);
     await set(turnRef, "*");
-  };
+  };*/
 
   const moveDealerLeft = async (seats, room) => {
     const dealerIndex = seats.findIndex((item) => item.dealer === "dealer");
@@ -287,6 +287,15 @@ export const useGameStore = defineStore("gameStore", () => {
     set(phaseGameRef, "preflop");
   };
 
+  const checkPlayerFold=async(seats,room,index)=>{
+    const seatRef = refDB(`rooms/${room}/seats/${index}`);
+    const seat = await getDB(seatRef);
+
+    if(seat.fold=="*"){
+      moveTurnLeft(seats,room);
+    }    
+  }
+
   return {
     gamePhase,
     evaluate,
@@ -302,9 +311,9 @@ export const useGameStore = defineStore("gameStore", () => {
     resetGame,
     resetTurn,
     resetChipsInGame,
-    mooveTurnleft,
     resetFolds,
     moveDealerLeft,
     resetGameWithWinner,
+    checkPlayerFold,
   };
 });

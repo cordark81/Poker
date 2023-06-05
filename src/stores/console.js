@@ -66,9 +66,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     if ((await checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
       console.log(newSeats[indexWinner].user);
-      if (index === 2) {
-        storeGame.resetGameWithWinner(newSeats, room, indexWinner);
-      }
+      storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
       storeGame.moveTurnLeft(seats, room);
     }

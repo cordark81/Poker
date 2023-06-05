@@ -18,10 +18,10 @@
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName"
+          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && seat.fold!=='*'"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
-        </div>
+        </div>        
       </div>
 
       <Chat class="flex flex-col" :room="room" />
@@ -96,7 +96,7 @@ onMounted(async () => {
         checkIndex(seats.value);
       }
     });
-
+    
     const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
     const ditchDealerDone = await getDB(roomDealerRef);
     const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
@@ -118,6 +118,8 @@ onMounted(async () => {
         console.log("faltan jugadores");
         storeGame.resetGame(seats.value, room.value);
       }
+
+      storeGame.checkPlayerFold(seats.value,room.value,selectedSeatIndex.value);
     });
   } catch (error) {
     console.log(error.message);
