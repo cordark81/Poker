@@ -18,7 +18,7 @@
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && seat.fold !== '*'"
+          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName &&  storeGame.checkPlayerFold(seats,room,index)"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
         </div>
@@ -93,7 +93,7 @@ onMounted(async () => {
         seats.value = roomData.seats;
         potRoom.value = roomData.pot;
         tableCards.value = roomData.tableCards;
-        checkIndex(seats.value);
+        checkIndex(seats.value);       
       }
     });
 
@@ -120,7 +120,7 @@ onMounted(async () => {
         storeGame.resetGame(seats.value, room.value);
       }
 
-      //storeGame.checkPlayerFold(seats.value,room.value,selectedSeatIndex.value);
+     
     });
   } catch (error) {
     console.log(error.message);

@@ -12,7 +12,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
   const checkConsole = async (seats, room) => {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
-    if (storeGame.verifySimilarPots(seats.value)) {
+    if (storeGame.verifySimilarPots(seats)) {
       if (phaseInGame === "preflop") {
         phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
       } else if (phaseInGame === "flop") {

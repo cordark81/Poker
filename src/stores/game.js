@@ -290,12 +290,12 @@ export const useGameStore = defineStore("gameStore", () => {
   const checkPlayerFold = async (seats, room, index) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);
-    
-    if (seat !== null) {
-      if (seat.fold == "*") {
-        moveTurnLeft(seats, room);
-      }
+
+    if (seat.fold == "*") {
+      moveTurnLeft(seats, room);
+      return false;
     }
+    return true;
   };
 
   return {
