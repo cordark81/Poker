@@ -2,11 +2,13 @@ import { defineStore } from "pinia";
 import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
 import { useCardsStore } from "./cards";
 import { usePotStore } from "./pot";
+import { ref } from "vue";
 import axios from "axios";
 
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
+  const firstRound = ref(true);
 
   const gamePhase = async(phase, room) => {
     switch (phase) {
@@ -247,7 +249,7 @@ export const useGameStore = defineStore("gameStore", () => {
     deleteDealer(seats, room);
     resetTurn(seats, room);
     resetFolds(seats, room);
-
+    firstRound.value = true;
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
   };
@@ -293,6 +295,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
+    firstRound.value = true;
     set(phaseGameRef, "preflop");
   };
 
@@ -308,6 +311,7 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   return {
+    firstRound,
     gamePhase,
     evaluate,
     ditchDealer,

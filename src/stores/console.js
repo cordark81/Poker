@@ -34,7 +34,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       } else if (phaseInGame === "river") {
         //si todos check evaluar cartas
       }
-    }else{
+    } else {
       storeGame.moveTurnLeft(seats, room);
     }
   };

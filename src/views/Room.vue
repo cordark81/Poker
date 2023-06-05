@@ -18,7 +18,8 @@
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName &&  storeGame.checkPlayerFold(seats,room,index)"
+          <GameConsole
+            v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && storeGame.checkPlayerFold(seats, room, index)"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
         </div>
@@ -93,7 +94,7 @@ onMounted(async () => {
         seats.value = roomData.seats;
         potRoom.value = roomData.pot;
         tableCards.value = roomData.tableCards;
-        checkIndex(seats.value);       
+        checkIndex(seats.value);
       }
     });
 
@@ -120,7 +121,7 @@ onMounted(async () => {
         storeGame.resetGame(seats.value, room.value);
       }
 
-     
+
     });
   } catch (error) {
     console.log(error.message);
@@ -198,14 +199,21 @@ const logicCallConsole = async (seatsF, room, index) => {
   if (storeGame.verifySimilarPots(seats.value)) {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
+    if (phaseInGame === "preflop" && !storeGame.firstRound) {
+      if (seats.value[index].dealer === "bb") {
+        storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
+      }else{
+        storeGame.moveTurnLeft(seats.value, room);
+      }
 
-    if (phaseInGame === "preflop") {
-      storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
     } else if (phaseInGame === "turn") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
+    } else{
+      storeGame.moveTurnLeft(seats.value, room);
+      storeGame.firstRound=false;
     }
   } else {
     storeGame.moveTurnLeft(seats.value, room);
