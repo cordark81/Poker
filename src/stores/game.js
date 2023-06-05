@@ -268,7 +268,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const phaseGameRef = refDB(`rooms/${room}/phaseGame`)    
     const seatRef = refDB(`rooms/${room}/seats`)
 
-    storeCards.deleteCards(seats, room);
+    await storeCards.deleteCards(seats, room);
     await storePot.potToPlayerWin(room, indexWinner);
     await storePot.resetPot(room);
     await storePot.resetMaxPot(seats, room);
@@ -276,9 +276,11 @@ export const useGameStore = defineStore("gameStore", () => {
     await resetFolds(seats,room);
     await resetTurn(seats,room);
     await moveDealerLeft(seats, room);
-    await firstTurnPlayer(seats, room, "turn");
-    const newSeats = await getDB(seatRef);
+    let newSeats = await getDB(seatRef);
     console.log(newSeats);
+    await firstTurnPlayer(newSeats, room, "turn");
+    newSeats = await getDB(seatRef);
+    await storePot.resetPotPlayer(newSeats,room)        
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats,room);

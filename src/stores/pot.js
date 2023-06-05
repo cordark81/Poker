@@ -58,7 +58,7 @@ export const usePotStore = defineStore("potStore", () => {
     return maxIndex;
   };
 
-  const resetPotPlayer = (seats, room) => {
+  const resetPotPlayer = async(seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
       set(roomRef, 0);

@@ -85,7 +85,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
     });
   };
 
-  const deleteCards = (seats, room) => {
+  const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
       set(roomRef, []);

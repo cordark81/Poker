@@ -109,8 +109,8 @@ onMounted(async () => {
             await storePot.initialPot(seats.value, room.value);
             set(roomDealerRef, true);
             storeCards.dealingCards(seats.value, room.value);
-            storeGame.firstTurnPlayer(seats.value, room.value, "turn");
-            storeGame.evaluateMaxPot(seats.value, room.value);
+            await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
+            await storeGame.evaluateMaxPot(seats.value, room.value);
             set(roomPhaseRef, "preflop");
           }
         }
