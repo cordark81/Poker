@@ -57,9 +57,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
     "Qs",
     "Ks",
   ]);
+  
   /*const dealtCards = ref([]);*/
   let gameCards = cards.value;
   let tableCards = ref([]);
+
   const results = ref([]);
   const winner = ref("");
 

@@ -8,12 +8,12 @@ export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
 
-  const gamePhase = (phase, room) => {
+  const gamePhase = async(phase, room) => {
     switch (phase) {
       case "flop":
         console.log("FLOP");
         for (let i = 0; i < 3; i++) {
-          drawCardTable(room);
+          await drawCardTable(room);
         }
         break;
       case "turn":
@@ -29,12 +29,19 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   };
 
-  const drawCardTable = (room) => {
-    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
-    storeCards.tableCards.push(storeCards.gameCards[pos]);
-    storeCards.gameCards.splice(pos, 1);
+  const drawCardTable = async (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
-    set(tableCardsRef, storeCards.tableCards);
+    let tableCards = await getDB(tableCardsRef);
+    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
+    
+    storeCards.gameCards.splice(pos, 1);
+
+    if(tableCards===null){
+      tableCards=[];
+    }
+    tableCards.push(storeCards.gameCards[pos]);
+
+    set(tableCardsRef, tableCards);
   };
 
   const evaluate = async (mano) => {
@@ -194,11 +201,13 @@ export const useGameStore = defineStore("gameStore", () => {
     let firstPot = null;
 
     seats.forEach((seat) => {
-      if (firstPot === null) {
-        firstPot = seat.potPlayer;
-      } else {
-        if (seat.potPlayer !== firstPot) {
-          areEqual = false;
+      if (seat.fold === "") {
+        if (firstPot === null) {
+          firstPot = seat.potPlayer;
+        } else {
+          if (seat.potPlayer !== firstPot) {
+            areEqual = false;
+          }
         }
       }
     });

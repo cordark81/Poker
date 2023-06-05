@@ -43,8 +43,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     storeGame.gamePhase(phase, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetMaxPot(seats, room);
-    //storeGame.resetTurn(seats, room);
-    //storeGame.firstTurnPlayer(seats, room, "maxPot");
+    storeGame.resetTurn(seats, room);
+    storeGame.firstTurnPlayer(seats, room, "maxPot");
     set(phaseInGameRef, phase);
   };
   /*pendiente de eliminar
