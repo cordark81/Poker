@@ -8,12 +8,12 @@ export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
 
-  const gamePhase = (phase, room) => {
+  const gamePhase = async(phase, room) => {
     switch (phase) {
       case "flop":
         console.log("FLOP");
         for (let i = 0; i < 3; i++) {
-          drawCardTable(room);
+          await drawCardTable(room);
         }
         break;
       case "turn":
@@ -29,12 +29,19 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   };
 
-  const drawCardTable = (room) => {
-    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
-    storeCards.tableCards.push(storeCards.gameCards[pos]);
-    storeCards.gameCards.splice(pos, 1);
+  const drawCardTable = async (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
-    set(tableCardsRef, storeCards.tableCards);
+    let tableCards = await getDB(tableCardsRef);
+    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
+    
+    storeCards.gameCards.splice(pos, 1);
+
+    if(tableCards===null){
+      tableCards=[];
+    }
+    tableCards.push(storeCards.gameCards[pos]);
+
+    set(tableCardsRef, tableCards);
   };
 
   const evaluate = async (mano) => {
@@ -78,36 +85,37 @@ export const useGameStore = defineStore("gameStore", () => {
       set(roomRef, "");
     });
   };
-
+  /* pendiente de borrar
   const mooveTurnleft = async (seats, room, index) => {
     const indexLeft = seats[(index + 1) % seats.length];
     const turnRef = refDB(`rooms/${room}/seats/${indexLeft}/turn`);
     await set(turnRef, "*");
-  };
+  };*/
 
-  function moverEtiquetasIzquierda(array) {
-    const newArray = [...array]; // Crear una copia del array para no modificar el original
+  const moveDealerLeft = async (seats, room) => {
+    const dealerIndex = seats.findIndex((item) => item.dealer === "dealer");
+    const sbIndex = (dealerIndex + seats.length - 1) % seats.length;
+    const bbIndex = (dealerIndex + seats.length - 2) % seats.length;
 
-    const dealerIndex = newArray.findIndex((item) => item.dealer === "dealer");
-    const sbIndex = (dealerIndex + newArray.length - 1) % newArray.length;
-    const bbIndex = (dealerIndex + newArray.length - 2) % newArray.length;
+    const dealerValue = seats[dealerIndex].dealer;
+    const sbValue = seats[sbIndex].dealer;
+    const bbValue = seats[bbIndex].dealer;
 
-    const dealerValue = newArray[dealerIndex].dealer;
-    const sbValue = newArray[sbIndex].dealer;
-    const bbValue = newArray[bbIndex].dealer;
-
-    for (let i = 0; i < newArray.length; i++) {
-      const newIndex = (i + 1) % newArray.length;
+    for (let i = 0; i < seats.length; i++) {
+      const newIndex = (i + 1) % seats.length;
 
       if (i === dealerIndex) {
-        newArray[newIndex].dealer = dealerValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, dealerValue);
       } else if (i === sbIndex) {
-        newArray[newIndex].dealer = sbValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, sbValue);
       } else if (i === bbIndex) {
-        newArray[newIndex].dealer = bbValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, bbValue);
       }
     }
-  }
+  };
 
   const asignChipsInGame = async (room, index) => {
     let chips = 0;
@@ -134,7 +142,7 @@ export const useGameStore = defineStore("gameStore", () => {
       }
     } catch (error) {
       // Manejo de errores
-      console.error(error);
+      console.error(error.message);
     }
   };
 
@@ -165,11 +173,13 @@ export const useGameStore = defineStore("gameStore", () => {
   };
   //Preparado para el comienzo de la segunda fase
   //Añadimos el parametro route para poder usar la funcion en varias situaciones
-  const firstTurnPlayer = (seats, room, route) => {
-    const newArray = [...seats];
+  const firstTurnPlayer = async (seat, room, route) => {
+    console.log(seat);
+    const seats = seat;
+    console.log(seats);
 
-    const bbIndex = newArray.findIndex((item) => item.dealer === "bb");
-    const turnIndex = (bbIndex + newArray.length + 1) % newArray.length;
+    const bbIndex = seats.findIndex((item) => item.dealer === "bb");
+    const turnIndex = (bbIndex + seats.length + 1) % seats.length;
 
     const ref = refDB(`rooms/${room}/seats/${turnIndex}/${route}`);
     set(ref, "*");
@@ -179,10 +189,9 @@ export const useGameStore = defineStore("gameStore", () => {
     }
   };
 
-  const evaluateMaxPot = (seats, room) => {
+  const evaluateMaxPot = async (seats, room) => {
     //Saca el indice del pot mas alto
     const maxPotIndex = storePot.potMax(seats, false);
-    console.log(maxPotIndex);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, "*");
   };
@@ -192,11 +201,13 @@ export const useGameStore = defineStore("gameStore", () => {
     let firstPot = null;
 
     seats.forEach((seat) => {
-      if (firstPot === null) {
-        firstPot = seat.potPlayer;
-      } else {
-        if (seat.potPlayer !== firstPot) {
-          areEqual = false;
+      if (seat.fold === "") {
+        if (firstPot === null) {
+          firstPot = seat.potPlayer;
+        } else {
+          if (seat.potPlayer !== firstPot) {
+            areEqual = false;
+          }
         }
       }
     });
@@ -235,13 +246,13 @@ export const useGameStore = defineStore("gameStore", () => {
     storePot.resetPot(room);
     deleteDealer(seats, room);
     resetTurn(seats, room);
-    resetFolds(seats,room)
+    resetFolds(seats, room);
 
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
   };
 
-  const resetTurn = (seats, room) => {
+  const resetTurn = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/turn`);
       set(roomRef, "");
@@ -255,11 +266,45 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
-  const resetFolds = (seats, room) => {
+  const resetFolds = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/fold`);
       set(roomRef, "");
     });
+  };
+
+  const resetGameWithWinner = async (seats, room, indexWinner) => {
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+    const seatRef = refDB(`rooms/${room}/seats`);
+
+    await storeCards.deleteCards(seats, room);
+    await storePot.potToPlayerWin(room, indexWinner);
+    await storePot.resetPot(room);
+    await storePot.resetMaxPot(seats, room);
+    await storeCards.resetDeck();
+    await resetFolds(seats, room);
+    await resetTurn(seats, room);
+    await moveDealerLeft(seats, room);
+    let newSeats = await getDB(seatRef);
+    console.log(newSeats);
+    await firstTurnPlayer(newSeats, room, "turn");
+    newSeats = await getDB(seatRef);
+    await storePot.resetPotPlayer(newSeats, room);
+    await storePot.initialPot(newSeats, room);
+    await evaluateMaxPot(newSeats, room);
+    await storeCards.dealingCards(newSeats, room);
+    set(phaseGameRef, "preflop");
+  };
+
+  const checkPlayerFold = async (seats, room, index) => {
+    const seatRef = refDB(`rooms/${room}/seats/${index}`);
+    const seat = await getDB(seatRef);
+
+    if (seat.fold == "*") {
+      moveTurnLeft(seats, room);
+      return false;
+    }
+    return true;
   };
 
   return {
@@ -277,7 +322,9 @@ export const useGameStore = defineStore("gameStore", () => {
     resetGame,
     resetTurn,
     resetChipsInGame,
-    mooveTurnleft,
-    resetFolds
+    resetFolds,
+    moveDealerLeft,
+    resetGameWithWinner,
+    checkPlayerFold,
   };
 });
