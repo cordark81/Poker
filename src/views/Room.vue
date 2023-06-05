@@ -18,10 +18,10 @@
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && seat.fold!=='*'"
+          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && seat.fold !== '*'"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
-        </div>        
+        </div>
       </div>
 
       <Chat class="flex flex-col" :room="room" />
@@ -96,11 +96,12 @@ onMounted(async () => {
         checkIndex(seats.value);
       }
     });
-    
-    const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
-    const ditchDealerDone = await getDB(roomDealerRef);
-    const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
+
     onPlayersSit("Rooms", room.value, async (roomData) => {
+      const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
+      const ditchDealerDone = await getDB(roomDealerRef);
+      const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
+
       if (roomData.data().seat === 0) {
         if (ditchDealerDone === false) {
           checkIndex(seats.value);
@@ -119,7 +120,7 @@ onMounted(async () => {
         storeGame.resetGame(seats.value, room.value);
       }
 
-      storeGame.checkPlayerFold(seats.value,room.value,selectedSeatIndex.value);
+      //storeGame.checkPlayerFold(seats.value,room.value,selectedSeatIndex.value);
     });
   } catch (error) {
     console.log(error.message);

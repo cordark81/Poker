@@ -108,7 +108,7 @@ export const useGameStore = defineStore("gameStore", () => {
         set(dealerRef, bbValue);
       }
     }
-  }
+  };
 
   const asignChipsInGame = async (room, index) => {
     let chips = 0;
@@ -257,7 +257,7 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
-  const resetFolds = async(seats, room) => {
+  const resetFolds = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/fold`);
       set(roomRef, "");
@@ -265,36 +265,38 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const resetGameWithWinner = async (seats, room, indexWinner) => {
-    const phaseGameRef = refDB(`rooms/${room}/phaseGame`)    
-    const seatRef = refDB(`rooms/${room}/seats`)
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+    const seatRef = refDB(`rooms/${room}/seats`);
 
     await storeCards.deleteCards(seats, room);
     await storePot.potToPlayerWin(room, indexWinner);
     await storePot.resetPot(room);
     await storePot.resetMaxPot(seats, room);
     await storeCards.resetDeck();
-    await resetFolds(seats,room);
-    await resetTurn(seats,room);
+    await resetFolds(seats, room);
+    await resetTurn(seats, room);
     await moveDealerLeft(seats, room);
     let newSeats = await getDB(seatRef);
     console.log(newSeats);
     await firstTurnPlayer(newSeats, room, "turn");
     newSeats = await getDB(seatRef);
-    await storePot.resetPotPlayer(newSeats,room)        
+    await storePot.resetPotPlayer(newSeats, room);
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
-    await storeCards.dealingCards(newSeats,room);
+    await storeCards.dealingCards(newSeats, room);
     set(phaseGameRef, "preflop");
   };
 
-  const checkPlayerFold=async(seats,room,index)=>{
+  const checkPlayerFold = async (seats, room, index) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);
-
-    if(seat.fold=="*"){
-      moveTurnLeft(seats,room);
-    }    
-  }
+    
+    if (seat !== null) {
+      if (seat.fold == "*") {
+        moveTurnLeft(seats, room);
+      }
+    }
+  };
 
   return {
     gamePhase,

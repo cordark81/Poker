@@ -12,26 +12,30 @@ export const useConsoleStore = defineStore("consoleStore", () => {
   const checkConsole = async (seats, room) => {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
-    if (phaseInGame === "preflop") {
-      phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
-    } else if (phaseInGame === "flop") {
-      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
-      console.log(maxPotLeft);
-      if (maxPotLeft === "*") {
-        phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
-      } else {
-        storeGame.moveTurnLeft(seats, room);
+    if (storeGame.verifySimilarPots(seats.value)) {
+      if (phaseInGame === "preflop") {
+        phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
+      } else if (phaseInGame === "flop") {
+        const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
+        console.log(maxPotLeft);
+        if (maxPotLeft === "*") {
+          phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
+        } else {
+          storeGame.moveTurnLeft(seats, room);
+        }
+      } else if (phaseInGame === "turn") {
+        const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
+        console.log(maxPotLeft);
+        if (maxPotLeft === "*") {
+          phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
+        } else {
+          storeGame.moveTurnLeft(seats, room);
+        }
+      } else if (phaseInGame === "river") {
+        //si todos check evaluar cartas
       }
-    } else if (phaseInGame === "turn") {
-      const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
-      console.log(maxPotLeft);
-      if (maxPotLeft === "*") {
-        phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
-      } else {
-        storeGame.moveTurnLeft(seats, room);
-      }
-    } else if (phaseInGame === "river") {
-      //si todos check evaluar cartas
+    }else{
+      storeGame.moveTurnLeft(seats, room);
     }
   };
 
@@ -39,8 +43,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     storeGame.gamePhase(phase, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetMaxPot(seats, room);
-    storeGame.resetTurn(seats, room);
-    storeGame.firstTurnPlayer(seats, room, "maxPot");
+    //storeGame.resetTurn(seats, room);
+    //storeGame.firstTurnPlayer(seats, room, "maxPot");
     set(phaseInGameRef, phase);
   };
   /*pendiente de eliminar
