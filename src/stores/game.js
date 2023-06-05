@@ -8,7 +8,7 @@ import axios from "axios";
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
-  const firstRound = ref(true);
+  const firstRound = ref(0);
 
   const gamePhase = async(phase, room) => {
     switch (phase) {
@@ -218,6 +218,7 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const moveTurnLeft = (seats, room) => {
+    firstRound.value++;
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 

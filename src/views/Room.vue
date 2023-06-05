@@ -199,24 +199,16 @@ const logicCallConsole = async (seatsF, room, index) => {
   if (storeGame.verifySimilarPots(seats.value)) {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
-    if (phaseInGame === "preflop" && !storeGame.firstRound) {
-      if (seats.value[index].dealer === "bb") {
-        storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
-      }else{
-        storeGame.moveTurnLeft(seats.value, room);
-      }
-
+    if (phaseInGame === "preflop" && storeGame.firstRound>=seats.length) {
+      storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
     } else if (phaseInGame === "turn") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
-    } else{
-      storeGame.moveTurnLeft(seats.value, room);
-      storeGame.firstRound=false;
     }
   } else {
-    storeGame.moveTurnLeft(seats.value, room);
+    storeGame.moveTurnLeft(seats.value, room);    
   }
 };
 
