@@ -66,6 +66,10 @@ export const useCardsStore = defineStore("cardsStore", () => {
   /*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
+  const resetDeck = () =>{
+    gameCards = cards.value;
+  }
+
   const dealingCards = (seats, room) => {
     seats.forEach((element, index) => {
       let cardsHand = [];
@@ -177,5 +181,6 @@ export const useCardsStore = defineStore("cardsStore", () => {
     checkCards,
     deleteCardsTable,
     upDecksFirebase,
+    resetDeck,
   };
 });

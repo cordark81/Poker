@@ -77,9 +77,22 @@ export const usePotStore = defineStore("potStore", () => {
     });
   };
 
+  const potToPlayerWin = async (room, indexPlayerWin) => {
+    const chipsInGameRef = refDB(
+      `rooms/${room}/seats/${indexPlayerWin}/chipsInGame`
+    );
+    const potRef = refDB(`rooms/${room}/pot`);
+
+    const chipsInGame = await getDB(chipsInGameRef);
+    const pot = await getDB(potRef);
+    
+    set(chipsInGameRef, chipsInGame + pot);
+  };
+
   return {
     initialPot,
     potMax,
+    potToPlayerWin,
     resetPot,
     resetPotPlayer,
     resetMaxPot,

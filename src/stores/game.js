@@ -85,26 +85,27 @@ export const useGameStore = defineStore("gameStore", () => {
     await set(turnRef, "*");
   };
 
-  function moverEtiquetasIzquierda(array) {
-    const newArray = [...array]; // Crear una copia del array para no modificar el original
+  function moveDealerLeft(seats, room) {
+    const dealerIndex = seats.findIndex((item) => item.dealer === "dealer");
+    const sbIndex = (dealerIndex + seats.lengh - 1) % seats.lengh;
+    const bbIndex = (dealerIndex + seats.lengh - 2) % seats.lengh;
 
-    const dealerIndex = newArray.findIndex((item) => item.dealer === "dealer");
-    const sbIndex = (dealerIndex + newArray.length - 1) % newArray.length;
-    const bbIndex = (dealerIndex + newArray.length - 2) % newArray.length;
+    const dealerValue = seats[dealerIndex].dealer;
+    const sbValue = seats[sbIndex].dealer;
+    const bbValue = seats[bbIndex].dealer;
 
-    const dealerValue = newArray[dealerIndex].dealer;
-    const sbValue = newArray[sbIndex].dealer;
-    const bbValue = newArray[bbIndex].dealer;
-
-    for (let i = 0; i < newArray.length; i++) {
-      const newIndex = (i + 1) % newArray.length;
+    for (let i = 0; i < seats.lengh; i++) {
+      const newIndex = (i + 1) % seats.lengh;
 
       if (i === dealerIndex) {
-        newArray[newIndex].dealer = dealerValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, dealerValue);
       } else if (i === sbIndex) {
-        newArray[newIndex].dealer = sbValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, sbValue);
       } else if (i === bbIndex) {
-        newArray[newIndex].dealer = bbValue;
+        const dealerRef = refDB(`rooms/${room}/seats/${newIndex}/dealer`);
+        set(dealerRef, bbValue);
       }
     }
   }
@@ -166,10 +167,10 @@ export const useGameStore = defineStore("gameStore", () => {
   //Preparado para el comienzo de la segunda fase
   //Añadimos el parametro route para poder usar la funcion en varias situaciones
   const firstTurnPlayer = (seats, room, route) => {
-    const newArray = [...seats];
+    const seats = [...seats];
 
-    const bbIndex = newArray.findIndex((item) => item.dealer === "bb");
-    const turnIndex = (bbIndex + newArray.length + 1) % newArray.length;
+    const bbIndex = seats.findIndex((item) => item.dealer === "bb");
+    const turnIndex = (bbIndex + seats.lengh + 1) % seats.lengh;
 
     const ref = refDB(`rooms/${room}/seats/${turnIndex}/${route}`);
     set(ref, "*");
@@ -235,7 +236,7 @@ export const useGameStore = defineStore("gameStore", () => {
     storePot.resetPot(room);
     deleteDealer(seats, room);
     resetTurn(seats, room);
-    resetFolds(seats,room)
+    resetFolds(seats, room);
 
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
@@ -262,6 +263,25 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
+  const resetGameWithWinner = async (seats, room, indexWinner) => {
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`)
+    
+    storeCards.deleteCards(seats, room);
+    //barajar
+    storePot.potToPlayerWin(room, indexWinner);
+    storePot.resetPot(room);
+    storePot.resetMaxPot(seats, room);
+    storeCards.resetDeck();
+    resetFolds(seats,room);
+    resetTurn(seats,room);
+    moveDealerLeft(seats, room);
+    firstTurnPlayer(seats.value, room.value, "turn");
+    await storePot.initialPot(seats.value, room.value);
+    evaluateMaxPot(seats.value, room.value);
+    storeCards.dealingCards(seats,room);
+    set(phaseGameRef, "preflop");
+  };
+
   return {
     gamePhase,
     evaluate,
@@ -278,6 +298,8 @@ export const useGameStore = defineStore("gameStore", () => {
     resetTurn,
     resetChipsInGame,
     mooveTurnleft,
-    resetFolds
+    resetFolds,
+    moveDealerLeft,
+    resetGameWithWinner,
   };
 });

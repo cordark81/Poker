@@ -31,6 +31,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         storeGame.moveTurnLeft(seats, room);
       }
     } else if (phaseInGame === "river") {
+      //si todos check evaluar cartas
     }
   };
 
@@ -47,7 +48,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     ajustBet(seats, room, index, 1);    
   };*/
 
-  const foldConsole = async (seat, room, index) => {
+  const foldConsole = async (seats, room, index) => {
     // actualiza a 0 la apuesta del jugador, elimina las cartas de esta ronda
     // y le ponemos una marca de que el jugador esta fold
 
@@ -60,7 +61,14 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(foldRef, "*");
 
     //si solo queda un jugador esto no se debe hace verificar logica
-    storeGame.moveTurnLeft(seat, room);
+
+    if (checkPlayerWithFold(seats) === 1) {
+      const indexWinner = findFoldedPlayerIndex(seats);
+      console.log(seats[winner]);
+      storeGame.resetGameWithWinner(seats, room, indexWinner);
+    } else {
+      storeGame.moveTurnLeft(seats, room);
+    }
   };
 
   //Funcion dinamica para distintos grados de apuesta
@@ -69,7 +77,15 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     storeGame.moveTurnLeft(seats, room);
   };
 
-  const allInConsole = async (room, index) => {
+  const checkPlayerWithFold = async (seats) =>
+    seats.reduce((count, seat) => (seat.fold === "" ? count + 1 : count), 0);
+
+  const findFoldedPlayerIndex = (seats) =>
+    seats.reduce((count, seat, index) => {
+      seat.fold === "" && count === -1 ? index : count;
+    }, -1);
+
+  const allInConsole = async (seats, room, index) => {
     const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
     const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
     const potRef = refDB(`rooms/${room}/pot`);
@@ -81,6 +97,9 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(potPlayerCallingRef, chipsInGame + potPlayer);
     await set(chipsInGameRef, 0);
     await set(potRef, pot + chipsInGame + potPlayer);
+
+    storeGame.moveTurnLeft(seats, room);
+    //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
   };
 
   const ajustBet = async (seats, room, index, multiplier) => {
@@ -99,11 +118,29 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(potRef, pot + (maxPot * multiplier - potPlayer));
   };
 
+  const betConsole = async (seats, room, index, bet) => {
+    const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+    const potRef = refDB(`rooms/${room}/pot`);
+
+    const potPlayer = await getDB(potPlayerCallingRef);
+    const chipsInGame = await getDB(chipsInGameRef);
+    const pot = await getDB(potRef);
+
+    await set(potPlayerCallingRef, potPlayer + bet);
+    await set(chipsInGameRef, chipsInGame - bet);
+    await set(potRef, pot + bet);
+
+    storeGame.moveTurnLeft(seats, room);
+  };
+
   return {
     foldConsole,
     checkConsole,
     raiseConsole,
     allInConsole,
+    betConsole,
     phaseChangeWithoutBet,
+    ajustBet,
   };
 });
