@@ -320,7 +320,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const resetCountRound = async (room) =>{
     const countRoundRef = refDB(`rooms/${room}/countRound`);
-    set(countRoundRef, 0);
+    set(countRoundRef, 1);
   }
 
   return {
