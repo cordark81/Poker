@@ -60,6 +60,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
     const foldRef = refDB(`rooms/${room}/seats/${index}/fold`);
     const seatRef = refDB(`rooms/${room}/seats`);
+    const potRef = refDB(`rooms/${room}/pot`);
 
     await set(potPlayerCallingRef, 0);
     await set(handRef, []);
@@ -69,7 +70,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
     if ((await checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
-      console.log(newSeats[indexWinner].user);
+      const chipsForWinner = await getDB(potRef)
+      storeGame.showWinner(newSeats[indexWinner],chipsForWinner);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
       storeGame.moveTurnLeft(seats, room);

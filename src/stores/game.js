@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { refDB, getDB, set, auth, get, numberSeats,push } from "../utils/firebase";
 import { useCardsStore } from "./cards";
 import { usePotStore } from "./pot";
 import { ref } from "vue";
@@ -329,6 +329,19 @@ export const useGameStore = defineStore("gameStore", () => {
     const chipsInGame = await getDB(chipsInGameRef);
     return chipsInGame;
   };
+
+  const showWinner = async(winner,chips) =>{
+    const textWinner = `El ganador es: ${winner} y ha ganado ${chips} fichas`
+    const message = {
+      text: textWinner
+      
+    };
+
+    await push(refDB(`rooms/${props.room}/messages`), message);
+      
+    
+     
+  }
 
   return {
     gamePhase,
