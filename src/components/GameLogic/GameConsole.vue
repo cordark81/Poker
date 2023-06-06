@@ -1,6 +1,6 @@
 <template>
   <div class="absolute bottom-0 right-0 w-64 h-64">
-    <input v-model="bet" type="number" step="5" :min=bet>
+    <input v-model="bet" type="number" step="5" :min=betMin :max=betMax>
     <button v-if="storeGame.verifySimilarPots(seats)===true" class="bg-orange-500" @click="storeConsole.checkConsole(seats,room)">Check</button>
     <button v-if="storeGame.verifySimilarPots(seats)===false" class="bg-green-500" @click="logicCall()">Call</button>
     <button class="bg-fuchsia-500" @click="storeConsole.betConsole(seats,room,index,bet)">Bet</button>
@@ -22,9 +22,13 @@ const storeGame = useGameStore();
 const storePot = usePotStore();
 
 const bet = ref(5);
+const betMin = ref(0);
+const betMax = ref(0);
 
 onMounted(()=>{
-  bet.value=storePot.potMax(props.seats,true);
+  betMin.value=storePot.potMax(props.seats,true);
+  betMax.value=storeGame.getChipsInGame(props.room,props.index);
+  bet.value=betMin.value;
 })
 
 const props = defineProps({

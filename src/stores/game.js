@@ -219,8 +219,8 @@ export const useGameStore = defineStore("gameStore", () => {
   const moveTurnLeft = async (seats, room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     let countRound = await getDB(countRoundRef);
-   
-    if (countRound <3) {
+
+    if (countRound < 3) {
       countRound++;
       set(countRoundRef, countRound);
     }
@@ -260,7 +260,6 @@ export const useGameStore = defineStore("gameStore", () => {
     resetCountRound(room);
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
-    
   };
 
   const resetTurn = async (seats, room) => {
@@ -305,7 +304,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
     resetCountRound(room);
-    
+
     set(phaseGameRef, "preflop");
   };
 
@@ -320,10 +319,16 @@ export const useGameStore = defineStore("gameStore", () => {
     return true;
   };
 
-  const resetCountRound = async (room) =>{
+  const resetCountRound = async (room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     set(countRoundRef, 1);
-  }
+  };
+
+  const getChipsInGame = async (room, index) => {
+    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+    const chipsInGame = await getDB(chipsInGameRef);
+    return chipsInGame;
+  };
 
   return {
     gamePhase,
@@ -344,5 +349,6 @@ export const useGameStore = defineStore("gameStore", () => {
     moveDealerLeft,
     resetGameWithWinner,
     checkPlayerFold,
+    getChipsInGame,
   };
 });
