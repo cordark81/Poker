@@ -7,9 +7,9 @@
       </h1>
     </div>
 
-    <div class="flex justify-center items-center flex-wrap h-96">
-      <div v-for="(seat, index) in seats" :key="index" class="h-52 flex justify-center w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
-        :class="styleSitInTable(index)">
+    <div class="flex justify-center items-center flex-wrap h-80">
+      <div v-for="(seat, index) in seats" :key="index"
+        :class="['h-52', 'flex', 'justify-center', 'w-1/2', 'md:w-1/3', 'lg:w-1/4', 'xl:w-1/4', 'items-end', { 'pb-40': index === 1 }]">
         <div v-if="seat.user" class="">
           <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room" :handCards="seat.hand" />
         </div>
@@ -18,7 +18,8 @@
         </div>
 
         <div>
-          <GameConsole v-if="seat.turn === '*' && seat.user === storeUser.user.displayName &&  storeGame.checkPlayerFold(seats,room,index)"
+          <GameConsole
+            v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && storeGame.checkPlayerFold(seats, room, index)"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
             class="bg-white h-5 mb-32 mr-10" />
         </div>
@@ -29,14 +30,13 @@
     <div>
       <CardsTable class="flex justify-center" :tableCards="tableCards" />
     </div>
-    <div class="flex justify-center">
-      <div class="bg-white w-96 flex justify-center">
-        <button @click="storeGame.evaluateMaxPot(seats, room)">
-          Prueba Maxpot
-        </button>
-
-        <div class="bg-red-600 ml-6">
-          <p class="text-white">{{ potRoom }}</p>
+    <div class="flex justify-center" :class="{
+      'mt-32': tableCards === null || typeof tableCards === 'undefined' || tableCards.length === 0,
+      'mt-9': tableCards !== null && typeof tableCards !== 'undefined' && tableCards.length !== 0
+    }">
+      <div>
+        <div class="shadow-inner bg-green-900 bg-opacity-75 rounded-3xl p-2 px-5">
+          <p class="text-white inline ">{{ potRoom }}</p>
         </div>
       </div>
     </div>
@@ -61,6 +61,7 @@ import {
   updateNumberSeats,
   onPlayersSit,
   set,
+  get,
 } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
 import Seats from "../components/Room/Seats.vue";
@@ -93,7 +94,7 @@ onMounted(async () => {
         seats.value = roomData.seats;
         potRoom.value = roomData.pot;
         tableCards.value = roomData.tableCards;
-        checkIndex(seats.value);       
+        checkIndex(seats.value);
       }
     });
 
@@ -113,6 +114,7 @@ onMounted(async () => {
             await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
             await storeGame.evaluateMaxPot(seats.value, room.value);
             set(roomPhaseRef, "preflop");
+            // ["As","As","As"]
           }
         }
       } else {
@@ -120,22 +122,12 @@ onMounted(async () => {
         storeGame.resetGame(seats.value, room.value);
       }
 
-     
+
     });
   } catch (error) {
     console.log(error.message);
   }
 });
-
-const styleSitInTable = (index) => {
-  if (index == 1) {
-    return "items-end pb-40";
-  } else if (index == 2) {
-    return "items-end pl-10";
-  } else {
-    return "items-end pr-10";
-  }
-};
 
 const checkIndex = (seats) => {
   seats.forEach((seat, index) => {
@@ -194,18 +186,20 @@ const findSeatIndexByUser = (username) => {
 
 const logicCallConsole = async (seatsF, room, index) => {
   await storeConsole.ajustBet(seatsF, room, index, 1);
-
   if (storeGame.verifySimilarPots(seats.value)) {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
-
-    if (phaseInGame === "preflop") {
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    const countRound = await getDB(countRoundRef);
+    if (phaseInGame === "preflop" && countRound >= seats.value.length) {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
     } else if (phaseInGame === "turn") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
+    } else {
+      storeGame.moveTurnLeft(seats.value, room);
     }
   } else {
     storeGame.moveTurnLeft(seats.value, room);

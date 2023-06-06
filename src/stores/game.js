@@ -1,14 +1,15 @@
 import { defineStore } from "pinia";
-import { refDB, getDB, set, auth, get, numberSeats } from "../utils/firebase";
+import { refDB, getDB, set, auth, get, numberSeats,push } from "../utils/firebase";
 import { useCardsStore } from "./cards";
 import { usePotStore } from "./pot";
+import { ref } from "vue";
 import axios from "axios";
 
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
 
-  const gamePhase = async(phase, room) => {
+  const gamePhase = async (phase, room) => {
     switch (phase) {
       case "flop":
         console.log("FLOP");
@@ -33,11 +34,11 @@ export const useGameStore = defineStore("gameStore", () => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
     let tableCards = await getDB(tableCardsRef);
     const pos = Math.floor(Math.random() * storeCards.gameCards.length);
-    
+
     storeCards.gameCards.splice(pos, 1);
 
-    if(tableCards===null){
-      tableCards=[];
+    if (tableCards === null) {
+      tableCards = [];
     }
     tableCards.push(storeCards.gameCards[pos]);
 
@@ -215,7 +216,15 @@ export const useGameStore = defineStore("gameStore", () => {
     return areEqual;
   };
 
-  const moveTurnLeft = (seats, room) => {
+  const moveTurnLeft = async (seats, room) => {
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    let countRound = await getDB(countRoundRef);
+
+    if (countRound < 3) {
+      countRound++;
+      set(countRoundRef, countRound);
+    }
+
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 
@@ -241,13 +250,14 @@ export const useGameStore = defineStore("gameStore", () => {
 
     storeCards.deleteCards(seats, room);
     storeCards.deleteCardsTable(room);
+    storeCards.resetDeck();
     storePot.resetMaxPot(seats, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetPot(room);
     deleteDealer(seats, room);
     resetTurn(seats, room);
     resetFolds(seats, room);
-
+    resetCountRound(room);
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
   };
@@ -278,6 +288,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const seatRef = refDB(`rooms/${room}/seats`);
 
     await storeCards.deleteCards(seats, room);
+    storeCards.deleteCardsTable(room);
     await storePot.potToPlayerWin(room, indexWinner);
     await storePot.resetPot(room);
     await storePot.resetMaxPot(seats, room);
@@ -286,13 +297,14 @@ export const useGameStore = defineStore("gameStore", () => {
     await resetTurn(seats, room);
     await moveDealerLeft(seats, room);
     let newSeats = await getDB(seatRef);
-    console.log(newSeats);
     await firstTurnPlayer(newSeats, room, "turn");
     newSeats = await getDB(seatRef);
     await storePot.resetPotPlayer(newSeats, room);
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
+    resetCountRound(room);
+
     set(phaseGameRef, "preflop");
   };
 
@@ -307,7 +319,29 @@ export const useGameStore = defineStore("gameStore", () => {
     return true;
   };
 
+  const resetCountRound = async (room) => {
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    set(countRoundRef, 1);
+  };
+  /* pèndiente eliminar, si no usa*/
+  const getChipsInGame = async (room, index) => {
+    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+    const chipsInGame = await getDB(chipsInGameRef);
+    return chipsInGame;
+  };
+
+  const showWinner = async(winner,chips,room) =>{
+    const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`
+    const message = {
+      text: textWinner      
+    };
+
+    await push(refDB(`rooms/${room}/messages`), message);   
+     
+  }
+
   return {
+    showWinner,
     gamePhase,
     evaluate,
     ditchDealer,
@@ -326,5 +360,6 @@ export const useGameStore = defineStore("gameStore", () => {
     moveDealerLeft,
     resetGameWithWinner,
     checkPlayerFold,
+    getChipsInGame,
   };
 });

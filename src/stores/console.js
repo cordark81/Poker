@@ -34,7 +34,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       } else if (phaseInGame === "river") {
         //si todos check evaluar cartas
       }
-    }else{
+    } else {
       storeGame.moveTurnLeft(seats, room);
     }
   };
@@ -60,6 +60,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
     const foldRef = refDB(`rooms/${room}/seats/${index}/fold`);
     const seatRef = refDB(`rooms/${room}/seats`);
+    const potRef = refDB(`rooms/${room}/pot`);
 
     await set(potPlayerCallingRef, 0);
     await set(handRef, []);
@@ -69,7 +70,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
     if ((await checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
-      console.log(newSeats[indexWinner].user);
+      const chipsForWinner = await getDB(potRef);
+      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner,room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
       storeGame.moveTurnLeft(seats, room);
@@ -78,8 +80,12 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
   //Funcion dinamica para distintos grados de apuesta
   const raiseConsole = async (seats, room, index) => {
-    ajustBet(seats, room, index, 2);
-    storeGame.moveTurnLeft(seats, room);
+    if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
+      allInConsole(seats, room, index);
+    } else {
+      ajustBet(seats, room, index, 2);
+      storeGame.moveTurnLeft(seats, room);
+    }
   };
 
   const checkPlayerWithoutFold = async (seats) =>
