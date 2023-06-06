@@ -61,7 +61,7 @@ import {
   updateNumberSeats,
   onPlayersSit,
   set,
-get,
+  get,
 } from "../utils/firebase";
 import Chat from "../components/Chat/Chat.vue";
 import Seats from "../components/Room/Seats.vue";
@@ -192,13 +192,15 @@ const logicCallConsole = async (seatsF, room, index) => {
     const phaseInGame = await getDB(phaseInGameRef);
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     const countRound = await getDB(countRoundRef);
-    if (phaseInGame === "preflop" && countRound>= seats.length) {
+    if (phaseInGame === "preflop" && countRound >= seats.length) {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
     } else if (phaseInGame === "turn") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
+    } else {
+      storeGame.moveTurnLeft(seats.value, room);
     }
   } else {
     storeGame.moveTurnLeft(seats.value, room);

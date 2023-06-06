@@ -218,9 +218,9 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const moveTurnLeft = async (seats, room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
-    const countRound = await getDB(countRoundRef);
+    let countRound = await getDB(countRoundRef);
    
-    if (countRound < 3) {
+    if (countRound <3) {
       countRound++;
       set(countRoundRef, countRound);
     }
@@ -256,7 +256,7 @@ export const useGameStore = defineStore("gameStore", () => {
     deleteDealer(seats, room);
     resetTurn(seats, room);
     resetFolds(seats, room);
-    firstRound.value = true;
+    resetCountRound(room);
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
   };
@@ -303,6 +303,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
     firstRound.value = true;
+    resetCountRound(room);
     set(phaseGameRef, "preflop");
   };
 
@@ -317,8 +318,12 @@ export const useGameStore = defineStore("gameStore", () => {
     return true;
   };
 
+  const resetCountRound = async (room) =>{
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    set(countRoundRef, 0);
+  }
+
   return {
-    firstRound,
     gamePhase,
     evaluate,
     ditchDealer,
