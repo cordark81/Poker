@@ -47,11 +47,13 @@ const scrollToBottom = () => {
 
 onMounted(() => {
   const roomRef = refDB(`rooms/${props.room}`);
+  
   try {
     onValue(roomRef, (snapshot) => {
       const roomData = snapshot.val();
       if (roomData) {
         messages.value = Object.values(roomData.messages);
+        scrollToBottom();
       }
     });
   } catch (error) {
@@ -77,8 +79,8 @@ const sendMessage = async () => {
   };
   try {
     await push(refDB(`rooms/${props.room}/messages`), message);
-    text.value = "";
     scrollToBottom();
+    text.value = "";    
   } catch (error) {
     console.error("Error sending message:", error);
   }

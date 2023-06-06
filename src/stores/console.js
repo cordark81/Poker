@@ -70,8 +70,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
     if ((await checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
-      const chipsForWinner = await getDB(potRef)
-      storeGame.showWinner(newSeats[indexWinner],chipsForWinner);
+      const chipsForWinner = await getDB(potRef);
+      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner,room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
       storeGame.moveTurnLeft(seats, room);

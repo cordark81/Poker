@@ -330,20 +330,18 @@ export const useGameStore = defineStore("gameStore", () => {
     return chipsInGame;
   };
 
-  const showWinner = async(winner,chips) =>{
-    const textWinner = `El ganador es: ${winner} y ha ganado ${chips} fichas`
+  const showWinner = async(winner,chips,room) =>{
+    const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`
     const message = {
-      text: textWinner
-      
+      text: textWinner      
     };
 
-    await push(refDB(`rooms/${props.room}/messages`), message);
-      
-    
+    await push(refDB(`rooms/${room}/messages`), message);   
      
   }
 
   return {
+    showWinner,
     gamePhase,
     evaluate,
     ditchDealer,
