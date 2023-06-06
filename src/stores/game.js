@@ -250,6 +250,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
     storeCards.deleteCards(seats, room);
     storeCards.deleteCardsTable(room);
+    storeCards.resetDeck();
     storePot.resetMaxPot(seats, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetPot(room);
@@ -259,6 +260,7 @@ export const useGameStore = defineStore("gameStore", () => {
     resetCountRound(room);
     set(roomDealerRef, false);
     set(roomPhaseRef, "offGame");
+    
   };
 
   const resetTurn = async (seats, room) => {
@@ -287,6 +289,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const seatRef = refDB(`rooms/${room}/seats`);
 
     await storeCards.deleteCards(seats, room);
+    storeCards.deleteCardsTable(room);
     await storePot.potToPlayerWin(room, indexWinner);
     await storePot.resetPot(room);
     await storePot.resetMaxPot(seats, room);
@@ -295,15 +298,14 @@ export const useGameStore = defineStore("gameStore", () => {
     await resetTurn(seats, room);
     await moveDealerLeft(seats, room);
     let newSeats = await getDB(seatRef);
-    console.log(newSeats);
     await firstTurnPlayer(newSeats, room, "turn");
     newSeats = await getDB(seatRef);
     await storePot.resetPotPlayer(newSeats, room);
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
-    firstRound.value = true;
     resetCountRound(room);
+    
     set(phaseGameRef, "preflop");
   };
 

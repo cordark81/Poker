@@ -186,16 +186,12 @@ const findSeatIndexByUser = (username) => {
 
 const logicCallConsole = async (seatsF, room, index) => {
   await storeConsole.ajustBet(seatsF, room, index, 1);
-  console.log(seats.value);
-  console.log("antes de ver iguales");
   if (storeGame.verifySimilarPots(seats.value)) {
-    console.log("son iguales")
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
     const phaseInGame = await getDB(phaseInGameRef);
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     const countRound = await getDB(countRoundRef);
-    if (phaseInGame === "preflop" && countRound >= seats.length) {
-      console.log("cambio de fase");
+    if (phaseInGame === "preflop" && countRound >= seats.value.length) {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
@@ -203,11 +199,9 @@ const logicCallConsole = async (seatsF, room, index) => {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
     } else if (phaseInGame === "river") {
     } else {
-      console.log("izquida cuando son iguales")
       storeGame.moveTurnLeft(seats.value, room);
     }
   } else {
-    console.log("izquida cuando no son iguales")
     storeGame.moveTurnLeft(seats.value, room);
   }
 };
