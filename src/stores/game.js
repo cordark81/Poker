@@ -8,9 +8,8 @@ import axios from "axios";
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
-  const firstRound = ref(0);
 
-  const gamePhase = async(phase, room) => {
+  const gamePhase = async (phase, room) => {
     switch (phase) {
       case "flop":
         console.log("FLOP");
@@ -35,11 +34,11 @@ export const useGameStore = defineStore("gameStore", () => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
     let tableCards = await getDB(tableCardsRef);
     const pos = Math.floor(Math.random() * storeCards.gameCards.length);
-    
+
     storeCards.gameCards.splice(pos, 1);
 
-    if(tableCards===null){
-      tableCards=[];
+    if (tableCards === null) {
+      tableCards = [];
     }
     tableCards.push(storeCards.gameCards[pos]);
 
@@ -217,9 +216,15 @@ export const useGameStore = defineStore("gameStore", () => {
     return areEqual;
   };
 
-  const moveTurnLeft = (seats, room) => {
-    firstRound.value++;
-    console.log(firstRound.value);
+  const moveTurnLeft = async (seats, room) => {
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    const countRound = await getDB(countRoundRef);
+   
+    if (countRound < 3) {
+      countRound++;
+      set(countRoundRef, countRound);
+    }
+
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 

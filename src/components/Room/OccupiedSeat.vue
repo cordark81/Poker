@@ -22,17 +22,20 @@
 
 
         </div>
-        <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center ml-24 mt-5">
-          <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500" alt="">
-          <p class="text-white font-bold text-center ">{{ seat.chips }}</p>
-        </div>
-        <div v-if="seat.dealer !== '' && seat.dealer !== 'dealer'"
-          class=" text-white font-bold border-2 border-amber-500 bg-black w-8 h-8 text-center rounded-full"> {{
-            seat.dealer }}
-        </div>
-        <div v-if="seat.dealer !== '' && seat.dealer === 'dealer'"
-          class="mt-5 text-white font-bold border-2 border-amber-500 w-10 h-10 text-center  ">
-          <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-ful h-full">
+        <div class="flex flex-row w-32 mt-5 ml-5">
+          <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center">
+            <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500"
+              alt="">
+            <p class="text-white font-bold text-center ">{{ seat.potPlayer }}</p>
+          </div>
+          <div v-if="seat.dealer !== '' && seat.dealer !== 'dealer'"
+            class="ml-5 text-white font-bold border-2 border-amber-500 bg-black w-8 h-8 text-center rounded-full"> {{
+              seat.dealer }}
+          </div>
+          <div v-if="seat.dealer !== '' && seat.dealer === 'dealer'"
+            class="text-white font-bold border-2 border-amber-500 w-10 h-10 ml-5  ">
+            <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-full h-full">
+          </div>
         </div>
       </div>
 
