@@ -27,7 +27,8 @@ const betMax = ref(0);
 
 onMounted(()=>{
   betMin.value=storePot.potMax(props.seats,true);
-  betMax.value=storeGame.getChipsInGame(props.room,props.index);
+  betMax.value=props.seats[props.index].chipsInGame;
+  console.log(betMax.value)
   bet.value=betMin.value;
 })
 

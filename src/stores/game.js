@@ -323,7 +323,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     set(countRoundRef, 1);
   };
-
+  /* pèndiente eliminar, si no usa*/
   const getChipsInGame = async (room, index) => {
     const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
     const chipsInGame = await getDB(chipsInGameRef);

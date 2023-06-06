@@ -78,8 +78,12 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
   //Funcion dinamica para distintos grados de apuesta
   const raiseConsole = async (seats, room, index) => {
-    ajustBet(seats, room, index, 2);
-    storeGame.moveTurnLeft(seats, room);
+    if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
+      allInConsole(seats, room, index);
+    } else {
+      ajustBet(seats, room, index, 2);
+      storeGame.moveTurnLeft(seats, room);
+    }
   };
 
   const checkPlayerWithoutFold = async (seats) =>
