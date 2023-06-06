@@ -24,19 +24,28 @@ const storeConsole = useConsoleStore();
 const storeGame = useGameStore();
 const storePot = usePotStore();
 
-const bet = ref(5);
+const bet = ref(0);
 const betMin = ref(0);
 const betMax = ref(0);
 
 onMounted(() => {
-  betMin.value = storePot.potMax(props.seats, true);
-  betMax.value = props.seats[props.index].chipsInGame;
+  let potmax = storePot.potMax(props.seats, true);
+  let chipsInGame = props.seats[props.index].chipsInGame;
+  let potPlayer = props.seats[props.index].potPlayer;
 
-  if (betMax.value >= props.seats[props.index].chipsInGame) {
-    bet.value = props.seats[props.index].chipsInGame;
+    if ((potmax - potPlayer)>= chipsInGame) {
+    bet.value = chipsInGame;
+    betMax.value = chipsInGame;
+    betMin.value = chipsInGame;
   } else {
-    bet.value = betMin.value;
+    bet.value = (potmax - potPlayer);
+    betMax.value = chipsInGame;
+    betMin.value = potmax;
   }
+
+  console.log(betMin.value)
+  console.log(betMax.value)
+  console.log(bet.value)
 })
 
 const props = defineProps({
