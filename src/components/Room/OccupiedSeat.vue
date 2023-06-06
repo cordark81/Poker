@@ -19,10 +19,23 @@
         </div>
         <div class="flex justify-center w-36 mb-5">
           <h1 class="text-red-600 font-bold">{{ seat.chipsInGame }}</h1>
-          <p class="text-white font-bold">{{ seat.dealer }}</p>
-          <p v-if="seat.potPlayer !== 0" class="text-red-600 font-bold">{{ seat.potPlayer }}</p>
+
+
+        </div>
+        <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center ml-24 mt-5">
+          <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500" alt="">
+          <p class="text-white font-bold text-center ">{{ seat.chips }}</p>
+        </div>
+        <div v-if="seat.dealer !== '' && seat.dealer !== 'dealer'"
+          class=" text-white font-bold border-2 border-amber-500 bg-black w-8 h-8 text-center rounded-full"> {{
+            seat.dealer }}
+        </div>
+        <div v-if="seat.dealer !== '' && seat.dealer === 'dealer'"
+          class="mt-5 text-white font-bold border-2 border-amber-500 w-10 h-10 text-center  ">
+          <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-ful h-full">
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -56,6 +69,12 @@ const chips = ref(400);
 <style scoped>
 .Seat {
   background-image: url("../../assets/images/fodo_sentado.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.dealer {
+  background-image: url("../../assets/images/dealersinfond.jpg");
   background-size: cover;
   background-position: center;
 }

@@ -219,6 +219,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const moveTurnLeft = (seats, room) => {
     firstRound.value++;
+    console.log(firstRound.value);
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 
