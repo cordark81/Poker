@@ -266,16 +266,15 @@ export const useGameStore = defineStore("gameStore", () => {
       }
 
       return {
-        chipsInGame: element.chipsInGame,
-        dealer: "",
-        fold: "",
-        hand: [],
-        maxpot: "",
-        potPlayer: 0,
-        turn: "",
-        allIn: "",
-        user: element.user,
-      };
+      chipsInGame: element.chipsInGame,
+      dealer: "",
+      fold: "",
+      hand: [],
+      maxpot: "Hola",
+      potPlayer: 0,
+      turn: "",
+      allIn: "",
+      user: element.user}
     });
 
     const updatedRoom = {

@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "vite": "vite dev",
     "json": "json-server --watch db.json",
-    "js": "cd ../Server_Socket && npm start",
+    "js": "cd ../API_evaluar && npm start",
     "start": "concurrently \"npm run vite\" \"npm run json\" \"npm run js\""
   },
   "dependencies": {
