@@ -18,7 +18,7 @@
 <script setup>
 import { defineEmits } from 'vue'
 import { useRouter } from "vue-router";
-import { ref as rtdbRef, database, onValue, auth, onAuthStateChanged } from "../../utils/firebase";
+import { ref as rtdbRef, database, get, auth, onAuthStateChanged } from "../../utils/firebase";
 
 
 const router = useRouter();
@@ -34,13 +34,13 @@ const emits = defineEmits("closeModal, openModal");
 
 
 const joinRoom = () => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
+  const unsubscribe = onAuthStateChanged (auth, async(user) => {
     if (user) {
       const userId = user.uid;
       const userRef = rtdbRef(database, `users/${userId}/chips`);
 
       // Obtener el valor de las fichas del usuario
-      get(userRef)
+      await get(userRef)
         .then((snapshot) => {
           const chips = snapshot.val();
 

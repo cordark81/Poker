@@ -253,20 +253,18 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const resetGame = async (room) => {
-
     const roomMessageRef = refDB(`rooms/${room}/messages`);
     const roomSeatsRef = refDB(`rooms/${room}/seats`);
     const roomRef = refDB(`rooms/${room}`);
 
-    const message = await  getDB(roomMessageRef);
+    const message = await getDB(roomMessageRef);
     const seats = await getDB(roomSeatsRef);
 
     const seatReset = seats.map((element) => {
-      
-      if(element.user===undefined){
-        element.user="";
+      if (element.user === undefined) {
+        element.user = "";
       }
-      
+
       return {
       chipsInGame: element.chipsInGame,
       dealer: "",
@@ -351,15 +349,23 @@ export const useGameStore = defineStore("gameStore", () => {
     set(phaseGameRef, "preflop");
   };
 
-  const checkPlayerFold = async (seats, room, index) => {
+  //fold = true allIn = false
+  const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);
-
-    if (seat.fold == "*") {
-      moveTurnLeft(seats, room);
-      return false;
+    if (foldAndAllIn) {
+      if (seat.fold == "*") {
+        moveTurnLeft(seats, room);
+        return false;
+      }
+      return true;
+    }else{
+      if (seat.allIn == "*") {
+        moveTurnLeft(seats, room);
+        return false;
+      }
+      return true;
     }
-    return true;
   };
 
   const resetCountRound = async (room) => {
@@ -401,7 +407,7 @@ export const useGameStore = defineStore("gameStore", () => {
     resetFolds,
     moveDealerLeft,
     resetGameWithWinner,
-    checkPlayerFold,
+    checkFoldAndAllIn,
     getChipsInGame,
   };
 });
