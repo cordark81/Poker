@@ -362,11 +362,9 @@ export const useGameStore = defineStore("gameStore", () => {
 			return true;
 		} else {
 			if (seat.allIn === "*") {
-				console.log("por el true");
 				moveTurnLeft(seats, room);
 				return false;
 			}
-			console.log("por el false");
 			return true;
 		}
 	};
