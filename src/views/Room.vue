@@ -21,7 +21,7 @@
           <GameConsole
             v-if="seat.turn === '*' && seat.user === storeUser.user.displayName && storeGame.checkPlayerFold(seats, room, index)"
             @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats"
-            class="bg-white h-5 mb-32 mr-10" />
+            />
         </div>
       </div>
 
@@ -113,13 +113,12 @@ onMounted(async () => {
             storeCards.dealingCards(seats.value, room.value);
             await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
             await storeGame.evaluateMaxPot(seats.value, room.value);
-            set(roomPhaseRef, "preflop");
-            // ["As","As","As"]
+            set(roomPhaseRef, "preflop");            
           }
         }
       } else {
         console.log("faltan jugadores");
-        storeGame.resetGame(seats.value, room.value);
+        storeGame.resetGame(room.value);
       }
 
 
@@ -187,10 +186,13 @@ const findSeatIndexByUser = (username) => {
 const logicCallConsole = async (seatsF, room, index) => {
   await storeConsole.ajustBet(seatsF, room, index, 1);
   if (storeGame.verifySimilarPots(seats.value)) {
+
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
-    const phaseInGame = await getDB(phaseInGameRef);
     const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+    const phaseInGame = await getDB(phaseInGameRef);
     const countRound = await getDB(countRoundRef);
+
     if (phaseInGame === "preflop" && countRound >= seats.value.length) {
       storeConsole.phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
     } else if (phaseInGame === "flop") {

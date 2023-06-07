@@ -1,5 +1,13 @@
 import { defineStore } from "pinia";
-import { refDB, getDB, set, auth, get, numberSeats,push } from "../utils/firebase";
+import {
+  refDB,
+  getDB,
+  set,
+  auth,
+  get,
+  numberSeats,
+  push,
+} from "../utils/firebase";
 import { useCardsStore } from "./cards";
 import { usePotStore } from "./pot";
 import { ref } from "vue";
@@ -244,10 +252,45 @@ export const useGameStore = defineStore("gameStore", () => {
     return maxpot;
   };
 
-  const resetGame = (seats, room) => {
-    const roomDealerRef = refDB(`rooms/${room}/ditchDealerDone`);
-    const roomPhaseRef = refDB(`rooms/${room}/phaseGame`);
+  const resetGame = async (room) => {
 
+    const roomMessageRef = refDB(`rooms/${room}/messages`);
+    const roomSeatsRef = refDB(`rooms/${room}/seats`);
+    const roomRef = refDB(`rooms/${room}`);
+
+    const message = await  getDB(roomMessageRef);
+    const seats = await getDB(roomSeatsRef);
+
+    const seatReset = seats.map((element) => {
+      
+      if(element.user===undefined){
+        element.user="";
+      }
+      
+      return {
+      chipsInGame: element.chipsInGame,
+      dealer: "",
+      fold: "",
+      hand: [],
+      maxpot: "",
+      potPlayer: 0,
+      turn: "",
+      allIn: "",
+      user: element.user}
+    });
+
+    const updatedRoom = {
+      countRound: 1,
+      ditchDealerDone: false,
+      messages: message,
+      phaseGame: "offGame",
+      pot: 0,
+      seats: seatReset,
+    };
+
+    set(roomRef, updatedRoom);
+
+    /* en proceso de borrar
     storeCards.deleteCards(seats, room);
     storeCards.deleteCardsTable(room);
     storeCards.resetDeck();
@@ -259,7 +302,7 @@ export const useGameStore = defineStore("gameStore", () => {
     resetFolds(seats, room);
     resetCountRound(room);
     set(roomDealerRef, false);
-    set(roomPhaseRef, "offGame");
+    set(roomPhaseRef, "offGame");*/
   };
 
   const resetTurn = async (seats, room) => {
@@ -330,15 +373,14 @@ export const useGameStore = defineStore("gameStore", () => {
     return chipsInGame;
   };
 
-  const showWinner = async(winner,chips,room) =>{
-    const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`
+  const showWinner = async (winner, chips, room) => {
+    const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`;
     const message = {
-      text: textWinner      
+      text: textWinner,
     };
 
-    await push(refDB(`rooms/${room}/messages`), message);   
-     
-  }
+    await push(refDB(`rooms/${room}/messages`), message);
+  };
 
   return {
     showWinner,
