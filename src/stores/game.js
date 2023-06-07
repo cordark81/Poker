@@ -272,7 +272,7 @@ export const useGameStore = defineStore("gameStore", () => {
       dealer: "",
       fold: "",
       hand: [],
-      maxpot: "Hola",
+      maxpot: "",
       potPlayer: 0,
       turn: "",
       allIn: "",
@@ -282,7 +282,7 @@ export const useGameStore = defineStore("gameStore", () => {
     const updatedRoom = {
       countRound: 1,
       ditchDealerDone: false,
-      message: message,
+      messages: message,
       phaseGame: "offGame",
       pot: 0,
       seats: seatReset,

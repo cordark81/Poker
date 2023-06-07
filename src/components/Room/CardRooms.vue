@@ -39,28 +39,32 @@ const joinRoom = () => {
       const userId = user.uid;
       const userRef = rtdbRef(database, `users/${userId}/chips`);
 
-      // Obtener el valor de las fichas del usuario en tiempo real
-      onValue(userRef, (snapshot) => {
-        const chips = snapshot.val();
+      // Obtener el valor de las fichas del usuario
+      get(userRef)
+        .then((snapshot) => {
+          const chips = snapshot.val();
 
-        // Verificar si el usuario tiene suficientes fichas
-        if (chips >= props.range) {
-          // El usuario tiene suficientes fichas, puedes unirlo a la sala
-                    
-        } else {
-          // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
-          emits("openModal")
-
-        }
-      });
-      //problema al meterlo en el on value // migrar a get!!!!!!!!!!!!!!!!!!!
-      window.open(`/room/${props.roomName}`, "_blank", "toolbar=no,location=no,menubar=no,status=no");
-
-      // Desuscribirse de los cambios de autenticación
-      unsubscribe();
+          // Verificar si el usuario tiene suficientes fichas
+          if (chips >= props.range) {
+            // El usuario tiene suficientes fichas, puedes unirlo a la sala
+            window.open(`/room/${props.roomName}`, "_blank", "toolbar=no,location=no,menubar=no,status=no");
+          } else {
+            // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
+            emits("openModal");
+          }
+        })
+        .catch((error) => {
+          // Manejar errores en la obtención de las fichas del usuario
+          console.error(error);
+        })
+        .finally(() => {
+          // Desuscribirse de los cambios de autenticación
+          unsubscribe();
+        });
     }
   });
 };
+
 </script>
 <style scoped>
 .background-cards {
