@@ -113,13 +113,12 @@ onMounted(async () => {
             storeCards.dealingCards(seats.value, room.value);
             await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
             await storeGame.evaluateMaxPot(seats.value, room.value);
-            set(roomPhaseRef, "preflop");
-            // ["As","As","As"]
+            set(roomPhaseRef, "preflop");            
           }
         }
       } else {
         console.log("faltan jugadores");
-        storeGame.resetGame(seats.value, room.value);
+        storeGame.resetGame(room.value);
       }
 
 
