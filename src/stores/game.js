@@ -270,7 +270,7 @@ export const useGameStore = defineStore("gameStore", () => {
       dealer: "",
       fold: "",
       hand: [],
-      maxpot: "Hola",
+      maxpot: "",
       potPlayer: 0,
       turn: "",
       allIn: "",

@@ -21,7 +21,7 @@
           <h1 class="text-red-600 font-bold">{{ seat.chipsInGame }}</h1>
         </div>
 
-        <div v-if="index===2" class="flex flex-row justify-start w-52 mt-5 -ml-20 overflow-visible">
+        <div v-if="index === 2" class="flex flex-row justify-start w-52 mt-5 -ml-20 overflow-visible">
           <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center  -ml-10 overflow-visible">
             <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500"
               alt="">
@@ -35,9 +35,12 @@
             class="text-white font-bold border-2 border-amber-500 w-10 h-10 ml-5 ">
             <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-full h-full">
           </div>
+          <div>
+            <h1 v-if="storeGame.checkFoldAndAllIn(seats, room, index, false)===true" class="bg-red-500 text-white">ALL IN</h1>
+          </div>
         </div>
 
-        <div v-if="index===1" class="flex flex-row justify-start w-52 mt-5  overflow-visible">
+        <div v-if="index === 1" class="flex flex-row justify-start w-52 mt-5  overflow-visible">
           <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center  mt-10 -mr-8 overflow-visible">
             <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500"
               alt="">
@@ -51,9 +54,12 @@
             class="text-white font-bold border-2 border-amber-500 w-10 h-10 ml-5 ">
             <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-full h-full">
           </div>
+          <div>
+            <h1 v-if="storeGame.checkFoldAndAllIn(seats, room, index, false)===true" class="bg-red-500 text-white">ALL IN</h1>
+          </div>
         </div>
 
-        <div v-if="index===0" class="flex flex-row justify-start w-52 mt-5 ml-24  overflow-visible">
+        <div v-if="index === 0" class="flex flex-row justify-start w-52 mt-5 ml-24  overflow-visible">
           <div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center  -mr-40 ml-12 overflow-visible">
             <img src="../../assets/images/stacksinfondo.jpg" class="w-12 h-12 rounded-xl border-2 border-amber-500"
               alt="">
@@ -66,6 +72,9 @@
           <div v-if="seat.dealer !== '' && seat.dealer === 'dealer'"
             class="text-white font-bold border-2 border-amber-500 w-10 h-10 ml-5 ">
             <img src="../../assets/images/dealersinfond.jpg" alt="" class="w-full h-full">
+          </div>
+          <div>
+            <h1 v-if="storeGame.checkFoldAndAllIn(seats, room, index, false)===true" class="bg-red-500 text-white">ALL IN</h1>
           </div>
         </div>
       </div>
