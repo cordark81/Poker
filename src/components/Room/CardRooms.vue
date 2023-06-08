@@ -30,6 +30,7 @@ import {
 	onAuthStateChanged,
 } from "../../utils/firebase";
 
+
 const router = useRouter();
 
 const props = defineProps({
@@ -42,6 +43,7 @@ const props = defineProps({
 const emits = defineEmits("closeModal, openModal");
 
 const joinRoom = () => {
+
 	const unsubscribe = onAuthStateChanged(auth, (user) => {
 		if (user) {
 			const userId = user.uid;
@@ -75,7 +77,8 @@ const joinRoom = () => {
 				});
 		}
 	});
-};
+
+
 </script>
 <style scoped>
 .background-cards {
