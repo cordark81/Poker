@@ -20,7 +20,7 @@
 				{ 'pb-40': index === 1 },
 			]">
 				<div v-if="seat.user" class="">
-					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room"
+					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room" :seats="seats"
 						:handCards="seat.hand" />
 				</div>
 				<div v-else>
@@ -205,7 +205,7 @@ const logicCallConsole = async (seatsF, room, index) => {
 		await storeConsole.allInConsole(seatsF, room, index);
 	} else {
 		await storeConsole.ajustBet(seatsF, room, index, 1);
-		
+
 		if (storeGame.verifySimilarPots(seats.value)) {
 			const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
 			const countRoundRef = refDB(`rooms/${room}/countRound`);

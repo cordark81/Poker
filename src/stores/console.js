@@ -150,6 +150,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         storeGame.allPlayerAllIn(seats) ||
         storeGame.checkFoldIfAllIn(seats)
       ) {
+        
         await storeGame.finishGameSpecialsAllIn(seats, room);
       } else {
         console.log("else");
@@ -172,7 +173,13 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const chipsInGame = await getDB(chipsInGameRef);
     const pot = await getDB(potRef);
 
-    
+    const potMax = storePot.potMax(seats, true);
+
+    if (potMax >= chipsInGame + potPlayer) {
+      await allInConsole(seats, room, index);
+    } else {
+      await storeGame.moveTurnLeft(seats, room);
+    }
 
     await set(potPlayerCallingRef, maxPot * multiplier);
     await set(chipsInGameRef, chipsInGame - (maxPot * multiplier - potPlayer));
