@@ -78,7 +78,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
   const resetDeck = () => {
     gameCards.value = [...cards];
   };
-
+  /*
   const dealingCards = async (seats, room) => {
     // Cargar el sonido antes de la ejecución
     //
@@ -98,6 +98,27 @@ export const useCardsStore = defineStore("cardsStore", () => {
       // Reproducir el sonido al repartir cada carta
       // cardSound.play();
     });
+  };*/
+
+  const dealingCards = async (seats, room) => {
+    for (let index = 0; index < seats.length; index++) {
+      const cardsHand = [];
+      for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+        const pos = Math.floor(Math.random() * gameCards.value.length);
+        const card = gameCards.value.splice(pos, 1)[0];
+        cardsHand.push(card);
+
+        const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+        set(roomRef, cardsHand);
+
+        const cardSound = await loadSound(
+          "/src/assets/sounds/Dealing-cards-sound.mp3"
+        );
+        console.log(cardSound);
+        await playSound(cardSound);
+      }
+      seats[index].hand = cardsHand;
+    }
   };
 
   const deleteCards = async (seats, room) => {
@@ -183,6 +204,23 @@ export const useCardsStore = defineStore("cardsStore", () => {
     set(deckDiamondsRef, cards.value);
     set(deckHeartRef, cards.value);
     set(deckSpadesRef, cards.value);
+  };
+
+  const loadSound = (url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.src = url;
+      audio.oncanplaythrough = () => resolve(audio);
+      audio.onerror = reject;
+    });
+  };
+
+  const playSound = (audio) => {
+    return new Promise((resolve, reject) => {
+      audio.play();
+      audio.onended = resolve;
+      audio.onerror = reject;
+    });
   };
 
   return {
