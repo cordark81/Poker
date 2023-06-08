@@ -65,6 +65,16 @@ export const useCardsStore = defineStore("cardsStore", () => {
   const results = ref([]);
   const winner = ref("");
 
+  const loadSound = (url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(url);
+      audio.addEventListener('canplaythrough', () => resolve(audio));
+      audio.addEventListener('error', reject);
+    });
+  };
+  
+  
+
   /*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
@@ -73,6 +83,9 @@ export const useCardsStore = defineStore("cardsStore", () => {
   }
 
   const dealingCards = async (seats, room) => {
+    // Cargar el sonido antes de la ejecución
+    const cardSound = await loadSound('src/assets/sounds/shuffling-cards.mp3');
+  
     seats.forEach((element, index) => {
       let cardsHand = [];
       let pos = Math.floor(Math.random() * gameCards.length);
@@ -84,8 +97,12 @@ export const useCardsStore = defineStore("cardsStore", () => {
       element.hand = cardsHand;
       const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
       set(roomRef, element.hand);
+  
+      // Reproducir el sonido al repartir cada carta
+      cardSound.play();
     });
   };
+  
 
   const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
