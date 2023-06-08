@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { refDB, set } from "../utils/firebase";
 
 export const useCardsStore = defineStore("cardsStore", () => {
-  const cards = ref([
+  const cards = [
     "Ah",
     "2h",
     "3h",
@@ -56,12 +56,11 @@ export const useCardsStore = defineStore("cardsStore", () => {
     "Js",
     "Qs",
     "Ks",
-  ]);
-  
-  /*const dealtCards = ref([]);*/
-  let gameCards = cards.value;
-  let tableCards = ref([]);
+  ];
 
+  /*const dealtCards = ref([]);*/
+  const gameCards = ref(cards);
+  const tableCards = ref([]);
   const results = ref([]);
   const winner = ref("");
   /*
@@ -72,37 +71,34 @@ export const useCardsStore = defineStore("cardsStore", () => {
       audio.addEventListener('error', reject);
     });
   };*/
-  
-  
 
   /*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
-  const resetDeck = async () =>{
-    gameCards = cards.value;
-  }
+  const resetDeck = () => {
+    gameCards.value = [...cards];
+  };
 
   const dealingCards = async (seats, room) => {
     // Cargar el sonido antes de la ejecución
     //
-  
+
     seats.forEach((element, index) => {
       let cardsHand = [];
-      let pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
-      pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
+      let pos = Math.floor(Math.random() * gameCards.value.length);
+      cardsHand.push(gameCards.value[pos]);
+      gameCards.value.splice(pos, 1);
+      pos = Math.floor(Math.random() * gameCards.value.length);
+      cardsHand.push(gameCards.value[pos]);
+      gameCards.value.splice(pos, 1);
       element.hand = cardsHand;
       const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
       set(roomRef, element.hand);
-  
+
       // Reproducir el sonido al repartir cada carta
       // cardSound.play();
     });
   };
-  
 
   const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
@@ -178,18 +174,16 @@ export const useCardsStore = defineStore("cardsStore", () => {
   };
 
   // Para recargar las barajas en la base de datos en caso de corrupción
-  const upDecksFirebase = () =>{
+  const upDecksFirebase = () => {
     const deckClubsRef = refDB(`rooms/Clubs/deck`);
     const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
     const deckHeartRef = refDB(`rooms/Heart/deck`);
     const deckSpadesRef = refDB(`rooms/Spades/deck`);
-    set(deckClubsRef,cards.value)
-    set(deckDiamondsRef,cards.value)
-    set(deckHeartRef,cards.value)
-    set(deckSpadesRef,cards.value)
-  }
-
-  
+    set(deckClubsRef, cards.value);
+    set(deckDiamondsRef, cards.value);
+    set(deckHeartRef, cards.value);
+    set(deckSpadesRef, cards.value);
+  };
 
   return {
     gameCards,

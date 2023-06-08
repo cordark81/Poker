@@ -101,8 +101,7 @@ const props = defineProps({
 	room: String,
 	seat: Object,
 	index: Number,
-	handCards: Array,
-	seats: Array,
+	handCards: Array,	
 });
 
 onMounted(() => {

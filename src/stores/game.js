@@ -289,6 +289,7 @@ export const useGameStore = defineStore("gameStore", () => {
     };
 
     set(roomRef, updatedRoom);
+    storeCards.resetDeck();
 
     /* en proceso de borrar
     storeCards.deleteCards(seats, room);
@@ -352,7 +353,6 @@ export const useGameStore = defineStore("gameStore", () => {
     set(phaseGameRef, "preflop");
   };
 
-
   const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);
@@ -391,17 +391,17 @@ export const useGameStore = defineStore("gameStore", () => {
 
     await push(refDB(`rooms/${room}/messages`), message);
   };
-  
+
   // true para fold
   // false para All in
   const checkPotWithFoldOrAllIn = (seats, foldOrAllIn) => {
-	let filteredArray;	
-	
-	if (foldOrAllIn) {
+    let filteredArray;
+
+    if (foldOrAllIn) {
       filteredArray = seats.filter((item) => item.fold !== "*");
-    }else{
-	  filteredArray = seats.filter((item) => item.allIn !== "*");
-	}
+    } else {
+      filteredArray = seats.filter((item) => item.allIn !== "*");
+    }
     return filteredArray.every(
       (item) => item.potPlayer === filteredArray[0].potPlayer
     );
@@ -414,8 +414,12 @@ export const useGameStore = defineStore("gameStore", () => {
     });
   };
 
+  const allPlayerAllIn = (seats) => seats.every((item) => item.allIn === "*");
+
   return {
-	checkPotWithFoldOrAllIn,
+
+	allPlayerAllIn,
+    checkPotWithFoldOrAllIn,
     showWinner,
     gamePhase,
     evaluate,

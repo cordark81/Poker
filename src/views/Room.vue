@@ -21,7 +21,7 @@
 			]">
 				<div v-if="seat.user" class="">
 					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room"
-						:handCards="seat.hand" :seats="seats" />
+						:handCards="seat.hand" />
 				</div>
 				<div v-else>
 					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
