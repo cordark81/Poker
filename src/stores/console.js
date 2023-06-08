@@ -78,7 +78,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
-      if (storeGame.checkPotWithFold(newSeats,true)) {
+      if (storeGame.checkPotWithFoldOrAllIn(newSeats,true)) {
         console.log("if");
         const countRoundRef = refDB(`rooms/${room}/countRound`);
 
@@ -110,7 +110,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     }
   };
 
-  const checkPlayerWithoutFold = (seats) =>
+  const   checkPlayerWithoutFold = (seats) =>
     seats.reduce((count, seat) => (seat.fold === "*" ? count - 1 : count), seats.length);
 
   const findFoldedPlayerIndex = (seats) =>

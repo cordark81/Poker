@@ -233,6 +233,36 @@ const logicCallConsole = async (seatsF, room, index) => {
 			storeGame.moveTurnLeft(seats.value, room);
 		}
 	} else {
+		if (storeGame.checkPotWithFoldOrAllIn(seats.value, false)) {
+			const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+			const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+			const phaseInGame = await getDB(phaseInGameRef);
+			const countRound = await getDB(countRoundRef);
+			if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"flop",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "flop") {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"turn",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "turn") {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"river",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "river") {
+			}
+		}
 		storeGame.moveTurnLeft(seats.value, room);
 	}
 };

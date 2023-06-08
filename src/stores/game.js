@@ -393,7 +393,7 @@ export const useGameStore = defineStore("gameStore", () => {
   
   // true para fold
   // false para All in
-  const checkPotWithFold = (seats, foldOrAllIn) => {
+  const checkPotWithFoldOrAllIn = (seats, foldOrAllIn) => {
     if (foldOrAllIn) {
       const filteredArray = seats.filter((item) => item.fold !== "*");
     }else{
@@ -412,7 +412,7 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   return {
-    checkPotWithFold,
+	checkPotWithFoldOrAllIn,
     showWinner,
     gamePhase,
     evaluate,
