@@ -104,6 +104,7 @@ const potRoom = ref(0);
 const tableCards = ref([]);
 
 onMounted(async () => {
+
 	const roomRef = refDB(`rooms/${room.value}`);
 	try {
 		onValue(roomRef, async (snapshot) => {
@@ -142,6 +143,7 @@ onMounted(async () => {
 	} catch (error) {
 		console.log(error.message);
 	}
+
 });
 
 const checkIndex = (seats) => {

@@ -231,9 +231,11 @@ export const useGameStore = defineStore("gameStore", () => {
 
     if (countRound < 3) {
       countRound++;
-      set(countRoundRef, countRound);
+      await set(countRoundRef, countRound);
     }
+
     console.log(countRound);
+
 
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
@@ -272,7 +274,9 @@ export const useGameStore = defineStore("gameStore", () => {
         dealer: "",
         fold: "",
         hand: [],
+
         maxPot: "",
+
         potPlayer: 0,
         turn: "",
         allIn: "",
@@ -289,8 +293,10 @@ export const useGameStore = defineStore("gameStore", () => {
       seats: seatReset,
     };
 
+
     set(roomRef, updatedRoom);
     storeCards.resetDeck();
+
 
     /* en proceso de borrar
     storeCards.deleteCards(seats, room);
@@ -365,7 +371,9 @@ export const useGameStore = defineStore("gameStore", () => {
       }
       return true;
     } else {
+
       if (seat.allIn === "*") {
+
         return false;
       }
       return true;
