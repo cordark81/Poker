@@ -72,15 +72,24 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     if ((await checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
       const chipsForWinner = await getDB(potRef);
-      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner,room);
+      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
-      if(storeGame.checkPotWithFold(newSeats)){
-        const phaseGame = await getDB(phaseGameRef);        
-        storeGame.gamePhase(phaseGame,room);
-      }else{
+      if (storeGame.checkPotWithFold(newSeats)) {
+        console.log("if");
+        const phaseGame = await getDB(phaseGameRef);
+        if (phaseGame === "preflop") {
+          phaseChangeWithoutBet(seats.value, room, "flop", phaseGameRef);
+        } else if (phaseGame === "flop") {
+          phaseChangeWithoutBet(seats.value, room, "turn", phaseGameRef);
+        } else if (phaseGame === "turn") {
+          phaseChangeWithoutBet(seats.value, room, "river", phaseGameRef);
+        } else if (phaseGame === "river") {
+        }
+      } else {
+        console.log("else");
         storeGame.moveTurnLeft(seats, room);
-      }      
+      }
     }
   };
 
@@ -109,7 +118,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
     const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
     const potRef = refDB(`rooms/${room}/pot`);
-    
 
     const potPlayer = await getDB(potPlayerCallingRef);
     const chipsInGame = await getDB(chipsInGameRef);
@@ -118,8 +126,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(potPlayerCallingRef, chipsInGame + potPlayer);
     await set(chipsInGameRef, 0);
     await set(potRef, pot + chipsInGame + potPlayer);
-    await set(allInRef,"*");
-    
+    await set(allInRef, "*");
+
     await storeGame.moveTurnLeft(seats, room);
     //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
   };

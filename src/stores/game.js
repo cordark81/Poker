@@ -390,12 +390,15 @@ export const useGameStore = defineStore("gameStore", () => {
   };
 
   const checkPotWithFold = (seats) => {
-    const filteredArray = seats.filter((item) => item.pot !== 0);
-    return filteredArray.every((item) => item === filteredArray[0]);
+    const filteredArray = seats.filter((item) => item.potPlayer !== 0);
+
+    return filteredArray.every(
+      (item) => item.potPlayer === filteredArray[0].potPlayer
+    );
   };
 
   return {
-	checkPotWithFold,
+    checkPotWithFold,
     showWinner,
     gamePhase,
     evaluate,
