@@ -232,6 +232,7 @@ export const useGameStore = defineStore("gameStore", () => {
       countRound++;
       set(countRoundRef, countRound);
     }
+    console.log(countRound);
 
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
@@ -279,7 +280,7 @@ export const useGameStore = defineStore("gameStore", () => {
     });
 
     const updatedRoom = {
-      countRound: 1,
+      countRound: 0,
       ditchDealerDone: false,
       messages: message,
       phaseGame: "offGame",
@@ -345,6 +346,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
+    await resetAllIn(newSeats, room);
     resetCountRound(room);
 
     set(phaseGameRef, "preflop");
@@ -371,7 +373,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const resetCountRound = async (room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
-    set(countRoundRef, 1);
+    set(countRoundRef, 0);
   };
   /* pèndiente eliminar, si no usa*/
   const getChipsInGame = async (room, index) => {
@@ -388,13 +390,25 @@ export const useGameStore = defineStore("gameStore", () => {
 
     await push(refDB(`rooms/${room}/messages`), message);
   };
-
-  const checkPotWithFold = (seats) => {
-    const filteredArray = seats.filter((item) => item.potPlayer !== 0);
-
+  
+  // true para fold
+  // false para All in
+  const checkPotWithFold = (seats, foldOrAllIn) => {
+    if (foldOrAllIn) {
+      const filteredArray = seats.filter((item) => item.fold !== "*");
+    }else{
+	  const filteredArray = seats.filter((item) => item.allIn !== "*");
+	}
     return filteredArray.every(
       (item) => item.potPlayer === filteredArray[0].potPlayer
     );
+  };
+
+  const resetAllIn = async (seats, room) => {
+    seats.forEach((seat, index) => {
+      const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
+      set(allInRef, "");
+    });
   };
 
   return {

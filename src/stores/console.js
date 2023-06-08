@@ -35,6 +35,9 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         //si todos check evaluar cartas
       }
     } else {
+      if(checkPlayerWithoutFold(seats,false)){
+
+      }
       storeGame.moveTurnLeft(seats, room);
     }
   };
@@ -68,22 +71,26 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(foldRef, "*");
 
     const newSeats = await getDB(seatRef);
-
-    if ((await checkPlayerWithoutFold(newSeats)) === 1) {
+    console.log(checkPlayerWithoutFold(newSeats));
+    if ((checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
       const chipsForWinner = await getDB(potRef);
       await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
-      if (storeGame.checkPotWithFold(newSeats)) {
+      if (storeGame.checkPotWithFold(newSeats,true)) {
         console.log("if");
+        const countRoundRef = refDB(`rooms/${room}/countRound`);
+
         const phaseGame = await getDB(phaseGameRef);
-        if (phaseGame === "preflop") {
-          phaseChangeWithoutBet(seats.value, room, "flop", phaseGameRef);
+        const countRound = await getDB(countRoundRef);
+        
+        if (phaseGame === "preflop" && countRound >= newSeats.length) {
+          phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
         } else if (phaseGame === "flop") {
-          phaseChangeWithoutBet(seats.value, room, "turn", phaseGameRef);
+          phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
         } else if (phaseGame === "turn") {
-          phaseChangeWithoutBet(seats.value, room, "river", phaseGameRef);
+          phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
         } else if (phaseGame === "river") {
         }
       } else {
@@ -103,8 +110,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     }
   };
 
-  const checkPlayerWithoutFold = async (seats) =>
-    seats.reduce((count, seat) => (seat.fold === "*" ? count - 1 : count), 3);
+  const checkPlayerWithoutFold = (seats) =>
+    seats.reduce((count, seat) => (seat.fold === "*" ? count - 1 : count), seats.length);
 
   const findFoldedPlayerIndex = (seats) =>
     seats.reduce(
