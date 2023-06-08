@@ -232,6 +232,7 @@ export const useGameStore = defineStore("gameStore", () => {
       countRound++;
       set(countRoundRef, countRound);
     }
+    console.log(countRound);
 
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
@@ -266,19 +267,20 @@ export const useGameStore = defineStore("gameStore", () => {
       }
 
       return {
-      chipsInGame: element.chipsInGame,
-      dealer: "",
-      fold: "",
-      hand: [],
-      maxpot: "",
-      potPlayer: 0,
-      turn: "",
-      allIn: "",
-      user: element.user}
+        chipsInGame: element.chipsInGame,
+        dealer: "",
+        fold: "",
+        hand: [],
+        maxpot: "",
+        potPlayer: 0,
+        turn: "",
+        allIn: "",
+        user: element.user,
+      };
     });
 
     const updatedRoom = {
-      countRound: 1,
+      countRound: 0,
       ditchDealerDone: false,
       messages: message,
       phaseGame: "offGame",
@@ -344,23 +346,25 @@ export const useGameStore = defineStore("gameStore", () => {
     await storePot.initialPot(newSeats, room);
     await evaluateMaxPot(newSeats, room);
     await storeCards.dealingCards(newSeats, room);
+    await resetAllIn(newSeats, room);
     resetCountRound(room);
 
     set(phaseGameRef, "preflop");
   };
 
-  //fold = true allIn = false
+
   const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);
+
     if (foldAndAllIn) {
-      if (seat.fold == "*") {
+      if (seat.fold === "*") {
         moveTurnLeft(seats, room);
         return false;
       }
       return true;
-    }else{
-      if (seat.allIn == "*") {
+    } else {
+      if (seat.allIn === "*") {
         moveTurnLeft(seats, room);
         return false;
       }
@@ -370,7 +374,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const resetCountRound = async (room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
-    set(countRoundRef, 1);
+    set(countRoundRef, 0);
   };
   /* pèndiente eliminar, si no usa*/
   const getChipsInGame = async (room, index) => {
@@ -387,8 +391,29 @@ export const useGameStore = defineStore("gameStore", () => {
 
     await push(refDB(`rooms/${room}/messages`), message);
   };
+  
+  // true para fold
+  // false para All in
+  const checkPotWithFold = (seats, foldOrAllIn) => {
+    if (foldOrAllIn) {
+      const filteredArray = seats.filter((item) => item.fold !== "*");
+    }else{
+	  const filteredArray = seats.filter((item) => item.allIn !== "*");
+	}
+    return filteredArray.every(
+      (item) => item.potPlayer === filteredArray[0].potPlayer
+    );
+  };
+
+  const resetAllIn = async (seats, room) => {
+    seats.forEach((seat, index) => {
+      const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
+      set(allInRef, "");
+    });
+  };
 
   return {
+    checkPotWithFold,
     showWinner,
     gamePhase,
     evaluate,

@@ -35,6 +35,9 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         //si todos check evaluar cartas
       }
     } else {
+      if(checkPlayerWithoutFold(seats,false)){
+
+      }
       storeGame.moveTurnLeft(seats, room);
     }
   };
@@ -61,20 +64,39 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const foldRef = refDB(`rooms/${room}/seats/${index}/fold`);
     const seatRef = refDB(`rooms/${room}/seats`);
     const potRef = refDB(`rooms/${room}/pot`);
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
 
     await set(potPlayerCallingRef, 0);
     await set(handRef, []);
     await set(foldRef, "*");
 
     const newSeats = await getDB(seatRef);
-
-    if ((await checkPlayerWithoutFold(newSeats)) === 1) {
+    console.log(checkPlayerWithoutFold(newSeats));
+    if ((checkPlayerWithoutFold(newSeats)) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
       const chipsForWinner = await getDB(potRef);
-      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner,room);
+      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
       storeGame.resetGameWithWinner(newSeats, room, indexWinner);
     } else {
-      storeGame.moveTurnLeft(seats, room);
+      if (storeGame.checkPotWithFold(newSeats,true)) {
+        console.log("if");
+        const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+        const phaseGame = await getDB(phaseGameRef);
+        const countRound = await getDB(countRoundRef);
+        
+        if (phaseGame === "preflop" && countRound >= newSeats.length) {
+          phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
+        } else if (phaseGame === "flop") {
+          phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
+        } else if (phaseGame === "turn") {
+          phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
+        } else if (phaseGame === "river") {
+        }
+      } else {
+        console.log("else");
+        storeGame.moveTurnLeft(seats, room);
+      }
     }
   };
 
@@ -88,8 +110,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     }
   };
 
-  const checkPlayerWithoutFold = async (seats) =>
-    seats.reduce((count, seat) => (seat.fold === "*" ? count - 1 : count), 3);
+  const checkPlayerWithoutFold = (seats) =>
+    seats.reduce((count, seat) => (seat.fold === "*" ? count - 1 : count), seats.length);
 
   const findFoldedPlayerIndex = (seats) =>
     seats.reduce(
@@ -112,9 +134,11 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(potPlayerCallingRef, chipsInGame + potPlayer);
     await set(chipsInGameRef, 0);
     await set(potRef, pot + chipsInGame + potPlayer);
-    await set(allInRef,"*");
 
-    storeGame.moveTurnLeft(seats, room);
+    await set(allInRef, "*");
+
+
+    await storeGame.moveTurnLeft(seats, room);
     //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
   };
 
