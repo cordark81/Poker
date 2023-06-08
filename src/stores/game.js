@@ -271,7 +271,7 @@ export const useGameStore = defineStore("gameStore", () => {
         dealer: "",
         fold: "",
         hand: [],
-        maxpot: "",
+        maxPot: "",
         potPlayer: 0,
         turn: "",
         allIn: "",
@@ -395,10 +395,12 @@ export const useGameStore = defineStore("gameStore", () => {
   // true para fold
   // false para All in
   const checkPotWithFoldOrAllIn = (seats, foldOrAllIn) => {
-    if (foldOrAllIn) {
-      const filteredArray = seats.filter((item) => item.fold !== "*");
+	let filteredArray;	
+	
+	if (foldOrAllIn) {
+      filteredArray = seats.filter((item) => item.fold !== "*");
     }else{
-	  const filteredArray = seats.filter((item) => item.allIn !== "*");
+	  filteredArray = seats.filter((item) => item.allIn !== "*");
 	}
     return filteredArray.every(
       (item) => item.potPlayer === filteredArray[0].potPlayer
