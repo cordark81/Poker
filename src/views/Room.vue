@@ -31,7 +31,7 @@
 					<GameConsole v-if="seat.turn === '*' &&
 						seat.user === storeUser.user.displayName &&
 						storeGame.checkFoldAndAllIn(seats, room, index, true) &&
-						storeGame.checkFoldAndAllIn(seats, room, index, false)
+						storeGame.checkFoldAndAllIn(seats, room, index, false) && storeGame.allPlayerAllIn(seats)===false
 						" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats" />
 				</div>
 			</div>

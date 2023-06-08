@@ -3,6 +3,7 @@ import { getDB, refDB, set } from "../utils/firebase";
 import { useGameStore } from "./game";
 import { usePotStore } from "./pot";
 import { useCardsStore } from "./cards";
+import { async } from "@firebase/util";
 
 export const useConsoleStore = defineStore("consoleStore", () => {
   const storeGame = useGameStore();
@@ -41,8 +42,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     }
   };
 
-  const phaseChangeWithoutBet = (seats, room, phase, phaseInGameRef) => {
-    storeGame.gamePhase(phase, room);
+  const phaseChangeWithoutBet = async (seats, room, phase, phaseInGameRef) => {
+    await storeGame.gamePhase(phase, room);
     storePot.resetPotPlayer(seats, room);
     storePot.resetMaxPot(seats, room);
     storeGame.resetTurn(seats, room);
@@ -122,7 +123,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       -1
     );
 
-  const allInConsole = async (room, index) => {
+  const allInConsole = async (seatsInitial, room, index) => {
     const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
     const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
     const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
@@ -133,40 +134,62 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const potPlayer = await getDB(potPlayerCallingRef);
     const chipsInGame = await getDB(chipsInGameRef);
     const pot = await getDB(potRef);
-    const seats = await getDB(seatsRef);
 
     await set(potPlayerCallingRef, chipsInGame + potPlayer);
     await set(chipsInGameRef, 0);
     await set(potRef, pot + chipsInGame + potPlayer);
 
     await set(allInRef, "*");
+    const seats = await getDB(seatsRef);
 
-    if (storeGame.allPlayerAllIn(seats)) {
-      const countRoundRef = refDB(`rooms/${room}/countRound`);
+    console.log(storeGame.allPlayerAllIn(seats));
+    try {
+      if (storeGame.allPlayerAllIn(seats)) {
+        const countRoundRef = refDB(`rooms/${room}/countRound`);
 
-      const phaseGame = await getDB(phaseGameRef);
-      const countRound = await getDB(countRoundRef);
+        const phaseGame = await getDB(phaseGameRef);
+        const countRound = await getDB(countRoundRef);
 
-      let phase = ["flop", "turn", "river"];
+        let phase = ["flop", "turn", "river"];
 
-      if (phaseGame === "preflop" && countRound >= newSeats.length) {
-        for (let index = 0; index < phase.length; index++) {
-         setTimeout(phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef),5000);
+        if (phaseGame === "preflop" && countRound >= seats.length) {
+          for (let i = 0; i < phase.length; i++) {
+            setTimeout(
+              (index) =>
+                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+              5000 * (1 + i),
+              i
+            );
+          }
+        } else if (phaseGame === "flop") {
+          for (let i = 1; i < phase.length; i++) {
+            setTimeout(
+              (index) =>{
+                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef)
+                
+              },
+              5000 * i,
+              i
+            );
+          }
+        } else if (phaseGame === "turn") {
+          for (let i = 2; i < phase.length; i++) {
+            setTimeout(
+              (index) =>
+                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+              5000*i,
+              i
+            );
+          }
         }
-      } else if (phaseGame === "flop") {
-        for (let index = 1; index < phase.length; index++) {
-          setTimeout(phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef),5000);
-        }
-      } else if (phaseGame === "turn") {
-        for (let index = 2; index < phase.length; index++) {
-          setTimeout(phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef),5000);
-        }
+        console.log("Quien ha ganado");
+      } else {
+        console.log("else");
+        await storeGame.moveTurnLeft(seatsInitial, room);
       }
-      console.log("Quien ha ganado");
-    } else {
-      await storeGame.moveTurnLeft(seats, room);
+    } catch (error) {
+      console.log(error.message);
     }
-
     //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
   };
 

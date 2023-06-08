@@ -280,7 +280,7 @@ export const useGameStore = defineStore("gameStore", () => {
     });
 
     const updatedRoom = {
-      countRound: 0,
+      countRound: 1,
       ditchDealerDone: false,
       messages: message,
       phaseGame: "offGame",
@@ -364,8 +364,7 @@ export const useGameStore = defineStore("gameStore", () => {
       }
       return true;
     } else {
-      if (seat.allIn === "*") {
-        moveTurnLeft(seats, room);
+      if (seat.allIn === "*") {        
         return false;
       }
       return true;
@@ -374,7 +373,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const resetCountRound = async (room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
-    set(countRoundRef, 0);
+    set(countRoundRef, 1);
   };
   /* pèndiente eliminar, si no usa*/
   const getChipsInGame = async (room, index) => {

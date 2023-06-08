@@ -15,7 +15,7 @@
         :text="'Raise'" :color="classGrayColor" class="mt-2" />
       <ButtonConsole v-if="storeGame.verifySimilarPots(seats) === false"
         @click="storeConsole.foldConsole(seats, room, index)" :text="'Fold'" :color="classGrayColor" class="mt-2" />
-      <ButtonConsole @click="storeConsole.allInConsole(room, index)" :text="'ALL IN'" :color="classRedColor"
+      <ButtonConsole @click="storeConsole.allInConsole(seats,room, index)" :text="'ALL IN'" :color="classRedColor"
         class="mt-2" />
     </div>
   </div>
