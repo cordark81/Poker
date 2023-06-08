@@ -352,6 +352,7 @@ export const useGameStore = defineStore("gameStore", () => {
     set(phaseGameRef, "preflop");
   };
 
+
   const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
     const seatRef = refDB(`rooms/${room}/seats/${index}`);
     const seat = await getDB(seatRef);

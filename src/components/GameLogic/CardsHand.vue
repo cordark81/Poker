@@ -3,7 +3,7 @@
 		<div v-for="card in handCards" :key="card">
 			<img
 				v-if="user === storeUser.user.displayName"
-				:src="'../../src/assets/cards/' + card + '.png'"
+				:src="`../../src/assets/cards/${card}.png`"
 				class="w-12 h-20 mr-2"
 			/>
 			<img

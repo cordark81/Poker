@@ -20,7 +20,6 @@
 				<div class="flex justify-center w-36 mb-5">
 					<h1 class="text-red-600 font-bold">{{ seat.chipsInGame }}</h1>
 				</div>
-
 				<div v-if="index === 2" class="flex flex-row justify-start w-52 mt-5 -ml-20 overflow-visible">
 					<div v-if="seat.potPlayer !== 0" class="flex flex-col justify-center -ml-10 overflow-visible">
 						<img src="../../assets/images/newnewstack-removebg-preview.png" class="w-12 h-12 rounded-xl"
