@@ -84,8 +84,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         const phaseGame = await getDB(phaseGameRef);
         const countRound = await getDB(countRoundRef);
 
-        if (storeGame.checkFoldIfallIn(newSeats)) {
-          await storeGame.finishGameSpecialsAllIn(seats,room);
+        if (storeGame.checkFoldIfAllIn(newSeats)) {
+          await storeGame.finishGameSpecialsAllIn(seats, room);
         } else {
           if (phaseGame === "preflop" && countRound >= newSeats.length) {
             phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
@@ -146,8 +146,11 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
     console.log(storeGame.allPlayerAllIn(seats));
     try {
-      if (storeGame.allPlayerAllIn(seats)) {
-        await storeGame.finishGameSpecialsAllIn(seats,room);
+      if (
+        storeGame.allPlayerAllIn(seats) ||
+        storeGame.checkFoldIfAllIn(seats)
+      ) {
+        await storeGame.finishGameSpecialsAllIn(seats, room);
       } else {
         console.log("else");
         await storeGame.moveTurnLeft(seatsInitial, room);
@@ -169,6 +172,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const chipsInGame = await getDB(chipsInGameRef);
     const pot = await getDB(potRef);
 
+    
+
     await set(potPlayerCallingRef, maxPot * multiplier);
     await set(chipsInGameRef, chipsInGame - (maxPot * multiplier - potPlayer));
     await set(potRef, pot + (maxPot * multiplier - potPlayer));
@@ -187,7 +192,15 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(chipsInGameRef, chipsInGame - bet);
     await set(potRef, pot + bet);
 
-    storeGame.moveTurnLeft(seats, room);
+    /*añadido*/
+
+    const potMax = storePot.potMax(seats, true);
+
+    if (potMax >= chipsInGame + potPlayer) {
+      await allInConsole(seats, room, index);
+    } else {
+      await storeGame.moveTurnLeft(seats, room);
+    }
   };
 
   return {

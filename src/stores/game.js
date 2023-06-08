@@ -10,12 +10,13 @@ import {
 } from "../utils/firebase";
 import { useCardsStore } from "./cards";
 import { usePotStore } from "./pot";
-import { ref } from "vue";
+import { useConsoleStore } from "./console";
 import axios from "axios";
 
 export const useGameStore = defineStore("gameStore", () => {
   const storeCards = useCardsStore();
   const storePot = usePotStore();
+  const storeConsole = useConsoleStore();
 
   const gamePhase = async (phase, room) => {
     switch (phase) {
@@ -336,7 +337,7 @@ export const useGameStore = defineStore("gameStore", () => {
     await storePot.potToPlayerWin(room, indexWinner);
     await storePot.resetPot(room);
     await storePot.resetMaxPot(seats, room);
-    await storeCards.resetDeck();
+    storeCards.resetDeck();
     await resetFolds(seats, room);
     await resetTurn(seats, room);
     await moveDealerLeft(seats, room);
@@ -415,8 +416,8 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const allPlayerAllIn = (seats) => seats.every((item) => item.allIn === "*");
 
-  const checkFoldIfallIn = (seats) => {
-    let filteredArray = seats.filter((item) => item.fold === "*");
+  const checkFoldIfAllIn = (seats) => {
+    let filteredArray = seats.filter((item) => item.fold !== "*");
     return filteredArray.every((item) => item.allIn === "*");
   };
 
@@ -432,7 +433,7 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 0; i < phase.length; i++) {
         setTimeout(
           (index) =>
-            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+		  storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
           5000 * (1 + i),
           i
         );
@@ -441,7 +442,7 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 1; i < phase.length; i++) {
         setTimeout(
           (index) => {
-            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef);
+            storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef);
           },
           5000 * i,
           i
@@ -451,7 +452,7 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 2; i < phase.length; i++) {
         setTimeout(
           (index) =>
-            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+		  storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
           5000 * i,
           i
         );
@@ -462,7 +463,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
   return {
     finishGameSpecialsAllIn,
-    checkFoldIfallIn,
+    checkFoldIfAllIn,
     allPlayerAllIn,
     checkPotWithFoldOrAllIn,
     showWinner,
