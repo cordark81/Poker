@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<CardsHand :index="index" :hand="seat.hand" :user="seat.user" :handCards="handCards" class="flex justify-center" />
+		<CardsHand :index="index" :hand="seat.hand" :user="seat.user" :handCards="handCards" :seats="seats" class="flex justify-center" />
 		<div class="w-52 h-28 Seat rounded-full border-2 border-amber-400 flex flex-row justify-between">
 			<div class="flex w-10">
 				<div class="w-52">
@@ -101,7 +101,7 @@ const props = defineProps({
 	room: String,
 	seat: Object,
 	index: Number,
-	handCards: Array,
+	handCards: Array,	
 	seats: Array,
 });
 

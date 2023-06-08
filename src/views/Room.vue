@@ -20,8 +20,8 @@
 				{ 'pb-40': index === 1 },
 			]">
 				<div v-if="seat.user" class="">
-					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room"
-						:handCards="seat.hand" :seats="seats" />
+					<OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room" :seats="seats"
+						:handCards="seat.hand" />
 				</div>
 				<div v-else>
 					<Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
@@ -31,7 +31,9 @@
 					<GameConsole v-if="seat.turn === '*' &&
 						seat.user === storeUser.user.displayName &&
 						storeGame.checkFoldAndAllIn(seats, room, index, true) &&
-						storeGame.checkFoldAndAllIn(seats, room, index, false)
+						storeGame.checkFoldAndAllIn(seats, room, index, false) &&
+						storeGame.allPlayerAllIn(seats) === false &&
+						storeGame.checkFoldIfAllIn(seats) === false
 						" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats" />
 				</div>
 			</div>
@@ -86,7 +88,6 @@ import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
 import CardsTable from "../components/GameLogic/CardsTable.vue";
 import GameConsole from "../components/GameLogic/GameConsole.vue";
-import CardsHand from "../components/GameLogic/CardsHand.vue";
 
 const router = useRouter();
 const storeUser = useUserStore();
@@ -199,41 +200,77 @@ const findSeatIndexByUser = (username) => {
 };
 
 const logicCallConsole = async (seatsF, room, index) => {
-	await storeConsole.ajustBet(seatsF, room, index, 1);
-	if (storeGame.verifySimilarPots(seats.value)) {
-		const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
-		const countRoundRef = refDB(`rooms/${room}/countRound`);
 
-		const phaseInGame = await getDB(phaseInGameRef);
-		const countRound = await getDB(countRoundRef);
+	if (seatsF[index].chipsInGame <= storePot.potMax(seatsF, true)) {
+		await storeConsole.allInConsole(seatsF, room, index);
+	} else {
+		await storeConsole.ajustBet(seatsF, room, index, 1);
 
-		if (phaseInGame === "preflop" && countRound >= seats.value.length) {
-			storeConsole.phaseChangeWithoutBet(
-				seats.value,
-				room,
-				"flop",
-				phaseInGameRef
-			);
-		} else if (phaseInGame === "flop") {
-			storeConsole.phaseChangeWithoutBet(
-				seats.value,
-				room,
-				"turn",
-				phaseInGameRef
-			);
-		} else if (phaseInGame === "turn") {
-			storeConsole.phaseChangeWithoutBet(
-				seats.value,
-				room,
-				"river",
-				phaseInGameRef
-			);
-		} else if (phaseInGame === "river") {
+		if (storeGame.verifySimilarPots(seats.value)) {
+			const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+			const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+			const phaseInGame = await getDB(phaseInGameRef);
+			const countRound = await getDB(countRoundRef);
+
+			if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"flop",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "flop") {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"turn",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "turn") {
+				storeConsole.phaseChangeWithoutBet(
+					seats.value,
+					room,
+					"river",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "river") {
+			} else {
+				storeGame.moveTurnLeft(seats.value, room);
+			}
 		} else {
+			if (storeGame.checkPotWithFoldOrAllIn(seats.value, false)) {
+				const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+				const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+				const phaseInGame = await getDB(phaseInGameRef);
+				const countRound = await getDB(countRoundRef);
+				if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"flop",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "flop") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"turn",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "turn") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"river",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "river") {
+				}
+			}
 			storeGame.moveTurnLeft(seats.value, room);
 		}
-	} else {
-		storeGame.moveTurnLeft(seats.value, room);
 	}
 };
 
