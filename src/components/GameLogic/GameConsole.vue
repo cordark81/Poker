@@ -10,7 +10,7 @@
         class="mt-2">
         
       </ButtonConsole>
-      <input v-if="false" v-model="bet" type="number" step="5" :min=betMin :max=betMax />
+      <input v-if="true" v-model="bet" type="number" step="5" :min=betMin :max=betMax />
       <ButtonConsole v-if="storePot.potMax(seats, true) !== 0" @click="storeConsole.raiseConsole(seats, room, index)"
         :text="'Raise'" :color="classGrayColor" class="mt-2" />
       <ButtonConsole v-if="storeGame.verifySimilarPots(seats) === false"

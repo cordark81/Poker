@@ -30,7 +30,7 @@
 					<div v-if="seat.dealer !== '' && seat.dealer !== 'dealer'"
 						class="ml-16 w-12 h-12 text-center rounded-full">
 						<img v-if="seat.dealer === 'bb'" src="../../assets/images/BB-removebg-preview (1).png" alt="">
-						<img v-if="seat.dealer === 'sb'" src="../../SB-removebg-preview (2).png" alt="">
+						<img v-if="seat.dealer === 'sb'" src="../../assets/images/SB-removebg-preview (2).png" alt="">
 					</div>
 					<div v-if="seat.dealer !== '' && seat.dealer === 'dealer'" class="w-10 h-10 ml-5">
 						<img src="../../assets/images/dealersinfond.jpg" alt="" class="w-full h-full rounded-full" />
