@@ -3,7 +3,6 @@ import { getDB, refDB, set } from "../utils/firebase";
 import { useGameStore } from "./game";
 import { usePotStore } from "./pot";
 import { useCardsStore } from "./cards";
-import { async } from "@firebase/util";
 
 export const useConsoleStore = defineStore("consoleStore", () => {
   const storeGame = useGameStore();
@@ -85,13 +84,17 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         const phaseGame = await getDB(phaseGameRef);
         const countRound = await getDB(countRoundRef);
 
-        if (phaseGame === "preflop" && countRound >= newSeats.length) {
-          phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
-        } else if (phaseGame === "flop") {
-          phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
-        } else if (phaseGame === "turn") {
-          phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
-        } else if (phaseGame === "river") {
+        if (storeGame.checkFoldIfallIn(newSeats)) {
+          await storeGame.finishGameSpecialsAllIn(seats,room);
+        } else {
+          if (phaseGame === "preflop" && countRound >= newSeats.length) {
+            phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
+          } else if (phaseGame === "flop") {
+            phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
+          } else if (phaseGame === "turn") {
+            phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
+          } else if (phaseGame === "river") {
+          }
         }
       } else {
         console.log("else");
@@ -103,7 +106,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
   //Funcion dinamica para distintos grados de apuesta
   const raiseConsole = async (seats, room, index) => {
     if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
-      allInConsole(room, index);
+      allInConsole(seats, room, index);
     } else {
       ajustBet(seats, room, index, 2);
       storeGame.moveTurnLeft(seats, room);
@@ -128,7 +131,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
     const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
     const potRef = refDB(`rooms/${room}/pot`);
-    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
     const seatsRef = refDB(`rooms/${room}/seats`);
 
     const potPlayer = await getDB(potPlayerCallingRef);
@@ -145,44 +147,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     console.log(storeGame.allPlayerAllIn(seats));
     try {
       if (storeGame.allPlayerAllIn(seats)) {
-        const countRoundRef = refDB(`rooms/${room}/countRound`);
-
-        const phaseGame = await getDB(phaseGameRef);
-        const countRound = await getDB(countRoundRef);
-
-        let phase = ["flop", "turn", "river"];
-
-        if (phaseGame === "preflop" && countRound >= seats.length) {
-          for (let i = 0; i < phase.length; i++) {
-            setTimeout(
-              (index) =>
-                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
-              5000 * (1 + i),
-              i
-            );
-          }
-        } else if (phaseGame === "flop") {
-          for (let i = 1; i < phase.length; i++) {
-            setTimeout(
-              (index) =>{
-                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef)
-                
-              },
-              5000 * i,
-              i
-            );
-          }
-        } else if (phaseGame === "turn") {
-          for (let i = 2; i < phase.length; i++) {
-            setTimeout(
-              (index) =>
-                phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
-              5000*i,
-              i
-            );
-          }
-        }
-        console.log("Quien ha ganado");
+        await storeGame.finishGameSpecialsAllIn(seats,room);
       } else {
         console.log("else");
         await storeGame.moveTurnLeft(seatsInitial, room);

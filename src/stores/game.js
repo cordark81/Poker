@@ -364,7 +364,7 @@ export const useGameStore = defineStore("gameStore", () => {
       }
       return true;
     } else {
-      if (seat.allIn === "*") {        
+      if (seat.allIn === "*") {
         return false;
       }
       return true;
@@ -415,9 +415,55 @@ export const useGameStore = defineStore("gameStore", () => {
 
   const allPlayerAllIn = (seats) => seats.every((item) => item.allIn === "*");
 
-  return {
+  const checkFoldIfallIn = (seats) => {
+    let filteredArray = seats.filter((item) => item.fold === "*");
+    return filteredArray.every((item) => item.allIn === "*");
+  };
 
-	allPlayerAllIn,
+  const finishGameSpecialsAllIn = async (seats, room) => {
+    const countRoundRef = refDB(`rooms/${room}/countRound`);
+    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+    const phaseGame = await getDB(phaseGameRef);
+    const countRound = await getDB(countRoundRef);
+
+    let phase = ["flop", "turn", "river"];
+
+    if (phaseGame === "preflop" && countRound >= seats.length) {
+      for (let i = 0; i < phase.length; i++) {
+        setTimeout(
+          (index) =>
+            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+          5000 * (1 + i),
+          i
+        );
+      }
+    } else if (phaseGame === "flop") {
+      for (let i = 1; i < phase.length; i++) {
+        setTimeout(
+          (index) => {
+            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef);
+          },
+          5000 * i,
+          i
+        );
+      }
+    } else if (phaseGame === "turn") {
+      for (let i = 2; i < phase.length; i++) {
+        setTimeout(
+          (index) =>
+            phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+          5000 * i,
+          i
+        );
+      }
+    }
+    console.log("Quien ha ganado");
+  };
+
+  return {
+    finishGameSpecialsAllIn,
+    checkFoldIfallIn,
+    allPlayerAllIn,
     checkPotWithFoldOrAllIn,
     showWinner,
     gamePhase,
