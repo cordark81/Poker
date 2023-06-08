@@ -113,8 +113,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(chipsInGameRef, 0);
     await set(potRef, pot + chipsInGame + potPlayer);
     await set(allInRef,"*");
-
-    storeGame.moveTurnLeft(seats, room);
+    console.log(seats)
+    await storeGame.moveTurnLeft(seats, room);
     //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
   };
 

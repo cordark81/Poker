@@ -230,9 +230,9 @@ export const useGameStore = defineStore("gameStore", () => {
 
     if (countRound < 3) {
       countRound++;
-      set(countRoundRef, countRound);
+      await set(countRoundRef, countRound);
     }
-
+    console.log(seats);
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 
@@ -266,15 +266,16 @@ export const useGameStore = defineStore("gameStore", () => {
       }
 
       return {
-      chipsInGame: element.chipsInGame,
-      dealer: "",
-      fold: "",
-      hand: [],
-      maxpot: "",
-      potPlayer: 0,
-      turn: "",
-      allIn: "",
-      user: element.user}
+        chipsInGame: element.chipsInGame,
+        dealer: "",
+        fold: "",
+        hand: [],
+        maxpot: "",
+        potPlayer: 0,
+        turn: "",
+        allIn: "",
+        user: element.user,
+      };
     });
 
     const updatedRoom = {
@@ -286,7 +287,7 @@ export const useGameStore = defineStore("gameStore", () => {
       seats: seatReset,
     };
 
-    set(roomRef, updatedRoom);
+    await set(roomRef, updatedRoom);
 
     /* en proceso de borrar
     storeCards.deleteCards(seats, room);
@@ -359,7 +360,7 @@ export const useGameStore = defineStore("gameStore", () => {
         return false;
       }
       return true;
-    }else{
+    } else {
       if (seat.allIn == "*") {
         moveTurnLeft(seats, room);
         return false;

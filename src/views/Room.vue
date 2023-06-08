@@ -117,7 +117,7 @@ onMounted(async () => {
         }
       } else {
         console.log("faltan jugadores");
-        storeGame.resetGame(room.value);
+        storeGame.resetGame(seats.value,room.value);
       }
 
 
