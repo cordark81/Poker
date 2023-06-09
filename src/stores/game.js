@@ -257,8 +257,6 @@ export const useGameStore = defineStore("gameStore", () => {
     set(newTurnRef, "*");
   };
 
-
-
   const evaluateMaxPotLeft = (seats, room) => {
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const maxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
@@ -303,10 +301,8 @@ export const useGameStore = defineStore("gameStore", () => {
       seats: seatReset,
     };
 
-
     set(roomRef, updatedRoom);
     storeCards.resetDeck();
-
 
     /* en proceso de borrar
     storeCards.deleteCards(seats, room);
@@ -376,16 +372,14 @@ export const useGameStore = defineStore("gameStore", () => {
 
     if (foldAndAllIn) {
       if (seat.fold === "*") {
-        
         moveTurnLeftWithoutCount(seats, room);
-        
+
         return false;
       }
       return true;
     } else {
-
       if (seat.allIn === "*") {
-
+        moveTurnLeftWithoutCount(seats, room);
         return false;
       }
       return true;
@@ -453,7 +447,12 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 0; i < phase.length; i++) {
         setTimeout(
           (index) =>
-		  storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+            storeConsole.phaseChangeWithoutBet(
+              seats,
+              room,
+              phase[index],
+              phaseGameRef
+            ),
           5000 * (1 + i),
           i
         );
@@ -462,7 +461,12 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 1; i < phase.length; i++) {
         setTimeout(
           (index) => {
-            storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef);
+            storeConsole.phaseChangeWithoutBet(
+              seats,
+              room,
+              phase[index],
+              phaseGameRef
+            );
           },
           5000 * i,
           i
@@ -472,7 +476,12 @@ export const useGameStore = defineStore("gameStore", () => {
       for (let i = 2; i < phase.length; i++) {
         setTimeout(
           (index) =>
-		  storeConsole.phaseChangeWithoutBet(seats, room, phase[index], phaseGameRef),
+            storeConsole.phaseChangeWithoutBet(
+              seats,
+              room,
+              phase[index],
+              phaseGameRef
+            ),
           5000 * i,
           i
         );
