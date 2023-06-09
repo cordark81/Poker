@@ -33,7 +33,7 @@
 						storeGame.checkFoldAndAllIn(seats, room, index, true) &&
 						storeGame.checkFoldAndAllIn(seats, room, index, false) &&
 						storeGame.allPlayerAllIn(seats) === false &&
-						storeGame.checkFoldIfAllIn(seats) === false
+						storeGame.checkFoldIfAllIn(seats) === false && storeGame.checkFinishGameWithOnePlayerOnly(seats) === false
 						" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats" />
 				</div>
 			</div>
@@ -215,7 +215,7 @@ const logicCallConsole = async (seatsF, room, index) => {
 			const phaseInGame = await getDB(phaseInGameRef);
 			const countRound = await getDB(countRoundRef);
 			if (storeGame.checkFinishGameWithOnePlayerOnly(seats.value)) {
-				storeGame.finishGameSpecialsAllIn(seats.value,room)
+				storeGame.finishGameSpecialsAllIn(seats.value, room)
 			} else {
 				if (phaseInGame === "preflop" && countRound >= seats.value.length) {
 					storeConsole.phaseChangeWithoutBet(

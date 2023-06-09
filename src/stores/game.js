@@ -489,11 +489,12 @@ export const useGameStore = defineStore("gameStore", () => {
     }
     console.log("Quien ha ganado");
   };
-
   const checkFinishGameWithOnePlayerOnly = (seats) => {
     const filteredArray = seats.filter(
-      (item) => item.fold !== "*" || item.allIn !== "*"
+      (item) => item.fold === "" && item.allIn === ""
     );
+
+    console.log(filteredArray.length);
     return filteredArray.length === 1;
   };
 
