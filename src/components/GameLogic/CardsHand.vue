@@ -7,12 +7,12 @@
 					storeGame.allPlayerAllIn(seats) ||
 					storeGame.checkFoldIfAllIn(seats)
 				"
-				:src="`https://pokerzone-eb346.web.app/assets/${card}.png`"
+				:src="`../../src/assets/cards/${card}.png`"
 				class="w-12 h-20 mr-2"
 			/>
 			<img
 				v-else
-				:src="`https://pokerzone-eb346.web.app/assets/back-red.png`"
+				:src="`../../src/assets/cards/back-red.png`"
 				class="w-12 h-20 mr-2"
 			/>
 		</div>

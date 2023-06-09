@@ -490,7 +490,15 @@ export const useGameStore = defineStore("gameStore", () => {
     console.log("Quien ha ganado");
   };
 
+  const checkFinishGameWithOnePlayerOnly = (seats) => {
+    const filteredArray = seats.filter(
+      (item) => item.fold !== "*" || item.allIn !== "*"
+    );
+    return filteredArray.length === 1;
+  };
+
   return {
+    checkFinishGameWithOnePlayerOnly,
     finishGameSpecialsAllIn,
     checkFoldIfAllIn,
     allPlayerAllIn,
