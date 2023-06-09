@@ -37,7 +37,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     } else {
       if (checkPlayerWithoutFold(seats, false)) {
       }
-      storeGame.moveTurnLeft(seats, room);
+      await storeGame.moveTurnLeft(seats, room);
     }
   };
 
@@ -70,7 +70,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
     await set(foldRef, "*");
 
     const newSeats = await getDB(seatRef);
-    console.log(checkPlayerWithoutFold(newSeats));
+    
     if (checkPlayerWithoutFold(newSeats) === 1) {
       const indexWinner = findFoldedPlayerIndex(newSeats);
       const chipsForWinner = await getDB(potRef);
@@ -98,7 +98,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
         }
       } else {
         console.log("else");
-        storeGame.moveTurnLeft(seats, room);
+        await storeGame.moveTurnLeft(seats, room);
       }
     }
   };
@@ -109,7 +109,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       allInConsole(seats, room, index);
     } else {
       ajustBet(seats, room, index, 2);
-      storeGame.moveTurnLeft(seats, room);
+      await storeGame.moveTurnLeft(seats, room);
     }
   };
 
@@ -179,8 +179,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
     if (potMax >= chipsInGame + potPlayer) {
       await allInConsole(seats, room, index);
-    } else {
-      await storeGame.moveTurnLeft(seats, room);
     }
 
     await set(potPlayerCallingRef, maxPot * multiplier);

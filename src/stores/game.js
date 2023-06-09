@@ -231,11 +231,9 @@ export const useGameStore = defineStore("gameStore", () => {
 
     if (countRound < 3) {
       countRound++;
-      await set(countRoundRef, countRound);
+      set(countRoundRef, countRound);
     }
-
     console.log(countRound);
-
 
     const turnIndex = seats.findIndex((item) => item.turn === "*");
     const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
@@ -246,6 +244,20 @@ export const useGameStore = defineStore("gameStore", () => {
     set(turnRef, "");
     set(newTurnRef, "*");
   };
+
+  const moveTurnLeftWithoutCount = async (seats, room) => {
+    console.log("sin contador");
+    const turnIndex = seats.findIndex((item) => item.turn === "*");
+    const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
+
+    const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
+    const newTurnRef = refDB(`rooms/${room}/seats/${newTurnIndex}/turn`);
+
+    set(turnRef, "");
+    set(newTurnRef, "*");
+  };
+
+
 
   const evaluateMaxPotLeft = (seats, room) => {
     const turnIndex = seats.findIndex((item) => item.turn === "*");
@@ -274,9 +286,7 @@ export const useGameStore = defineStore("gameStore", () => {
         dealer: "",
         fold: "",
         hand: [],
-
         maxPot: "",
-
         potPlayer: 0,
         turn: "",
         allIn: "",
@@ -366,7 +376,9 @@ export const useGameStore = defineStore("gameStore", () => {
 
     if (foldAndAllIn) {
       if (seat.fold === "*") {
-        moveTurnLeft(seats, room);
+        
+        moveTurnLeftWithoutCount(seats, room);
+        
         return false;
       }
       return true;
