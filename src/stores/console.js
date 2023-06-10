@@ -35,8 +35,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 				//si todos check evaluar cartas
 			}
 		} else {
-			if (checkPlayerWithoutFold(seats, false)) {
-			}
 			await storeGame.moveTurnLeft(seats, room);
 		}
 	};
