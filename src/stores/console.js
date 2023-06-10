@@ -35,8 +35,6 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 				//si todos check evaluar cartas
 			}
 		} else {
-			if (checkPlayerWithoutFold(seats, false)) {
-			}
 			await storeGame.moveTurnLeft(seats, room);
 		}
 	};
@@ -160,18 +158,21 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 					storeGame.checkFinishGameWithOnePlayerOnly(seatsInitial) &&
 					countRound >= seats.length
 				) {
-					console.log("checkea que solo queda un jugador con fichas");
-					storeGame.finishGameSpecialsAllIn(seats, room);
+					await storeGame.finishGameSpecialsAllIn(seats, room);
 				} else {
-					if (phaseInGame === "preflop" && countRound >= seats.length) {
-						phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
-					} else if (phaseInGame === "flop") {
-						phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
-					} else if (phaseInGame === "turn") {
-						phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
-					} else if (phaseInGame === "river") {
-					} else {
+					if (storeGame.checkNoFinishGameWithoutSpeak(seats)) {
 						await storeGame.moveTurnLeft(seatsInitial, room);
+					} else {
+						if (phaseInGame === "preflop" && countRound >= seats.length) {
+							phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
+						} else if (phaseInGame === "flop") {
+							phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
+						} else if (phaseInGame === "turn") {
+							phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
+						} else if (phaseInGame === "river") {
+						} else {
+							await storeGame.moveTurnLeft(seatsInitial, room);
+						}
 					}
 				}
 			}
@@ -208,6 +209,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
 		const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
 		const potRef = refDB(`rooms/${room}/pot`);
+		const seatsRef = refDB(`rooms/${room}/seats`);
+		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
 
 		const potPlayer = await getDB(potPlayerCallingRef);
 		const chipsInGame = await getDB(chipsInGameRef);
@@ -217,6 +220,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		await set(chipsInGameRef, chipsInGame - bet);
 		await set(potRef, pot + bet);
 
+		const newSeats = await getDB(seatsRef);
+
 		/*añadido*/
 
 		const potMax = storePot.potMax(seats, true);
@@ -224,6 +229,10 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		if (potMax >= chipsInGame + potPlayer) {
 			await allInConsole(seats, room, index);
 		} else {
+			//if (storePot.asignMaxPot(newSeats) === index) {
+			storePot.resetMaxPot(newSeats, room);
+			set(maxPotRef, "*");
+			//}
 			await storeGame.moveTurnLeft(seats, room);
 		}
 	};

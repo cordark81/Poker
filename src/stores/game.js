@@ -28,11 +28,11 @@ export const useGameStore = defineStore("gameStore", () => {
 				break;
 			case "turn":
 				console.log("TURN");
-				drawCardTable(room);
+				await drawCardTable(room);
 				break;
 			case "river":
 				console.log("RIVER");
-				drawCardTable(room);
+				await drawCardTable(room);
 				break;
 			default:
 				break;
@@ -516,7 +516,17 @@ export const useGameStore = defineStore("gameStore", () => {
 		return filteredArray.length === 1;
 	};
 
+	const checkNoFinishGameWithoutSpeak = (seats) => {
+		const filteredArray = seats.filter(
+			(item) => item.fold === "" && item.allIn === "" && item.potPlayer === 0
+		);
+
+		console.log(filteredArray.length);
+		return filteredArray.length === 1;
+	};
+
 	return {
+		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
 		finishGameSpecialsAllIn,
 		checkFoldIfAllIn,
