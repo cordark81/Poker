@@ -209,6 +209,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
 		const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
 		const potRef = refDB(`rooms/${room}/pot`);
+		const seatsRef = refDB(`rooms/${room}/seats`);
+		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
 
 		const potPlayer = await getDB(potPlayerCallingRef);
 		const chipsInGame = await getDB(chipsInGameRef);
@@ -218,6 +220,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		await set(chipsInGameRef, chipsInGame - bet);
 		await set(potRef, pot + bet);
 
+		const newSeats = await getDB(seatsRef);
+
 		/*añadido*/
 
 		const potMax = storePot.potMax(seats, true);
@@ -225,6 +229,10 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		if (potMax >= chipsInGame + potPlayer) {
 			await allInConsole(seats, room, index);
 		} else {
+			//if (storePot.asignMaxPot(newSeats) === index) {
+			storePot.resetMaxPot(newSeats, room);
+			set(maxPotRef, "*");
+			//}
 			await storeGame.moveTurnLeft(seats, room);
 		}
 	};
