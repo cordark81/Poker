@@ -78,7 +78,6 @@ const joinRoom = () => {
 		}
 	})};
 
-}
 </script>
 <style scoped>
 .background-cards {
