@@ -41,21 +41,26 @@ const props = defineProps({
 })
 
 const scrollToBottom = () => {
+
   const container = scrollContainer.value;
-  container.scrollTop = container.scrollHeight - container.clientHeight
+  if (container.scrollHeight !== null) {
+    container.scrollTop = container.scrollHeight - container.clientHeight
+  }
 };
 
 onMounted(() => {
   const roomRef = refDB(`rooms/${props.room}`);
+
   try {
     onValue(roomRef, (snapshot) => {
       const roomData = snapshot.val();
       if (roomData) {
         messages.value = Object.values(roomData.messages);
+        scrollToBottom();
       }
     });
   } catch (error) {
-    console.error("Error listening for room data:", error);
+    console.error("Error listening for room data:", error.message);
   }
 
 })
@@ -77,8 +82,8 @@ const sendMessage = async () => {
   };
   try {
     await push(refDB(`rooms/${props.room}/messages`), message);
-    text.value = "";
     scrollToBottom();
+    text.value = "";
   } catch (error) {
     console.error("Error sending message:", error);
   }

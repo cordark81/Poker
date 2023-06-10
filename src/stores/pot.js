@@ -58,28 +58,45 @@ export const usePotStore = defineStore("potStore", () => {
     return maxIndex;
   };
 
-  const resetPotPlayer = (seats, room) => {
+  const resetPotPlayer = async(seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
       set(roomRef, 0);
     });
   };
 
-  const resetPot = (room) => {
+  const resetPot = async (room) => {
     const roomRef = refDB(`rooms/${room}/pot`);
     set(roomRef, 0);
   };
 
-  const resetMaxPot = (seats, room) => {
+  const resetMaxPot = async(seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
       set(roomRef, "");
     });
   };
 
+  const potToPlayerWin = async (room, indexPlayerWin) => {
+    const chipsInGameRef = refDB(
+      `rooms/${room}/seats/${indexPlayerWin}/chipsInGame`
+    );
+    const potRef = refDB(`rooms/${room}/pot`);
+    const roomRef = refDB(`rooms/${room}/seats`);
+
+    const chipsInGame = await getDB(chipsInGameRef);
+    const pot = await getDB(potRef);
+
+    set(chipsInGameRef, chipsInGame + pot);
+
+    const roomP = await getDB(roomRef);
+    console.log(roomP);
+  };
+
   return {
     initialPot,
     potMax,
+    potToPlayerWin,
     resetPot,
     resetPotPlayer,
     resetMaxPot,

@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { refDB, set } from "../utils/firebase";
 
 export const useCardsStore = defineStore("cardsStore", () => {
-  const cards = ref([
+  const cards = [
     "Ah",
     "2h",
     "3h",
@@ -56,32 +56,72 @@ export const useCardsStore = defineStore("cardsStore", () => {
     "Js",
     "Qs",
     "Ks",
-  ]);
+  ];
+
   /*const dealtCards = ref([]);*/
-  let gameCards = cards.value;
-  let tableCards = ref([]);
+  const gameCards = ref(cards);
+  const tableCards = ref([]);
   const results = ref([]);
   const winner = ref("");
+  /*
+  const loadSound = (url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(url);
+      audio.addEventListener('canplaythrough', () => resolve(audio));
+      audio.addEventListener('error', reject);
+    });
+  };*/
 
   /*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
 
-  const dealingCards = (seats, room) => {
+  const resetDeck = () => {
+    gameCards.value = [...cards];
+  };
+  /*
+  const dealingCards = async (seats, room) => {
+    // Cargar el sonido antes de la ejecución
+    //
+
     seats.forEach((element, index) => {
       let cardsHand = [];
-      let pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
-      pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
+      let pos = Math.floor(Math.random() * gameCards.value.length);
+      cardsHand.push(gameCards.value[pos]);
+      gameCards.value.splice(pos, 1);
+      pos = Math.floor(Math.random() * gameCards.value.length);
+      cardsHand.push(gameCards.value[pos]);
+      gameCards.value.splice(pos, 1);
       element.hand = cardsHand;
-      const roomRef = refDB(`rooms/${room}/seats/${index}`);
-      set(roomRef, element);
+      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+      set(roomRef, element.hand);
+
+      // Reproducir el sonido al repartir cada carta
+      // cardSound.play();
     });
+  };*/
+
+  const dealingCards = async (seats, room) => {
+    for (let index = 0; index < seats.length; index++) {
+      const cardsHand = [];
+      for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+        const pos = Math.floor(Math.random() * gameCards.value.length);
+        const card = gameCards.value.splice(pos, 1)[0];
+        cardsHand.push(card);
+
+        const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+        set(roomRef, cardsHand);
+
+        const cardSound = await loadSound(
+          "/src/assets/sounds/Dealing-cards-sound.mp3"
+        );
+        console.log(cardSound);
+        await playSound(cardSound);
+      }
+      seats[index].hand = cardsHand;
+    }
   };
 
-  const deleteCards = (seats, room) => {
+  const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
       set(roomRef, []);
@@ -155,16 +195,33 @@ export const useCardsStore = defineStore("cardsStore", () => {
   };
 
   // Para recargar las barajas en la base de datos en caso de corrupción
-  const upDecksFirebase = () =>{
+  const upDecksFirebase = () => {
     const deckClubsRef = refDB(`rooms/Clubs/deck`);
     const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
     const deckHeartRef = refDB(`rooms/Heart/deck`);
     const deckSpadesRef = refDB(`rooms/Spades/deck`);
-    set(deckClubsRef,cards.value)
-    set(deckDiamondsRef,cards.value)
-    set(deckHeartRef,cards.value)
-    set(deckSpadesRef,cards.value)
-  }
+    set(deckClubsRef, cards.value);
+    set(deckDiamondsRef, cards.value);
+    set(deckHeartRef, cards.value);
+    set(deckSpadesRef, cards.value);
+  };
+
+  const loadSound = (url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.src = url;
+      audio.oncanplaythrough = () => resolve(audio);
+      audio.onerror = reject;
+    });
+  };
+
+  const playSound = (audio) => {
+    return new Promise((resolve, reject) => {
+      audio.play();
+      audio.onended = resolve;
+      audio.onerror = reject;
+    });
+  };
 
   return {
     gameCards,
@@ -175,5 +232,6 @@ export const useCardsStore = defineStore("cardsStore", () => {
     checkCards,
     deleteCardsTable,
     upDecksFirebase,
+    resetDeck,
   };
 });

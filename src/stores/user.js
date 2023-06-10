@@ -13,7 +13,8 @@ import {
   browserLocalPersistence,
   onAuthStateChanged,
   updateEmail,
-  updatePassword
+  updatePassword,
+  browserSessionPersistence
 } from "@firebase/auth";
 
 export const useUserStore = defineStore("userStore", () => {
@@ -34,7 +35,7 @@ export const useUserStore = defineStore("userStore", () => {
 
   const doLogin = async (email, password) => {
     const auth = getAuth();
-    await setPersistence(auth, browserLocalPersistence);
+    await setPersistence(auth, browserSessionPersistence);
     await signInWithEmailAndPassword(getAuth(), email, password);
     user.value = auth.currentUser;
   };
