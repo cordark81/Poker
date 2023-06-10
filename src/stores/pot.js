@@ -94,9 +94,11 @@ export const usePotStore = defineStore("potStore", () => {
 	};
 
 	const asignMaxPot = (seats) => {
+		console.log(seats);
 		const playerPotMax = { potMax: -1, index: -1 };
 		seats.forEach((seat, index) => {
-			if (seat.potPlayer > playerPotMax) {
+			if (seat.potPlayer > playerPotMax.potMax) {
+				
 				playerPotMax.potMax = seat.potPlayer;
 				playerPotMax.index = index;
 			}
