@@ -28,11 +28,11 @@ export const useGameStore = defineStore("gameStore", () => {
 				break;
 			case "turn":
 				console.log("TURN");
-				drawCardTable(room);
+				await drawCardTable(room);
 				break;
 			case "river":
 				console.log("RIVER");
-				drawCardTable(room);
+				await drawCardTable(room);
 				break;
 			default:
 				break;
