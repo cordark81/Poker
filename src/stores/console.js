@@ -156,31 +156,19 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 			) {
 				await storeGame.finishGameSpecialsAllIn(seats, room);
 			} else {
-				if (storeGame.checkFinishGameWithOnePlayerOnly(seats)) {
+				if (
+					storeGame.checkFinishGameWithOnePlayerOnly(seatsInitial) &&
+					countRound >= seats.length
+				) {
 					console.log("checkea que solo queda un jugador con fichas");
 					storeGame.finishGameSpecialsAllIn(seats, room);
 				} else {
 					if (phaseInGame === "preflop" && countRound >= seats.length) {
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							"flop",
-							phaseInGameRef
-						);
+						phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
 					} else if (phaseInGame === "flop") {
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							"turn",
-							phaseInGameRef
-						);
+						phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
 					} else if (phaseInGame === "turn") {
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							"river",
-							phaseInGameRef
-						);
+						phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
 					} else if (phaseInGame === "river") {
 					} else {
 						await storeGame.moveTurnLeft(seatsInitial, room);

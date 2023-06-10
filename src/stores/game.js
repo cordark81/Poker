@@ -374,21 +374,33 @@ export const useGameStore = defineStore("gameStore", () => {
 	const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
 		const seatRef = refDB(`rooms/${room}/seats/${index}`);
 		const seat = await getDB(seatRef);
+		if (allPlayerFoldAndAllIn(seats)) {
+			if (foldAndAllIn) {
+				if (seat.fold === "*") {
+					moveTurnLeftWithoutCount(seats, room);
 
-		if (foldAndAllIn) {
-			if (seat.fold === "*") {
-				moveTurnLeftWithoutCount(seats, room);
-
-				return false;
+					return false;
+				}
+				return true;
+			} else {
+				if (seat.allIn === "*") {
+					moveTurnLeftWithoutCount(seats, room);
+					return false;
+				}
+				return true;
 			}
-			return true;
 		} else {
-			if (seat.allIn === "*") {
-				moveTurnLeftWithoutCount(seats, room);
-				return false;
-			}
-			return true;
+			return false;
 		}
+	};
+
+	const allPlayerFoldAndAllIn = (seats) => {
+		const filteredArray = seats.filter(
+			(item) => item.fold === "" && item.allIn === ""
+		);
+
+		console.log(filteredArray.length);
+		return filteredArray.length !== 0;
 	};
 
 	const resetCountRound = async (room) => {
@@ -447,6 +459,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		const countRound = await getDB(countRoundRef);
 
 		let phase = ["flop", "turn", "river"];
+		console.log(phaseGame);
 
 		if (phaseGame === "preflop" && countRound >= seats.length) {
 			for (let i = 0; i < phase.length; i++) {
