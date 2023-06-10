@@ -516,7 +516,17 @@ export const useGameStore = defineStore("gameStore", () => {
 		return filteredArray.length === 1;
 	};
 
+	const checkNoFinishGameWithoutSpeak = (seats) => {
+		const filteredArray = seats.filter(
+			(item) => item.fold === "" && item.allIn === "" && item.potPlayer === 0
+		);
+
+		console.log(filteredArray.length);
+		return filteredArray.length === 1;
+	};
+
 	return {
+		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
 		finishGameSpecialsAllIn,
 		checkFoldIfAllIn,
