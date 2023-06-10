@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { refDB, set } from "../utils/firebase";
 
 export const useCardsStore = defineStore("cardsStore", () => {
-  const cards = ref([
+  const cards = [
     "Ah",
     "2h",
     "3h",
@@ -56,15 +56,14 @@ export const useCardsStore = defineStore("cardsStore", () => {
     "Js",
     "Qs",
     "Ks",
-  ]);
-  
-  /*const dealtCards = ref([]);*/
-  let gameCards = cards.value;
-  let tableCards = ref([]);
+  ];
 
+  /*const dealtCards = ref([]);*/
+  const gameCards = ref(cards);
+  const tableCards = ref([]);
   const results = ref([]);
   const winner = ref("");
-
+  /*
   const loadSound = (url) => {
     return new Promise((resolve, reject) => {
       const audio = new Audio(url);
@@ -87,6 +86,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
   const resetDeck = async () =>{
     gameCards = cards.value;
   }
+
   const dealingCards = async (seats, room) => {
     for (let index = 0; index < seats.length; index++) {
       const cardsHand = [];
@@ -180,18 +180,33 @@ export const useCardsStore = defineStore("cardsStore", () => {
   };
 
   // Para recargar las barajas en la base de datos en caso de corrupción
-  const upDecksFirebase = () =>{
+  const upDecksFirebase = () => {
     const deckClubsRef = refDB(`rooms/Clubs/deck`);
     const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
     const deckHeartRef = refDB(`rooms/Heart/deck`);
     const deckSpadesRef = refDB(`rooms/Spades/deck`);
-    set(deckClubsRef,cards.value)
-    set(deckDiamondsRef,cards.value)
-    set(deckHeartRef,cards.value)
-    set(deckSpadesRef,cards.value)
-  }
+    set(deckClubsRef, cards.value);
+    set(deckDiamondsRef, cards.value);
+    set(deckHeartRef, cards.value);
+    set(deckSpadesRef, cards.value);
+  };
 
-  
+  const loadSound = (url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.src = url;
+      audio.oncanplaythrough = () => resolve(audio);
+      audio.onerror = reject;
+    });
+  };
+
+  const playSound = (audio) => {
+    return new Promise((resolve, reject) => {
+      audio.play();
+      audio.onended = resolve;
+      audio.onerror = reject;
+    });
+  };
 
   return {
     gameCards,
