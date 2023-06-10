@@ -33,7 +33,7 @@
 						storeGame.checkFoldAndAllIn(seats, room, index, true) &&
 						storeGame.checkFoldAndAllIn(seats, room, index, false) &&
 						storeGame.allPlayerAllIn(seats) === false &&
-						storeGame.checkFoldIfAllIn(seats) === false
+						storeGame.checkFoldIfAllIn(seats) === false && storeGame.checkFinishGameWithOnePlayerOnly(seats) === false
 						" @logicCall="logicCallConsole(seats, room, index)" :room="room" :index="index" :seats="seats" />
 				</div>
 			</div>
@@ -214,31 +214,34 @@ const logicCallConsole = async (seatsF, room, index) => {
 
 			const phaseInGame = await getDB(phaseInGameRef);
 			const countRound = await getDB(countRoundRef);
-
-			if (phaseInGame === "preflop" && countRound >= seats.value.length) {
-				storeConsole.phaseChangeWithoutBet(
-					seats.value,
-					room,
-					"flop",
-					phaseInGameRef
-				);
-			} else if (phaseInGame === "flop") {
-				storeConsole.phaseChangeWithoutBet(
-					seats.value,
-					room,
-					"turn",
-					phaseInGameRef
-				);
-			} else if (phaseInGame === "turn") {
-				storeConsole.phaseChangeWithoutBet(
-					seats.value,
-					room,
-					"river",
-					phaseInGameRef
-				);
-			} else if (phaseInGame === "river") {
+			if (storeGame.checkFinishGameWithOnePlayerOnly(seats.value)) {
+				storeGame.finishGameSpecialsAllIn(seats.value, room)
 			} else {
-				storeGame.moveTurnLeft(seats.value, room);
+				if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"flop",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "flop") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"turn",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "turn") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"river",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "river") {
+				} else {
+					storeGame.moveTurnLeft(seats.value, room);
+				}
 			}
 		} else {
 			if (storeGame.checkPotWithFoldOrAllIn(seats.value, false)) {
