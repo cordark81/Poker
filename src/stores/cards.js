@@ -72,7 +72,13 @@ export const useCardsStore = defineStore("cardsStore", () => {
       audio.addEventListener('error', reject);
     });
   };
-  
+  const playSound = (audio) => {
+    return new Promise((resolve, reject) => {
+      audio.play();
+      audio.onended = resolve;
+      audio.onerror = reject;
+    });
+  };
   
 
   /*const addCards = (cardHand, player, room) =>
@@ -81,28 +87,24 @@ export const useCardsStore = defineStore("cardsStore", () => {
   const resetDeck = async () =>{
     gameCards = cards.value;
   }
-
   const dealingCards = async (seats, room) => {
-    // Cargar el sonido antes de la ejecución
-    const cardSound = await loadSound('src/assets/sounds/shuffling-cards.mp3');
-  
-    seats.forEach((element, index) => {
-      let cardsHand = [];
-      let pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
-      pos = Math.floor(Math.random() * gameCards.length);
-      cardsHand.push(gameCards[pos]);
-      gameCards.splice(pos, 1);
-      element.hand = cardsHand;
-      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
-      set(roomRef, element.hand);
-  
-      // Reproducir el sonido al repartir cada carta
-      cardSound.play();
-    });
-  };
-  
+    for (let index = 0; index < seats.length; index++) {
+      const cardsHand = [];
+      for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
+        const pos = Math.floor(Math.random() * gameCards.length);
+        const card = gameCards.splice(pos, 1)[0];
+        cardsHand.push(card);
+        
+        const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
+        set(roomRef, cardsHand);
+        
+        const cardSound = await loadSound("/src/assets/sounds/Dealing-cards-sound.mp3");
+        console.log(cardSound);
+        await playSound(cardSound);
+      }
+      seats[index].hand = cardsHand;
+    }
+  };
 
   const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {

@@ -76,7 +76,7 @@ const joinRoom = () => {
 					unsubscribe();
 				});
 		}
-	});
+	})};
 
 
 </script>
