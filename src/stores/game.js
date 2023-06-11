@@ -201,6 +201,28 @@ export const useGameStore = defineStore("gameStore", () => {
 		}
 	};
 
+	const firstMaxPotInNewRound = async (seats, room) => {
+		
+		const bbIndex = seats.findIndex((item) => item.dealer === "bb");
+		let maxPotIndex = (bbIndex + seats.length + 1) % seats.length;
+
+		if(seats[maxPotIndex].fold==="*"||seats[maxPotIndex].allIn==="*"){
+			maxPotIndex = (bbIndex + seats.length + 2) % seats.length;	
+		}
+		
+		const ref = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
+		const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/turn`);
+		set(ref, "*");
+		set(turnRef, "*");
+
+
+		/*
+		if (route === "maxPot") {
+			const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
+			set(turnRef, "*");
+		}*/
+	};
+
 	const evaluateMaxPot = async (seats, room) => {
 		//Saca el indice del pot mas alto
 		const maxPotIndex = storePot.potMax(seats, false);
@@ -259,10 +281,15 @@ export const useGameStore = defineStore("gameStore", () => {
 		set(newTurnRef, "*");
 	};
 
-	const evaluateMaxPotLeft = (seats, room) => {
+	const evaluateMaxPotLeftWithoutFold = (seats, room) => {
 		const turnIndex = seats.findIndex((item) => item.turn === "*");
-		const maxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
-		const maxPotRef = refDB(`rooms/${room}/seats/${maxPotIndexLeft}/maxPot`);
+		let isMaxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
+
+		if(seats[isMaxPotIndexLeft].fold==="*"||seats[isMaxPotIndexLeft].fold==="*"){
+			isMaxPotIndexLeft = (turnIndex + seats.length + 2) % seats.length;
+		}
+
+		const maxPotRef = refDB(`rooms/${room}/seats/${isMaxPotIndexLeft}/maxPot`);
 		const maxpot = getDB(maxPotRef);
 
 		return maxpot;
@@ -370,7 +397,8 @@ export const useGameStore = defineStore("gameStore", () => {
 
 		set(phaseGameRef, "preflop");
 	};
-
+	/// tenemos el array mejor con el array y nos quitamos una promesa???
+	
 	const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
 		const seatRef = refDB(`rooms/${room}/seats/${index}`);
 		const seat = await getDB(seatRef);
@@ -525,7 +553,22 @@ export const useGameStore = defineStore("gameStore", () => {
 		return filteredArray.length === 1;
 	};
 
+	const evaluateMaxPotLeft = (seats, room) => {
+		const turnIndex = seats.findIndex((item) => item.turn === "*");
+		let isMaxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
+
+		if(seats[isMaxPotIndexLeft].fold==="*"||seats[isMaxPotIndexLeft].fold==="*"){
+			isMaxPotIndexLeft = (turnIndex + seats.length + 2) % seats.length;
+		}
+
+		const maxPotRef = refDB(`rooms/${room}/seats/${isMaxPotIndexLeft}/maxPot`);
+		const maxpot = getDB(maxPotRef);
+
+		return maxpot;
+	};
+
 	return {
+		firstMaxPotInNewRound,
 		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
 		finishGameSpecialsAllIn,
@@ -543,7 +586,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		evaluateMaxPot,
 		verifySimilarPots,
 		moveTurnLeft,
-		evaluateMaxPotLeft,
+		evaluateMaxPotLeftWithoutFold,
 		resetGame,
 		resetTurn,
 		resetChipsInGame,
