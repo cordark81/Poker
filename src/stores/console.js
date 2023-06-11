@@ -5,185 +5,210 @@ import { usePotStore } from "./pot";
 import { useCardsStore } from "./cards";
 
 export const useConsoleStore = defineStore("consoleStore", () => {
-  const storeGame = useGameStore();
-  const storePot = usePotStore();
-  const storeCards = useCardsStore();
+	const storeGame = useGameStore();
+	const storePot = usePotStore();
+	const storeCards = useCardsStore();
 
-  const checkConsole = async (seats, room) => {
-    const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
-    const phaseInGame = await getDB(phaseInGameRef);
-    if (storeGame.verifySimilarPots(seats)) {
-      if (phaseInGame === "preflop") {
-        phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
-      } else if (phaseInGame === "flop") {
-        const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
-        console.log(maxPotLeft);
-        if (maxPotLeft === "*") {
-          phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
-        } else {
-          storeGame.moveTurnLeft(seats, room);
-        }
-      } else if (phaseInGame === "turn") {
-        const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
-        console.log(maxPotLeft);
-        if (maxPotLeft === "*") {
-          phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
-        } else {
-          storeGame.moveTurnLeft(seats, room);
-        }
-      } else if (phaseInGame === "river") {
-        //si todos check evaluar cartas
-      }
-    } else {
-      await storeGame.moveTurnLeft(seats, room);
-    }
-  };
+	const checkConsole = async (seats, room) => {
+		const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+		const phaseInGame = await getDB(phaseInGameRef);
+		if (storeGame.verifySimilarPots(seats)) {
+			if (phaseInGame === "preflop") {
+				phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
+			} else if (phaseInGame === "flop") {
+				const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(
+					seats,
+					room
+				);
+				console.log(maxPotLeft);
+				if (maxPotLeft === "*") {
+					phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
+				} else {
+					storeGame.moveTurnLeft(seats, room);
+				}
+			} else if (phaseInGame === "turn") {
+				const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(
+					seats,
+					room
+				);
+				console.log(maxPotLeft);
+				if (maxPotLeft === "*") {
+					phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
+				} else {
+					storeGame.moveTurnLeft(seats, room);
+				}
+			} else if (phaseInGame === "river") {
+				//si todos check evaluar cartas
+			}
+		} else {
+			await storeGame.moveTurnLeft(seats, room);
+		}
+	};
 
-  const phaseChangeWithoutBet = async (seats, room, phase, phaseInGameRef) => {
-    await storeGame.gamePhase(phase, room);
-    storePot.resetPotPlayer(seats, room);
-    storePot.resetMaxPot(seats, room);
-    storeGame.resetTurn(seats, room);
-    storeGame.firstMaxPotInNewRound(seats, room);
-    set(phaseInGameRef, phase);
-  };
-  /*pendiente de eliminar
+	const phaseChangeWithoutBet = async (seats, room, phase, phaseInGameRef) => {
+		await storeGame.gamePhase(phase, room);
+		storePot.resetPotPlayer(seats, room);
+		storePot.resetMaxPot(seats, room);
+		storeGame.resetTurn(seats, room);
+		storeGame.firstMaxPotInNewRound(seats, room);
+		set(phaseInGameRef, phase);
+	};
+	/*pendiente de eliminar
   const callConsole = async (seats, room, index) => {
     ajustBet(seats, room, index, 1);    
   };*/
 
-  const foldConsole = async (seats, room, index) => {
-    // actualiza a 0 la apuesta del jugador, elimina las cartas de esta ronda
-    // y le ponemos una marca de que el jugador esta fold
+	const foldConsole = async (seats, room, index) => {
+		// actualiza a 0 la apuesta del jugador, elimina las cartas de esta ronda
+		// y le ponemos una marca de que el jugador esta fold
 
-    const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
-    const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
-    const foldRef = refDB(`rooms/${room}/seats/${index}/fold`);
-    const seatRef = refDB(`rooms/${room}/seats`);
-    const potRef = refDB(`rooms/${room}/pot`);
-    const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+		const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
+		const foldRef = refDB(`rooms/${room}/seats/${index}/fold`);
+		const seatRef = refDB(`rooms/${room}/seats`);
+		const potRef = refDB(`rooms/${room}/pot`);
+		const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+		const noPlayRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
 
-    await set(potPlayerCallingRef, 0);
-    await set(handRef, []);
-    await set(foldRef, "*");
+		await set(potPlayerCallingRef, 0);
+		await set(handRef, []);
+		await set(foldRef, "*");
+		await set(noPlayRef, "*");
 
-    const newSeats = await getDB(seatRef);
+		const newSeats = await getDB(seatRef);
 
-    if (checkPlayerWithoutFold(newSeats) === 1) {
-      const indexWinner = findFoldedPlayerIndex(newSeats);
-      const chipsForWinner = await getDB(potRef);
-      await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
-      storeGame.resetGameWithWinner(newSeats, room, indexWinner);
-    } else {
-      console.log(storeGame.checkPotWithFoldOrAllIn(newSeats, true));
-      if (storeGame.checkPotWithFoldOrAllIn(newSeats, true)) {
-        console.log("if");
-        const countRoundRef = refDB(`rooms/${room}/countRound`);
+		if (checkPlayerWithoutFold(newSeats) === 1) {
+			const indexWinner = findFoldedPlayerIndex(newSeats);
+			const chipsForWinner = await getDB(potRef);
+			await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
+			storeGame.resetGameWithWinner(newSeats, room, indexWinner);
+		} else {
+			console.log(storeGame.checkPotWithFoldOrAllIn(newSeats, true));
+			if (storeGame.checkPotWithFoldOrAllIn(newSeats, true)) {
+				console.log("if");
+				const countRoundRef = refDB(`rooms/${room}/countRound`);
 
-        const phaseGame = await getDB(phaseGameRef);
-        const countRound = await getDB(countRoundRef);
+				const phaseGame = await getDB(phaseGameRef);
+				const countRound = await getDB(countRoundRef);
 
-        if (storeGame.checkFoldIfAllIn(newSeats)) {
-          await storeGame.finishGameSpecialsAllIn(seats, room);
-        } else {
-          if (
-            storeGame.checkFinishGameWithOnePlayerOnly(seatsInitial) &&
-            countRound >= seats.length
-          ) {
-            await storeGame.finishGameSpecialsAllIn(seats, room);
-          } else {
-            // falta logica
-            if (phaseGame === "preflop" && countRound >= newSeats.length) {
-              phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
-            } else if (phaseGame === "flop") {
-              phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
-            } else if (phaseGame === "turn") {
-              phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
-            } else if (phaseGame === "river") {
-            }
-          }
-        }
-      } else {
-        console.log("else");
-        await storeGame.moveTurnLeft(seats, room);
-      }
-    }
-  };
+				if (storeGame.checkFoldIfAllIn(newSeats)) {
+					await storeGame.finishGameSpecialsAllIn(seats, room);
+				} else {
+					if (
+						storeGame.checkFinishGameWithOnePlayerOnly(seats) &&
+						countRound >= seats.length
+					) {
+						await storeGame.finishGameSpecialsAllIn(seats, room);
+					} else {
+						// falta logica
+						if (phaseGame === "preflop" && countRound >= newSeats.length) {
+							phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
+						} else if (phaseGame === "flop") {
+							phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
+						} else if (phaseGame === "turn") {
+							phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
+						} else if (phaseGame === "river") {
+						}
+					}
+				}
+			} else {
+				console.log("else");
+				await storeGame.moveTurnLeft(seats, room);
+			}
+		}
+	};
 
-  //Funcion dinamica para distintos grados de apuesta
-  const raiseConsole = async (seats, room, index) => {
-    const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
-    if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
-      allInConsole(seats, room, index);
-    } else {
-      ajustBet(seats, room, index, 2);
-      storePot.resetMaxPot(seats, room);
-      set(maxPotRef, "*");
-      await storeGame.moveTurnLeft(seats, room);
-    }
-  };
+	//Funcion dinamica para distintos grados de apuesta
+	const raiseConsole = async (seats, room, index) => {
+		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
+		if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
+			allInConsole(seats, room, index);
+		} else {
+			ajustBet(seats, room, index, 2);
+			storePot.resetMaxPot(seats, room);
+			set(maxPotRef, "*");
+			await storeGame.moveTurnLeft(seats, room);
+		}
+	};
 
-  const checkPlayerWithoutFold = (seats) =>
-    seats.reduce(
-      (count, seat) => (seat.fold === "*" ? count - 1 : count),
-      seats.length
-    );
+	const checkPlayerWithoutFold = (seats) =>
+		seats.reduce(
+			(count, seat) => (seat.fold === "*" ? count - 1 : count),
+			seats.length
+		);
 
-  const findFoldedPlayerIndex = (seats) =>
-    seats.reduce(
-      (count, seat, index) =>
-        seat.fold === "" && count === -1 ? index : count,
-      -1
-    );
+	const findFoldedPlayerIndex = (seats) =>
+		seats.reduce(
+			(count, seat, index) =>
+				seat.fold === "" && count === -1 ? index : count,
+			-1
+		);
 
-  const allInConsole = async (seatsInitial, room, index) => {
-    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
-    const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
-    const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
-    const potRef = refDB(`rooms/${room}/pot`);
-    const seatsRef = refDB(`rooms/${room}/seats`);
-    const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
-    const countRoundRef = refDB(`rooms/${room}/countRound`);
-    const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
+	const allInConsole = async (seatsInitial, room, index) => {
+		const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+		const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
+		const potRef = refDB(`rooms/${room}/pot`);
+		const seatsRef = refDB(`rooms/${room}/seats`);
+		const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+		const countRoundRef = refDB(`rooms/${room}/countRound`);
+		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
+		const noPlayRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
 
-    const potPlayer = await getDB(potPlayerCallingRef);
-    const chipsInGame = await getDB(chipsInGameRef);
-    const pot = await getDB(potRef);
-    const phaseInGame = await getDB(phaseInGameRef);
-    const countRound = await getDB(countRoundRef);
+		const potPlayer = await getDB(potPlayerCallingRef);
+		const chipsInGame = await getDB(chipsInGameRef);
+		const pot = await getDB(potRef);
+		const phaseInGame = await getDB(phaseInGameRef);
+		const countRound = await getDB(countRoundRef);
 
-    await set(potPlayerCallingRef, chipsInGame + potPlayer);
-    await set(chipsInGameRef, 0);
-    await set(potRef, pot + chipsInGame + potPlayer);
+		await set(potPlayerCallingRef, chipsInGame + potPlayer);
+		await set(chipsInGameRef, 0);
+		await set(potRef, pot + chipsInGame + potPlayer);
 
-    await set(allInRef, "*");
-    const seats = await getDB(seatsRef);
+		await set(allInRef, "*");
+		await set(noPlayRef, "*");
+		let seats = await getDB(seatsRef);
 
-    console.log(storeGame.allPlayerAllIn(seats));
-    try {
-      if (
-        storeGame.allPlayerAllIn(seats) ||
-        storeGame.checkFoldIfAllIn(seats)
-      ) {
-        await storeGame.finishGameSpecialsAllIn(seats, room);
-      } else {
-        console.log("antes");
-        if (
-          storeGame.checkFinishGameWithOnePlayerOnly(seats) &&
-          countRound >= seats.length
-        ) {
-          console.log("despues");
-          await storeGame.finishGameSpecialsAllIn(seats, room);
-        } else {
-          if (storePot.asignMaxPot(seats) === index) {
-            storePot.resetMaxPot(seats, room);
-            set(maxPotRef, "*");
-          }
-          //aqui ya le ha pasado el turno no se por que??????
-          
-          const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
-          
-          if (maxPotLeft === "*") {
+		try {
+			if (storeGame.checkIfNoPlayerCanPlay(seats)) {
+				await storeGame.finishGameSpecialsAllIn(seats, room);
+			} else {
+				if (
+					storeGame.checkFinishGameWithOnePlayerOnly(seats) &&
+					storeGame.checkNoFinishGameWithoutSpeak(seats) === false &&
+					countRound >= seats.length
+				) {
+					console.log("despues");
+					await storeGame.finishGameSpecialsAllIn(seats, room);
+				} else {
+					if (storePot.asignMaxPot(seats) === index) {
+						storePot.resetMaxPot(seats, room);
+						set(maxPotRef, "*");
+					}
+					seats = await getDB(seatsRef);
+					if (storeGame.checkTurnLeftWithOrderPlayerAllIn(seats)) {
+						await storeGame.moveTurnLeft(seatsInitial, room);
+					} else {
+						if (storeGame.checkNextPhaseWithoutNoPlay(seats)) {
+							if (phaseInGame === "preflop" && countRound >= seats.length) {
+								phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
+							} else if (phaseInGame === "flop") {
+								phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
+							} else if (phaseInGame === "turn") {
+								phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
+							} else if (phaseInGame === "river") {
+							}
+						} else {
+							await storeGame.moveTurnLeft(seatsInitial, room);
+						}
+					}
+					//aqui ya le ha pasado el turno no se por que??????
+
+					/*const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(
+            seats,
+            room
+          );*/
+					/*if (maxPotLeft === "*") {
             if (phaseInGame === "preflop" && countRound >= seats.length) {
               phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
             } else if (phaseInGame === "flop") {
@@ -192,94 +217,94 @@ export const useConsoleStore = defineStore("consoleStore", () => {
               phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
             } else if (phaseInGame === "river") {
             }
-          }else{
-            await storeGame.moveTurnLeft(seatsInitial, room);
-          }
-          /*
-          if (phaseInGame === "preflop" && countRound >= seats.length) {
-            phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
-          } else if (phaseInGame === "flop") {
-            phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
-          } else if (phaseInGame === "turn") {
-            phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
-          } else if (phaseInGame === "river") {
           } else {
-            console.log(storePot.asignMaxPot(seats));
-            if (storePot.asignMaxPot(seats) === index) {
-              storePot.resetMaxPot(seats, room);
-              set(maxPotRef, "*");
-            }
             await storeGame.moveTurnLeft(seatsInitial, room);
           }*/
-        }
-      }
-    } catch (error) {
-      console.log(error.message);
-    }
+					/*
+            if (phaseInGame === "preflop" && countRound >= seats.length) {
+              phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
+            } else if (phaseInGame === "flop") {
+              phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
+            } else if (phaseInGame === "turn") {
+              phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
+            } else if (phaseInGame === "river") {
+            } else {
+              console.log(storePot.asignMaxPot(seats));
+              if (storePot.asignMaxPot(seats) === index) {
+                storePot.resetMaxPot(seats, room);
+                set(maxPotRef, "*");
+              }
+              await storeGame.moveTurnLeft(seatsInitial, room);
+            }*/
+				}
+			}
+		} catch (error) {
+			console.log(error.message);
+		}
 
-    //si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
-  };
+		//si todos all in avanzar fases hasta el final y evaluar cartas podemos poner un delay de 5 seg entre cartas para darle emocion set timeout
+	};
 
-  const ajustBet = async (seats, room, index, multiplier) => {
-    const maxPot = storePot.potMax(seats, true);
+	const ajustBet = async (seats, room, index, multiplier) => {
+		const maxPot = storePot.potMax(seats, true);
 
-    const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
-    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
-    const potRef = refDB(`rooms/${room}/pot`);
+		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+		const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+		const potRef = refDB(`rooms/${room}/pot`);
 
-    const potPlayer = await getDB(potPlayerCallingRef);
-    const chipsInGame = await getDB(chipsInGameRef);
-    const pot = await getDB(potRef);
+		const potPlayer = await getDB(potPlayerCallingRef);
+		const chipsInGame = await getDB(chipsInGameRef);
+		const pot = await getDB(potRef);
 
-    const potMax = storePot.potMax(seats, true);
+		const potMax = storePot.potMax(seats, true);
 
-    if (potMax >= chipsInGame + potPlayer) {
-      await allInConsole(seats, room, index);
-    }
+		if (potMax >= chipsInGame + potPlayer) {
+			await allInConsole(seats, room, index);
+		}
 
-    await set(potPlayerCallingRef, maxPot * multiplier);
-    await set(chipsInGameRef, chipsInGame - (maxPot * multiplier - potPlayer));
-    await set(potRef, pot + (maxPot * multiplier - potPlayer));
-  };
+		await set(potPlayerCallingRef, maxPot * multiplier);
+		await set(chipsInGameRef, chipsInGame - (maxPot * multiplier - potPlayer));
+		await set(potRef, pot + (maxPot * multiplier - potPlayer));
+	};
 
-  const betConsole = async (seats, room, index, bet) => {
-    const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
-    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
-    const potRef = refDB(`rooms/${room}/pot`);
-    const seatsRef = refDB(`rooms/${room}/seats`);
-    const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
+	const betConsole = async (seats, room, index, bet) => {
+		const potPlayerCallingRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
+		const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
+		const potRef = refDB(`rooms/${room}/pot`);
+		const seatsRef = refDB(`rooms/${room}/seats`);
+		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
 
-    const potPlayer = await getDB(potPlayerCallingRef);
-    const chipsInGame = await getDB(chipsInGameRef);
-    const pot = await getDB(potRef);
+		const potPlayer = await getDB(potPlayerCallingRef);
+		const chipsInGame = await getDB(chipsInGameRef);
+		const pot = await getDB(potRef);
 
-    await set(potPlayerCallingRef, potPlayer + bet);
-    await set(chipsInGameRef, chipsInGame - bet);
-    await set(potRef, pot + bet);
+		await set(potPlayerCallingRef, potPlayer + bet);
+		await set(chipsInGameRef, chipsInGame - bet);
+		await set(potRef, pot + bet);
 
-    const newSeats = await getDB(seatsRef);
+		const newSeats = await getDB(seatsRef);
 
-    /*añadido*/
+		/*añadido*/
 
-    const potMax = storePot.potMax(seats, true);
+		const potMax = storePot.potMax(seats, true);
 
-    if (potMax >= chipsInGame + potPlayer) {
-      await allInConsole(seats, room, index);
-    } else {
-      storePot.resetMaxPot(newSeats, room);
-      set(maxPotRef, "*");
+		if (potMax >= chipsInGame + potPlayer) {
+			await allInConsole(seats, room, index);
+		} else {
+			storePot.resetMaxPot(newSeats, room);
+			set(maxPotRef, "*");
 
-      await storeGame.moveTurnLeft(seats, room);
-    }
-  };
+			await storeGame.moveTurnLeft(seats, room);
+		}
+	};
 
-  return {
-    foldConsole,
-    checkConsole,
-    raiseConsole,
-    allInConsole,
-    betConsole,
-    phaseChangeWithoutBet,
-    ajustBet,
-  };
+	return {
+		foldConsole,
+		checkConsole,
+		raiseConsole,
+		allInConsole,
+		betConsole,
+		phaseChangeWithoutBet,
+		ajustBet,
+	};
 });

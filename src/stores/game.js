@@ -202,19 +202,17 @@ export const useGameStore = defineStore("gameStore", () => {
 	};
 
 	const firstMaxPotInNewRound = async (seats, room) => {
-		
 		const bbIndex = seats.findIndex((item) => item.dealer === "bb");
 		let maxPotIndex = (bbIndex + seats.length + 1) % seats.length;
 
-		if(seats[maxPotIndex].fold==="*"||seats[maxPotIndex].allIn==="*"){
-			maxPotIndex = (bbIndex + seats.length + 2) % seats.length;	
+		if (seats[maxPotIndex].fold === "*" || seats[maxPotIndex].allIn === "*") {
+			maxPotIndex = (bbIndex + seats.length + 2) % seats.length;
 		}
-		
+
 		const ref = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
 		const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/turn`);
 		set(ref, "*");
 		set(turnRef, "*");
-
 
 		/*
 		if (route === "maxPot") {
@@ -285,7 +283,10 @@ export const useGameStore = defineStore("gameStore", () => {
 		const turnIndex = seats.findIndex((item) => item.turn === "*");
 		let isMaxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
 
-		if(seats[isMaxPotIndexLeft].fold==="*"||seats[isMaxPotIndexLeft].fold==="*"){
+		if (
+			seats[isMaxPotIndexLeft].fold === "*" ||
+			seats[isMaxPotIndexLeft].fold === "*"
+		) {
 			isMaxPotIndexLeft = (turnIndex + seats.length + 2) % seats.length;
 		}
 
@@ -316,6 +317,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				fold: "",
 				hand: [],
 				maxPot: "",
+				noPlay: "",
 				potPlayer: 0,
 				turn: "",
 				allIn: "",
@@ -393,12 +395,13 @@ export const useGameStore = defineStore("gameStore", () => {
 		await evaluateMaxPot(newSeats, room);
 		await storeCards.dealingCards(newSeats, room);
 		await resetAllIn(newSeats, room);
-		resetCountRound(room);
+		await resetCountRound(room);
+		await resetNoPlay(newSeats);
 
 		set(phaseGameRef, "preflop");
 	};
 	/// tenemos el array mejor con el array y nos quitamos una promesa???
-	
+
 	const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
 		const seatRef = refDB(`rooms/${room}/seats/${index}`);
 		const seat = await getDB(seatRef);
@@ -434,6 +437,13 @@ export const useGameStore = defineStore("gameStore", () => {
 	const resetCountRound = async (room) => {
 		const countRoundRef = refDB(`rooms/${room}/countRound`);
 		set(countRoundRef, 1);
+	};
+
+	const resetNoPlay = async (seats) => {
+		seats.forEach((seat, index) => {
+			const noPlayRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
+			set(noPlayRef, "");
+		});
 	};
 	/* pèndiente eliminar, si no usa*/
 	const getChipsInGame = async (room, index) => {
@@ -536,9 +546,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		console.log("Quien ha ganado");
 	};
 	const checkFinishGameWithOnePlayerOnly = (seats) => {
-		const filteredArray = seats.filter(
-			(item) => item.fold === "" && item.allIn === ""
-		);
+		const filteredArray = seats.filter((item) => item.noPlay === "");
 
 		console.log(filteredArray.length);
 		return filteredArray.length === 1;
@@ -546,10 +554,16 @@ export const useGameStore = defineStore("gameStore", () => {
 
 	const checkNoFinishGameWithoutSpeak = (seats) => {
 		const filteredArray = seats.filter(
-			(item) => item.fold === "" && item.allIn === "" && item.potPlayer === 0
+			(item) => item.noPlay === "" && item.potPlayer === 0
 		);
 
 		console.log(filteredArray.length);
+		return filteredArray.length === 1;
+	};
+
+	const checkTurnLeftWithOrderPlayerAllIn = (seats) => {
+		const filteredArray = seats.filter((item) => item.noPlay === "");
+
 		return filteredArray.length === 1;
 	};
 
@@ -557,7 +571,10 @@ export const useGameStore = defineStore("gameStore", () => {
 		const turnIndex = seats.findIndex((item) => item.turn === "*");
 		let isMaxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
 
-		if(seats[isMaxPotIndexLeft].fold==="*"||seats[isMaxPotIndexLeft].fold==="*"){
+		if (
+			seats[isMaxPotIndexLeft].fold === "*" ||
+			seats[isMaxPotIndexLeft].fold === "*"
+		) {
 			isMaxPotIndexLeft = (turnIndex + seats.length + 2) % seats.length;
 		}
 
@@ -567,7 +584,22 @@ export const useGameStore = defineStore("gameStore", () => {
 		return maxpot;
 	};
 
+	const checkIfNoPlayerCanPlay = (seats) => {
+		if (seats.every((seat) => seat.noPlay === "*")) {
+			return true;
+		}
+		return false;
+	};
+
+	const checkNextPhaseWithoutNoPlay = (seats) => {
+		const filter = seats.filter((seat) => seat.noPlay === "");
+		return filter.every((seat) => seat.potPlayer === filter[0].potPlayer);
+	};
+
 	return {
+		checkTurnLeftWithOrderPlayerAllIn,
+		checkNextPhaseWithoutNoPlay,
+		checkIfNoPlayerCanPlay,
 		firstMaxPotInNewRound,
 		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
