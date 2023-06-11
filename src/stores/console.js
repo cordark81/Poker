@@ -16,7 +16,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
       if (phaseInGame === "preflop") {
         phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
       } else if (phaseInGame === "flop") {
-        const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
+        const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
         console.log(maxPotLeft);
         if (maxPotLeft === "*") {
           phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
@@ -24,7 +24,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
           storeGame.moveTurnLeft(seats, room);
         }
       } else if (phaseInGame === "turn") {
-        const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room);
+        const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
         console.log(maxPotLeft);
         if (maxPotLeft === "*") {
           phaseChangeWithoutBet(seats, room, "river", phaseInGameRef);
@@ -179,8 +179,23 @@ export const useConsoleStore = defineStore("consoleStore", () => {
             storePot.resetMaxPot(seats, room);
             set(maxPotRef, "*");
           }
-          await storeGame.moveTurnLeft(seatsInitial, room);
-
+          //aqui ya le ha pasado el turno no se por que??????
+          
+          const maxPotLeft = await storeGame.evaluateMaxPotLeftWithoutFold(seats, room);
+          
+          if (maxPotLeft === "*") {
+            if (phaseInGame === "preflop" && countRound >= seats.length) {
+              phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
+            } else if (phaseInGame === "flop") {
+              phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
+            } else if (phaseInGame === "turn") {
+              phaseChangeWithoutBet(seats.value, room, "river", phaseInGameRef);
+            } else if (phaseInGame === "river") {
+            }
+          }else{
+            await storeGame.moveTurnLeft(seatsInitial, room);
+          }
+          /*
           if (phaseInGame === "preflop" && countRound >= seats.length) {
             phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
           } else if (phaseInGame === "flop") {
@@ -195,7 +210,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
               set(maxPotRef, "*");
             }
             await storeGame.moveTurnLeft(seatsInitial, room);
-          }
+          }*/
         }
       }
     } catch (error) {
