@@ -534,8 +534,8 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			}
 			showWinnerAfterRiver(seats, room);
+			//setTimeout(() => resetGameWithWinner(seats, room, ), 5000);
 		}
-		console.log("Quien ha ganado");
 	};
 	const checkFinishGameWithOnePlayerOnly = (seats) => {
 		const filteredArray = seats.filter(
