@@ -54,8 +54,8 @@ export const useGameStore = defineStore("gameStore", () => {
 		set(tableCardsRef, tableCards);
 	};
 
-	const evaluate = async (mano) => {
-		const cadena = mano.join("");
+	const evaluate = async (hand) => {
+		const cadena = hand.join("");
 		try {
 			const response = await axios.post(
 				`http://localhost:3005/evaluate/${cadena}`
@@ -64,6 +64,49 @@ export const useGameStore = defineStore("gameStore", () => {
 		} catch (error) {
 			console.error(error);
 			throw error;
+		}
+	};
+
+	const showWinnerAfterRiver = async (seats, room) => {
+		const potRef = refDB(`rooms/${room}/pot`);
+		const pot = await getDB(potRef);
+
+		const winners = await checkWinner(seats, room);
+
+		await Promise.all(
+			winners.winners.map(async (winner, index) => {
+				const indexWinner = winners.index[index];
+				const userWinner = seats[indexWinner].user;
+				const descriptionWinner = winner.descr;
+				const textWinner = `¡¡¡Ganador: ${userWinner} con ${descriptionWinner} ganó ${pot} fichas!!!`;
+				const message = {
+					photoUser:
+						"https://www.primedope.com/wp-content/uploads/Robot-playing-GTO-Poker-400x335.webp",
+					text: textWinner,
+					user: "PokerBot",
+				};
+
+				await push(refDB(`rooms/${room}/messages`), message);
+			})
+		);
+	};
+
+	const checkWinner = async (seats, room) => {
+		try {
+			let allCardsInGame = [];
+
+			const tableCardsRef = refDB(`rooms/${room}/tableCards`);
+			const tableCards = await getDB(tableCardsRef);
+
+			seats.forEach((seat) => {
+				allCardsInGame = allCardsInGame.concat(seat.hand.concat(tableCards));
+			});
+
+			const results = await evaluate(allCardsInGame);
+			console.log(results);
+			return results;
+		} catch (error) {
+			console.error(error);
 		}
 	};
 
@@ -463,47 +506,34 @@ export const useGameStore = defineStore("gameStore", () => {
 
 		if (phaseGame === "preflop" && countRound >= seats.length) {
 			for (let i = 0; i < phase.length; i++) {
-				setTimeout(
-					(index) =>
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							phase[index],
-							phaseGameRef
-						),
-					5000 * (1 + i),
-					i
+				await storeConsole.phaseChangeWithoutBet(
+					seats,
+					room,
+					phase[i],
+					phaseGameRef
 				);
 			}
+			showWinnerAfterRiver(seats, room);
 		} else if (phaseGame === "flop") {
 			for (let i = 1; i < phase.length; i++) {
-				setTimeout(
-					(index) => {
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							phase[index],
-							phaseGameRef
-						);
-					},
-					5000 * i,
-					i
+				await storeConsole.phaseChangeWithoutBet(
+					seats,
+					room,
+					phase[i],
+					phaseGameRef
 				);
 			}
+			showWinnerAfterRiver(seats, room);
 		} else if (phaseGame === "turn") {
 			for (let i = 2; i < phase.length; i++) {
-				setTimeout(
-					(index) =>
-						storeConsole.phaseChangeWithoutBet(
-							seats,
-							room,
-							phase[index],
-							phaseGameRef
-						),
-					5000 * i,
-					i
+				await storeConsole.phaseChangeWithoutBet(
+					seats,
+					room,
+					phase[i],
+					phaseGameRef
 				);
 			}
+			showWinnerAfterRiver(seats, room);
 		}
 		console.log("Quien ha ganado");
 	};
@@ -525,7 +555,50 @@ export const useGameStore = defineStore("gameStore", () => {
 		return filteredArray.length === 1;
 	};
 
+	const checkPhaseChange = (
+		seats,
+		room,
+		phaseInGameRef,
+		phaseInGame,
+		countRound,
+		moveTurn
+	) => {
+		if (moveTurn) {
+			if (phaseInGame === "preflop" && countRound >= seats.length) {
+				storeConsole.phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
+			} else if (phaseInGame === "flop") {
+				storeConsole.phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
+			} else if (phaseInGame === "turn") {
+				storeConsole.phaseChangeWithoutBet(
+					seats,
+					room,
+					"river",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "river") {
+				showWinnerAfterRiver(seats, room);
+			} else {
+				moveTurnLeft(seats, room);
+			}
+		} else {
+			if (phaseInGame === "preflop" && countRound >= seats.length) {
+				storeConsole.phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
+			} else if (phaseInGame === "flop") {
+				storeConsole.phaseChangeWithoutBet(seats, room, "turn", phaseInGameRef);
+			} else if (phaseInGame === "turn") {
+				storeConsole.phaseChangeWithoutBet(
+					seats,
+					room,
+					"river",
+					phaseInGameRef
+				);
+			} else if (phaseInGame === "river") {
+			}
+		}
+	};
+
 	return {
+		checkPhaseChange,
 		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
 		finishGameSpecialsAllIn,
@@ -534,7 +607,6 @@ export const useGameStore = defineStore("gameStore", () => {
 		checkPotWithFoldOrAllIn,
 		showWinner,
 		gamePhase,
-		evaluate,
 		ditchDealer,
 		deleteDealer,
 		asignChipsInGame,

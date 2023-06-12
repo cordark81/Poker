@@ -85,14 +85,22 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 				if (storeGame.checkFoldIfAllIn(newSeats)) {
 					await storeGame.finishGameSpecialsAllIn(seats, room);
 				} else {
-					if (phaseGame === "preflop" && countRound >= newSeats.length) {
+					storeGame.checkPhaseChange(
+						newSeats,
+						room,
+						phaseGameRef,
+						phaseGame,
+						countRound,
+						false
+					);
+					/*if (phaseGame === "preflop" && countRound >= newSeats.length) {
 						phaseChangeWithoutBet(newSeats, room, "flop", phaseGameRef);
 					} else if (phaseGame === "flop") {
 						phaseChangeWithoutBet(newSeats, room, "turn", phaseGameRef);
 					} else if (phaseGame === "turn") {
 						phaseChangeWithoutBet(newSeats, room, "river", phaseGameRef);
 					} else if (phaseGame === "river") {
-					}
+					}*/
 				}
 			} else {
 				console.log("else");
@@ -163,7 +171,15 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 					if (storeGame.checkNoFinishGameWithoutSpeak(seats)) {
 						await storeGame.moveTurnLeft(seatsInitial, room);
 					} else {
-						if (phaseInGame === "preflop" && countRound >= seats.length) {
+						storeGame.checkPhaseChange(
+							seats,
+							room,
+							phaseInGameRef,
+							phaseInGame,
+							countRound,
+							true
+						);
+						/*if (phaseInGame === "preflop" && countRound >= seats.length) {
 							phaseChangeWithoutBet(seats.value, room, "flop", phaseInGameRef);
 						} else if (phaseInGame === "flop") {
 							phaseChangeWithoutBet(seats.value, room, "turn", phaseInGameRef);
@@ -172,7 +188,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 						} else if (phaseInGame === "river") {
 						} else {
 							await storeGame.moveTurnLeft(seatsInitial, room);
-						}
+						}*/
 					}
 				}
 			}
