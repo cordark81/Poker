@@ -153,7 +153,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 
 		await set(potPlayerCallingRef, chipsInGame + potPlayer);
 		await set(chipsInGameRef, 0);
-		await set(potRef, pot + chipsInGame + potPlayer);
+		await set(potRef, pot + chipsInGame);
 
 		await set(noPlayRef, "*");
 		await set(allInRef, "*");

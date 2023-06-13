@@ -75,6 +75,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
 		await Promise.all(
 			winners.winners.map(async (winner, index) => {
+				//Pendiente de añadir a la funcion showWinner
 				const indexWinner = winners.index[index];
 				const userWinner = seats[indexWinner].user;
 				const descriptionWinner = winner.descr;

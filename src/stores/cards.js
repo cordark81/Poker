@@ -195,7 +195,8 @@ export const useCardsStore = defineStore("cardsStore", () => {
 	};
 
 	// Para recargar las barajas en la base de datos en caso de corrupción
-	const upDecksFirebase = () => {
+	//Este hay que eliminarlo
+	/*const upDecksFirebase = () => {
 		const deckClubsRef = refDB(`rooms/Clubs/deck`);
 		const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
 		const deckHeartRef = refDB(`rooms/Heart/deck`);
@@ -204,7 +205,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
 		set(deckDiamondsRef, cards.value);
 		set(deckHeartRef, cards.value);
 		set(deckSpadesRef, cards.value);
-	};
+	};*/
 
 	const loadSound = (url) => {
 		return new Promise((resolve, reject) => {
@@ -231,7 +232,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
 		deleteCards,
 		checkCards,
 		deleteCardsTable,
-		upDecksFirebase,
+		//upDecksFirebase,
 		resetDeck,
 	};
 });
