@@ -44,12 +44,11 @@ export const useGameStore = defineStore("gameStore", () => {
 		let tableCards = await getDB(tableCardsRef);
 		const pos = Math.floor(Math.random() * storeCards.gameCards.length);
 
-		storeCards.gameCards.splice(pos, 1);
-
 		if (tableCards === null) {
 			tableCards = [];
 		}
 		tableCards.push(storeCards.gameCards[pos]);
+		storeCards.gameCards.splice(pos, 1);
 
 		set(tableCardsRef, tableCards);
 	};
@@ -333,6 +332,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				fold: "",
 				hand: [],
 				maxPot: "",
+				noPlay: "",
 				potPlayer: 0,
 				turn: "",
 				allIn: "",
@@ -389,6 +389,13 @@ export const useGameStore = defineStore("gameStore", () => {
 		});
 	};
 
+	const resetNoPlay = async (seats, room) => {
+		seats.forEach((seat, index) => {
+			const roomRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
+			set(roomRef, "");
+		});
+	};
+
 	const resetGameWithWinner = async (seats, room, indexWinner) => {
 		const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
 		const seatRef = refDB(`rooms/${room}/seats`);
@@ -411,6 +418,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		await storeCards.dealingCards(newSeats, room);
 		await resetAllIn(newSeats, room);
 		resetCountRound(room);
+		resetNoPlay(seats, room);
 
 		set(phaseGameRef, "preflop");
 	};
@@ -458,13 +466,22 @@ export const useGameStore = defineStore("gameStore", () => {
 		return chipsInGame;
 	};
 
-	const showWinner = async (winner, chips, room) => {
-		const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`;
+	const showWinner = async (winner, pot, room) => {
+		const textWinner = `¡¡¡Ganador: ${winner.user} ganó ${pot} fichas!!!`;
+		const message = {
+			photoUser:
+				"https://www.primedope.com/wp-content/uploads/Robot-playing-GTO-Poker-400x335.webp",
+			text: textWinner,
+			user: "PokerBot",
+		};
+
+		await push(refDB(`rooms/${room}/messages`), message);
+		/*const textWinner = `El ganador es => ${winner.user} y ha ganado ${chips} fichas`;
 		const message = {
 			text: textWinner,
 		};
 
-		await push(refDB(`rooms/${room}/messages`), message);
+		await push(refDB(`rooms/${room}/messages`), message);*/
 	};
 
 	// true para fold
