@@ -51,6 +51,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		storeCards.gameCards.splice(pos, 1);
 
 		set(tableCardsRef, tableCards);
+		console.log(storeCards.gameCards);
 	};
 
 	const evaluate = async (hand) => {

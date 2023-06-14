@@ -69,13 +69,13 @@ const scrollToBottom = () => {
 };
 
 onMounted(() => {
-	const roomRef = refDB(`rooms/${props.room}`);
+	const messagesRef = refDB(`rooms/${props.room}/messages`);
 
 	try {
-		onValue(roomRef, (snapshot) => {
-			const roomData = snapshot.val();
+		onValue(messagesRef, async (snapshot) => {
+			const roomData = await snapshot.val();
 			if (roomData) {
-				messages.value = Object.values(roomData.messages);
+				messages.value = Object.values(roomData);
 				scrollToBottom();
 			}
 		});

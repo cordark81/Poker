@@ -118,6 +118,7 @@ export const useCardsStore = defineStore("cardsStore", () => {
 			}
 			seats[index].hand = cardsHand;
 		}
+		console.log(gameCards.value);
 	};
 
 	const deleteCards = async (seats, room) => {
