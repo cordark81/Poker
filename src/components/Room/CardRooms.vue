@@ -6,7 +6,7 @@
 		<div
 			class="bg-amber-900 text-yellow-500 text-base flex flex-col text-center px-2 py-1"
 		>
-			<div>{{ countSeat }} asientos libres</div>
+			<div>{{ freeSeats }} asientos libres</div>
 		</div>
 		<div class="flex h-2/3 items-end justify-center">
 			<button
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { defineEmits } from "vue";
+import { defineEmits, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
 	ref as rtdbRef,
@@ -28,10 +28,12 @@ import {
 	get,
 	auth,
 	onAuthStateChanged,
+	refDB,
+	onValue,
 } from "../../utils/firebase";
 
-
 const router = useRouter();
+const freeSeats = ref();
 
 const props = defineProps({
 	roomName: String,
@@ -42,8 +44,16 @@ const props = defineProps({
 
 const emits = defineEmits("closeModal, openModal");
 
-const joinRoom = () => {
+onMounted(() => {
+	const freeSeatsRef = refDB(`rooms/${props.roomName}/freeSeats`);
 
+	onValue(freeSeatsRef, async (freeSeatsValue) => {
+		freeSeats.value = await freeSeatsValue.val();
+		console.log(freeSeats.value);
+	});
+});
+
+const joinRoom = () => {
 	const unsubscribe = onAuthStateChanged(auth, (user) => {
 		if (user) {
 			const userId = user.uid;
@@ -76,7 +86,9 @@ const joinRoom = () => {
 					unsubscribe();
 				});
 		}
-	})};
+
+	});
+};
 
 </script>
 <style scoped>

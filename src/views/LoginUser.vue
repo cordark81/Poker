@@ -104,6 +104,7 @@
     </div>
   </div>
   <CreateUser v-show="dialog" @closeModal="dialog = false" />
+
 </template>
 
 <script setup>
@@ -117,10 +118,11 @@ const email = ref("");
 const password = ref("");
 const dialog = ref(false);
 const router = useRouter();
-const store = useUserStore();
+const storeUser = useUserStore();
 const forgotPasswordEmail = ref("");
 const showForgotPasswordModal = ref(false);
 const errorMessage = ref("");
+
 
 const getMessageError = (errorCode) => {
   switch (errorCode) {
@@ -138,6 +140,7 @@ const getMessageError = (errorCode) => {
 };
 const resetFields = () => password.value = email.value = ""
 
+
 const showErrorNotification = (error) => {
   const message = getMessageError(error.code);
   errorMessage.value = message;
@@ -148,6 +151,7 @@ const showErrorNotification = (error) => {
 
 // Uso de la función showErrorNotification
 const doLogin = async () => {
+
   try {
     await store.doLogin(email.value, password.value);
     console.log("Estás logeado");
@@ -158,7 +162,6 @@ const doLogin = async () => {
     showErrorNotification(error); 
     resetFields();
   }
-};
 
 
 const loginGoogle = async () => {
@@ -180,21 +183,23 @@ const submitForgotPassword = async () => {
     showErrorNotification(error); 
     errorMessage.value = error.message;
   }
+
 };
 </script>
 
 <style scoped>
 .background-login {
-  background-image: url("../assets/images/background-login.jpeg");
-  background-size: cover;
-  background-position: center;
+	background-image: url("../assets/images/background-login.jpeg");
+	background-size: cover;
+	background-position: center;
 }
 
 .background-forgot-password {
-  background-image: url("../assets/images/palos.jpg");
-  background-size: cover;
-  background-position: center;
+	background-image: url("../assets/images/palos.jpg");
+	background-size: cover;
+	background-position: center;
 }
+
 .notification-container {
   position: absolute;
   top: 10rem; /* Ajusta la posición vertical según tus necesidades */

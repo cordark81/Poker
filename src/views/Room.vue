@@ -48,10 +48,7 @@
 						v-if="
 							seat.turn === '*' &&
 							seat.user === storeUser.user.displayName &&
-							storeGame.checkFoldAndAllIn(seats, room, index, true) &&
-							storeGame.checkFoldAndAllIn(seats, room, index, false) &&
-							storeGame.allPlayerAllIn(seats) === false &&
-							storeGame.checkFoldIfAllIn(seats) === false
+							storeGame.allPlayerNoPlay(seats) === false
 						"
 						@logicCall="logicCallConsole(seats, room, index)"
 						:room="room"
@@ -278,7 +275,15 @@ const logicCallConsole = async (seatsF, room, index) => {
 				console.log("checkea que solo queda un jugador con fichas");
 				storeGame.finishGameSpecialsAllIn(seats.value, room);
 			} else {
-				if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+				storeGame.checkPhaseChange(
+					seats.value,
+					room,
+					phaseInGameRef,
+					phaseInGame,
+					countRound,
+					true
+				);
+				/*if (phaseInGame === "preflop" && countRound >= seats.value.length) {
 					storeConsole.phaseChangeWithoutBet(
 						seats.value,
 						room,
@@ -302,7 +307,7 @@ const logicCallConsole = async (seatsF, room, index) => {
 				} else if (phaseInGame === "river") {
 				} else {
 					storeGame.moveTurnLeft(seats.value, room);
-				}
+				}*/
 			}
 		} else {
 			console.log("las apuestas no son iguales");
@@ -317,7 +322,15 @@ const logicCallConsole = async (seatsF, room, index) => {
 					console.log("checkea que solo queda un jugador con fichas");
 					storeGame.finishGameSpecialsAllIn(seats.value, room);
 				} else {
-					if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+					storeGame.checkPhaseChange(
+						seats.value,
+						room,
+						phaseInGameRef,
+						phaseInGame,
+						countRound,
+						false
+					);
+					/*if (phaseInGame === "preflop" && countRound >= seats.value.length) {
 						storeConsole.phaseChangeWithoutBet(
 							seats.value,
 							room,
@@ -339,7 +352,7 @@ const logicCallConsole = async (seatsF, room, index) => {
 							phaseInGameRef
 						);
 					} else if (phaseInGame === "river") {
-					}
+					}*/
 				}
 			}
 			console.log(
