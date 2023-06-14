@@ -32,7 +32,11 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 					storeGame.moveTurnLeft(seats, room);
 				}
 			} else if (phaseInGame === "river") {
-				//si todos check evaluar cartas
+				indexWinner = await storeGame.showWinnerAfterRiver(seats, room);
+				setTimeout(
+					() => storeGame.resetGameWithWinner(seats, room, indexWinner),
+					7000
+				);
 			}
 		} else {
 			await storeGame.moveTurnLeft(seats, room);
@@ -206,10 +210,15 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 						storeGame.finishGameSpecialsAllIn(newSeats, room);
 					} else {
 						if (phaseInGame === "river" /*fase es river*/) {
-							storeGame.showWinnerAfterRiver(
+							indexWinner = await storeGame.showWinnerAfterRiver(
 								newSeats,
 								room
-							); /*resolucion de partida*/
+							);
+							setTimeout(
+								() =>
+									storeGame.resetGameWithWinner(newSeats, room, indexWinner),
+								7000
+							);
 						} else {
 							storeGame.checkPhaseChange(
 								newSeats,
