@@ -75,7 +75,10 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 			const indexWinner = findFoldedPlayerIndex(newSeats);
 			const chipsForWinner = await getDB(potRef);
 			await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room);
-			storeGame.resetGameWithWinner(newSeats, room, indexWinner);
+			setTimeout(
+				() => storeGame.resetGameWithWinner(newSeats, room, indexWinner),
+				2000
+			);
 		} else {
 			if (storeGame.checkPotWithFoldOrAllIn(newSeats, true)) {
 				console.log("if");

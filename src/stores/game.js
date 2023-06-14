@@ -71,11 +71,12 @@ export const useGameStore = defineStore("gameStore", () => {
 		const pot = await getDB(potRef);
 
 		const winners = await checkWinner(seats, room);
+		let indexWinner = -1;
 
 		await Promise.all(
 			winners.winners.map(async (winner, index) => {
 				//Pendiente de añadir a la funcion showWinner
-				const indexWinner = winners.index[index];
+				indexWinner = winners.index[index];
 				const userWinner = seats[indexWinner].user;
 				const descriptionWinner = winner.descr;
 				const textWinner = `¡¡¡Ganador: ${userWinner} con ${descriptionWinner} ganó ${pot} fichas!!!`;
@@ -89,6 +90,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				await push(refDB(`rooms/${room}/messages`), message);
 			})
 		);
+		return indexWinner;
 	};
 
 	const checkWinner = async (seats, room) => {
@@ -401,6 +403,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		const seatRef = refDB(`rooms/${room}/seats`);
 
 		await storeCards.deleteCards(seats, room);
+
 		storeCards.deleteCardsTable(room);
 		await storePot.potToPlayerWin(room, indexWinner);
 		await storePot.resetPot(room);
@@ -410,15 +413,15 @@ export const useGameStore = defineStore("gameStore", () => {
 		await resetTurn(seats, room);
 		await moveDealerLeft(seats, room);
 		let newSeats = await getDB(seatRef);
+		await resetAllIn(newSeats, room);
+		resetNoPlay(seats, room);
 		await firstTurnPlayer(newSeats, room, "turn");
 		newSeats = await getDB(seatRef);
 		await storePot.resetPotPlayer(newSeats, room);
 		await storePot.initialPot(newSeats, room);
 		await evaluateMaxPot(newSeats, room);
 		await storeCards.dealingCards(newSeats, room);
-		await resetAllIn(newSeats, room);
 		resetCountRound(room);
-		resetNoPlay(seats, room);
 
 		set(phaseGameRef, "preflop");
 	};
@@ -519,6 +522,8 @@ export const useGameStore = defineStore("gameStore", () => {
 		const phaseGame = await getDB(phaseGameRef);
 		const countRound = await getDB(countRoundRef);
 
+		let indexWinner = -1;
+
 		let phase = ["flop", "turn", "river"];
 		console.log(phaseGame);
 
@@ -531,7 +536,8 @@ export const useGameStore = defineStore("gameStore", () => {
 					phaseGameRef
 				);
 			}
-			showWinnerAfterRiver(seats, room);
+			indexWinner = await showWinnerAfterRiver(seats, room);
+			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		} else if (phaseGame === "flop") {
 			for (let i = 1; i < phase.length; i++) {
 				await storeConsole.phaseChangeWithoutBet(
@@ -541,7 +547,8 @@ export const useGameStore = defineStore("gameStore", () => {
 					phaseGameRef
 				);
 			}
-			showWinnerAfterRiver(seats, room);
+			indexWinner = await showWinnerAfterRiver(seats, room);
+			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		} else if (phaseGame === "turn") {
 			for (let i = 2; i < phase.length; i++) {
 				await storeConsole.phaseChangeWithoutBet(
@@ -551,8 +558,8 @@ export const useGameStore = defineStore("gameStore", () => {
 					phaseGameRef
 				);
 			}
-			showWinnerAfterRiver(seats, room);
-			//setTimeout(() => resetGameWithWinner(seats, room, ), 5000);
+			indexWinner = await showWinnerAfterRiver(seats, room);
+			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		}
 	};
 	const checkFinishGameWithOnePlayerOnly = (seats) => {
