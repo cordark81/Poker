@@ -3,6 +3,7 @@ import { useUserStore } from '../stores/user';
 import Login from "../views/LoginUser.vue";
 import Lobby from "../views/Lobby.vue";
 import Room from "../views/Room.vue";
+import CoinStore from "../views/CoinStore.vue";
 import ModalNoAccess from "../components/Modals/ModalNoAccess.vue"
 
 
@@ -33,6 +34,13 @@ const router = createRouter({
       path: "/noAccess",
       name: "noAccess",
       component: ModalNoAccess,
+    },
+    {
+      path: "/coin-store",
+      component: CoinStore,
+      meta:{
+        requiresAuth:true
+      }
     }
   //   { 
   //     path: '/:pathMatch(.*)*', 
