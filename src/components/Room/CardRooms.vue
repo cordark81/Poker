@@ -86,8 +86,10 @@ const joinRoom = () => {
 					unsubscribe();
 				});
 		}
+
 	});
 };
+
 </script>
 <style scoped>
 .background-cards {

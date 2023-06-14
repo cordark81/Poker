@@ -70,7 +70,15 @@ export const useCardsStore = defineStore("cardsStore", () => {
       audio.addEventListener('canplaythrough', () => resolve(audio));
       audio.addEventListener('error', reject);
     });
-  };*/
+  };
+  const playSound = (audio) => {
+    return new Promise((resolve, reject) => {
+      audio.play();
+      audio.onended = resolve;
+      audio.onerror = reject;
+    });
+  };
+  
 
 	/*const addCards = (cardHand, player, room) =>
 		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
