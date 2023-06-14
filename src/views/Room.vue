@@ -45,7 +45,11 @@
 
 				<div>
 					<GameConsole
-						v-if="seat.turn === '*' && seat.user === storeUser.user.displayName"
+						v-if="
+							seat.turn === '*' &&
+							seat.user === storeUser.user.displayName &&
+							storeGame.allPlayerNoPlay(seats) === false
+						"
 						@logicCall="logicCallConsole(seats, room, index)"
 						:room="room"
 						:index="index"

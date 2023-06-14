@@ -294,16 +294,45 @@ export const useGameStore = defineStore("gameStore", () => {
 			countRound++;
 			set(countRoundRef, countRound);
 		}
-		console.log(countRound);
 
-		const turnIndex = seats.findIndex((item) => item.turn === "*");
+		const turnIndex = seats.findIndex((seat) => seat.turn === "*");
+		const turnIndexRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
+
+		for (let i = 1; i < seats.length; i++) {
+			const newTurnIndex = (turnIndex + seats.length + i) % seats.length;
+
+			const noPlayRef = refDB(`rooms/${room}/seats/${newTurnIndex}/noPlay`);
+			const newTurnRef = refDB(`rooms/${room}/seats/${newTurnIndex}/turn`);
+
+			const noPlay = await getDB(noPlayRef);
+
+			if (noPlay === "") {
+				set(turnIndexRef, "");
+				set(newTurnRef, "*");
+				return;
+			}
+		}
+
+		/*if (evalua si el que esta a la izquierda esta noPLay){
+			checkear cuantos turnos hay que pasar
+
+	}else {
+			un solo turno
+		}
+
 		const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
 
 		const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
 		const newTurnRef = refDB(`rooms/${room}/seats/${newTurnIndex}/turn`);
 
 		set(turnRef, "");
-		set(newTurnRef, "*");
+		set(newTurnRef, "*");*/
+	};
+
+	const noConsoleWithNoPlay = (seats, room, index) => {
+		if (seats[index].noPlay === "*") {
+			moveTurnLeft(seats, room);
+		}
 	};
 
 	const moveTurnLeftWithoutCount = async (seats, room) => {
@@ -525,6 +554,8 @@ export const useGameStore = defineStore("gameStore", () => {
 
 	const allPlayerAllIn = (seats) => seats.every((item) => item.allIn === "*");
 
+	const allPlayerNoPlay = (seats) => seats.every((item) => item.noPlay === "*");
+
 	const checkFoldIfAllIn = (seats) => {
 		let filteredArray = seats.filter((item) => item.fold !== "*");
 		return filteredArray.every((item) => item.allIn === "*");
@@ -640,12 +671,14 @@ export const useGameStore = defineStore("gameStore", () => {
 	};
 
 	return {
+		noConsoleWithNoPlay,
 		checkPhaseChange,
 		checkNoFinishGameWithoutSpeak,
 		checkFinishGameWithOnePlayerOnly,
 		finishGameSpecialsAllIn,
 		checkFoldIfAllIn,
 		allPlayerAllIn,
+		allPlayerNoPlay,
 		checkPotWithFoldOrAllIn,
 		showWinner,
 		gamePhase,

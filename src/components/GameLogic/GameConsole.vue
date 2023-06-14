@@ -94,6 +94,7 @@ const classRedColor =
 	"w-24 flex text-red-100 justify-center transition duration-200 ease-in-out transform px-4 py-2  border-b-4 border-red-500 hover:border-b-2 bg-gradient-to-t from-red-400  via-red-600 to-red-200 rounded-2xl hover:translate-y-px";
 
 onMounted(() => {
+	storeGame.noConsoleWithNoPlay(props.seats, props.room, props.index);
 	let potmax = storePot.potMax(props.seats, true);
 	let chipsInGame = props.seats[props.index].chipsInGame;
 	let potPlayer = props.seats[props.index].potPlayer;

@@ -114,7 +114,6 @@ export const useCardsStore = defineStore("cardsStore", () => {
 				const cardSound = await loadSound(
 					"/src/assets/sounds/Dealing-cards-sound_cut.mp3"
 				);
-				console.log(cardSound);
 				await playSound(cardSound);
 			}
 			seats[index].hand = cardsHand;
