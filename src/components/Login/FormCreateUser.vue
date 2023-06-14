@@ -8,11 +8,11 @@
 				>
 				<input
 					v-model="user.correo"
-					class="border border-gray-300 rounded-md py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
+					class="border border-gray-300 rounded-md py-2 px-4 w-full pl-9 bg-input-image-email focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
 					type="email"
 					id="correo"
 					required
-					placeholder="Ingrese su correo electrónico"
+					placeholder="example@gmail.com"
 				/>
 			</div>
 			<div class="mb-6">
@@ -21,11 +21,11 @@
 				>
 				<input
 					v-model="user.username"
-					class="border border-gray-300 rounded-md py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
+					class="border border-gray-300 rounded-md py-2 px-4 w-full pl-9 bg-input-image-user focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
 					type="text"
 					id="username"
 					required
-					placeholder="Ingrese su nombre de usuario"
+					placeholder="Nombre de usuario"
 				/>
 			</div>
 			<div class="mb-6">
@@ -34,11 +34,11 @@
 				>
 				<input
 					v-model="user.contraseña"
-					class="border border-gray-300 rounded-md py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
+					class="border border-gray-300 rounded-md py-2 px-4 w-full pl-9 bg-input-image-password focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-blue-500"
 					type="password"
 					id="contraseña"
 					required
-					placeholder="Ingrese su contraseña"
+					placeholder="••••••••"
 				/>
 			</div>
 			<div v-show="errorMessage">
@@ -48,7 +48,7 @@
 				<button
 					type="button"
 					@click="closeModal"
-					class="flex-1 mr-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform"
+					class="flex-1 mr-4 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform"
 				>
 					Cancelar
 				</button>
@@ -137,3 +137,32 @@ const closeModal = () => {
 	resetFields();
 };
 </script>
+
+<style scoped>
+.bg-input-image-password {
+	background-image: url("../../assets/images/bloquear.png");
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
+	background-position-x: 10px; /* Ajusta el tamaño de la imagen según tus necesidades */
+	/* Ajusta el espaciado a la derecha para que la imagen sea visible */
+}
+
+.bg-input-image-email {
+	background-image: url("../../assets/images/correo.png");
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
+	background-position-x: 10px; /* Ajusta el tamaño de la imagen según tus necesidades */
+	/* Ajusta el espaciado a la derecha para que la imagen sea visible */
+}
+
+.bg-input-image-user {
+	background-image: url("../../assets/images/usuario.png");
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
+	background-position-x: 10px; /* Ajusta el tamaño de la imagen según tus necesidades */
+	/* Ajusta el espaciado a la derecha para que la imagen sea visible */
+}
+</style>

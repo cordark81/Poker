@@ -58,6 +58,11 @@
 							@click="logOut"
 							class="z-50 text-sm items-center p-2 bg-black text-white rounded-2xl hover:bg-gray-800 focus:outline-none"
 						>
+							<img
+								src="../../assets/images/cerrar-sesion2.png"
+								alt="Google logo"
+								class="inline-block w-6 h-6"
+							/>
 							Log out
 						</button>
 					</div>

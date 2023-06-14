@@ -22,8 +22,8 @@
 							type="email"
 							name="email"
 							id="email"
-							class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-							placeholder="Correo electrónico"
+							class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full pl-9 bg-input-image-email p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+							placeholder="example@gmail.com"
 							required
 						/>
 					</div>
@@ -39,7 +39,7 @@
 							name="password"
 							id="password"
 							placeholder="••••••••"
-							class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+							class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full pl-9 bg-input-image-password p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 							required
 						/>
 					</div>
@@ -57,7 +57,7 @@
 						type="submit"
 						class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 					>
-						Aceptar
+						Iniciar Sesión
 					</button>
 					<div class="flex justify-center space-x-2">
 						<button
@@ -65,6 +65,11 @@
 							@click="loginGoogle"
 							class="w-full text-white bg-red-500 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 						>
+							<img
+								src="../assets/images/simbolo-de-google.png"
+								alt="Google logo"
+								class="inline-block w-6 h-6 mr-2"
+							/>
 							Iniciar sesión con Google
 						</button>
 					</div>
@@ -96,19 +101,17 @@
 				así que asegúrate de revisarla también.
 			</p>
 			<form @submit.prevent="submitForgotPassword" class="mt-4">
-				<div
-					class="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-primary-400 dark:border-gray-700 dark:focus-within:ring-primary-600"
-				>
+				<div class="flex">
 					<input
 						v-model="forgotPasswordEmail"
 						type="email"
-						placeholder="Correo electrónico"
+						placeholder="example@gmail.com"
 						required
-						class="flex-1 py-2 px-4 bg-transparent text-gray-900 dark:text-white focus:outline-none dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						class="flex-1 py-2 px-4 pl-9 bg-input-image-email rounded-tl-lg rounded-bl-lg text-gray-900 dark:text-white focus:outline-none dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
 					/>
 					<button
 						type="submit"
-						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-primary-300 rounded-lg dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-primary-300 rounded-tr-lg rounded-br-lg dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 					>
 						Enviar
 					</button>
@@ -116,9 +119,9 @@
 			</form>
 			<button
 				@click="showForgotPasswordModal = false"
-				class="mt-4 text-sm font-medium text-red-500 hover:text-red-600 focus:outline-none dark:text-red-500 dark:hover:text-red-600"
+				class="mt-5 text-white bg-red-500 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 			>
-				Cerrar
+				Cancelar
 			</button>
 		</div>
 	</div>
@@ -189,7 +192,7 @@ const loginGoogle = async () => {
 
 const submitForgotPassword = async () => {
 	try {
-		await store.doReset(forgotPasswordEmail.value);
+		await storeUser.doReset(forgotPasswordEmail.value);
 		console.log(
 			"Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada, incluida la carpeta de spam."
 		);
@@ -212,5 +215,23 @@ const submitForgotPassword = async () => {
 	background-image: url("../assets/images/palos.jpg");
 	background-size: cover;
 	background-position: center;
+}
+
+.bg-input-image-password {
+	background-image: url("../assets/images/bloquear.png");
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
+	background-position-x: 10px; /* Ajusta el tamaño de la imagen según tus necesidades */
+	/* Ajusta el espaciado a la derecha para que la imagen sea visible */
+}
+
+.bg-input-image-email {
+	background-image: url("../assets/images/correo.png");
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
+	background-position-x: 10px; /* Ajusta el tamaño de la imagen según tus necesidades */
+	/* Ajusta el espaciado a la derecha para que la imagen sea visible */
 }
 </style>
