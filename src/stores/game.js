@@ -70,13 +70,27 @@ export const useGameStore = defineStore("gameStore", () => {
 		const potRef = refDB(`rooms/${room}/pot`);
 		const pot = await getDB(potRef);
 
-		const winners = await checkWinner(seats, room);
+		const seatsWithoutFold = seats.filter((seat) => seat.fold === "");
+
+		const winners = await checkWinner(seatsWithoutFold, room);
 		let indexWinner = -1;
 
 		await Promise.all(
-			winners.winners.map(async (winner, index) => {
+			winners.winners.map(async (winner) => {
 				//Pendiente de añadir a la funcion showWinner
-				indexWinner = winners.index[index];
+				console.log(winner);
+
+				const cardsWinner = winner.cardPool.map(
+					(card) => card.value + card.suit
+				);
+				console.log(seats);
+				indexWinner = seats.findIndex((seat, index) => {
+					return (
+						seat.hand && seat.hand.every((card) => cardsWinner.includes(card))
+					);
+				});
+
+				//indexWinner = winners.index[index];
 				const userWinner = seats[indexWinner].user;
 				const descriptionWinner = winner.descr;
 				const textWinner = `¡¡¡Ganador: ${userWinner} con ${descriptionWinner} ganó ${pot} fichas!!!`;

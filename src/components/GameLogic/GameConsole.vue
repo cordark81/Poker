@@ -2,7 +2,7 @@
 	<div
 		class="absolute bottom-0 right-0 flex flex-col justify-center items-center w-64 h-64 overflow-visible"
 	>
-		<div class="flex flex-col mb-48 mt-2 mr-48">
+		<div class="flex flex-col mb-48 mt-2 w-64">
 			<ButtonConsole
 				v-if="storeGame.verifySimilarPots(seats) === true"
 				@click="storeConsole.checkConsole(seats, room)"
@@ -17,21 +17,38 @@
 				class="mt-2"
 				:color="classGrayColor"
 			/>
-			<ButtonConsole
-				@click="storeConsole.betConsole(seats, room, index, bet)"
-				:text="'Bet'"
-				:color="classGrayColor"
-				class="mt-2"
-			>
-			</ButtonConsole>
-			<input
-				v-if="true"
-				v-model="bet"
-				type="number"
-				step="5"
-				:min="betMin"
-				:max="betMax"
-			/>
+			<div class="flex flex-row">
+				<ButtonConsole
+					@click="storeConsole.betConsole(seats, room, index, bet)"
+					:text="'Bet'"
+					:color="classGrayColor"
+					class="mt-2"
+				>
+				</ButtonConsole>
+
+				<div
+					class="inline-flex items-center space-x-2 rounded-full ml-2 h-8 mt-3 bg-gray-50 p-2"
+				>
+					<input
+						v-if="true"
+						v-model="bet"
+						type="number"
+						step="5"
+						:min="betMin"
+						:max="betMax"
+						class="text-lg text-gray-900 focus:outline-none outline-none bg-transparent border-none text-right"
+					/>
+				</div>
+
+				<!--<input
+					v-if="true"
+					v-model="bet"
+					type="number"
+					step="5"
+					:min="betMin"
+					:max="betMax"
+				/>-->
+			</div>
 			<ButtonConsole
 				v-if="storePot.potMax(seats, true) !== 0"
 				@click="storeConsole.raiseConsole(seats, room, index)"
@@ -52,12 +69,6 @@
 				:color="classRedColor"
 				class="mt-2"
 			/>
-			<button
-				class="text-white"
-				@click="storeGame.showWinnerAfterRiver(seats, room)"
-			>
-				Comprobar
-			</button>
 		</div>
 	</div>
 </template>
