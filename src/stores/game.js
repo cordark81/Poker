@@ -580,7 +580,7 @@ export const useGameStore = defineStore("gameStore", () => {
 		return filteredArray.length === 1;
 	};
 
-	const checkPhaseChange = (
+	const checkPhaseChange = async (
 		seats,
 		room,
 		phaseInGameRef,
@@ -601,7 +601,8 @@ export const useGameStore = defineStore("gameStore", () => {
 					phaseInGameRef
 				);
 			} else if (phaseInGame === "river") {
-				showWinnerAfterRiver(seats, room);
+				indexWinner = await showWinnerAfterRiver(seats, room);
+				setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 			} else {
 				moveTurnLeft(seats, room);
 			}
@@ -618,6 +619,8 @@ export const useGameStore = defineStore("gameStore", () => {
 					phaseInGameRef
 				);
 			} else if (phaseInGame === "river") {
+				indexWinner = await showWinnerAfterRiver(seats, room);
+				setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 			}
 		}
 	};
