@@ -378,6 +378,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				fold: "",
 				hand: [],
 				maxPot: "",
+				noChips: "",
 				noPlay: "",
 				potPlayer: 0,
 				turn: "",
@@ -462,12 +463,20 @@ export const useGameStore = defineStore("gameStore", () => {
 		await firstTurnPlayer(newSeats, room, "turn");
 		newSeats = await getDB(seatRef);
 		await storePot.resetPotPlayer(newSeats, room);
-		await storePot.initialPot(newSeats, room);
-		await evaluateMaxPot(newSeats, room);
-		await storeCards.dealingCards(newSeats, room);
 		resetCountRound(room);
-
-		set(phaseGameRef, "preflop");
+		await storePot.initialPot(newSeats, room);
+		newSeats = await getDB(seatRef);
+		const playersWithChips = newSeats.reduce((count, seat) => {
+			if (seat.noChips === "") {
+				count++;
+			}
+			return count;
+		}, 0);
+		if (playersWithChips >= 3) {
+			await storeCards.dealingCards(newSeats, room);
+			await evaluateMaxPot(newSeats, room);
+			set(phaseGameRef, "preflop");
+		}
 	};
 
 	const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {

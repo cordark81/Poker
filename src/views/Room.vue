@@ -85,6 +85,7 @@
 			</div>
 		</div>
 		<ModalInSeat v-show="showModal" @closeModal="showModal = false" />
+		<ModalNoChips v-show="modalNoChips" @closeModal="modalNoChips = false" />
 	</div>
 </template>
 
@@ -111,6 +112,7 @@ import Chat from "../components/Chat/Chat.vue";
 import Seats from "../components/Room/Seats.vue";
 import OccupiedSeat from "../components/Room/OccupiedSeat.vue";
 import ModalInSeat from "../components/Modals/ModalInSeat.vue";
+import ModalNoChips from "../components/Modals/ModalNoChips.vue";
 import CardsTable from "../components/GameLogic/CardsTable.vue";
 import GameConsole from "../components/GameLogic/GameConsole.vue";
 
@@ -127,12 +129,13 @@ const selectedSeatIndex = ref(-1);
 const showModal = ref(false);
 const potRoom = ref(0);
 const tableCards = ref([]);
+const modalNoChips = ref(false);
 
 onMounted(async () => {
 	const roomRef = refDB(`rooms/${room.value}`);
 	const freeSeatsRef = refDB(`rooms/${room.value}/freeSeats`);
-
 	const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
+	const seatsRef = refDB(`rooms/${room.value}/seats`);
 	try {
 		onValue(roomRef, async (snapshot) => {
 			const roomData = await snapshot.val();
@@ -141,25 +144,62 @@ onMounted(async () => {
 				potRoom.value = roomData.pot;
 				tableCards.value = roomData.tableCards;
 				checkIndex(seats.value);
+				const noChipsRef = refDB(
+					`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`
+				);
+				onValue(noChipsRef, async (noChips) => {
+					const noChipsValue = await noChips.val();
+					console.log(noChipsValue);
+					if (noChipsValue === "*") {
+						modalNoChips.value = true;
+					}
+				});
 			}
 		});
 		onValue(freeSeatsRef, async (freeSeats) => {
-			const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
+			const ditchDealerDoneRef = refDB(`rooms/${room.value}/ditchDealerDone`);
 			if (freeSeats) {
 				const numberFreeSeats = await freeSeats.val();
 				if (numberFreeSeats === 0) {
-					const ditchDealerDone = await getDB(roomDealerRef);
+					const ditchDealerDone = await getDB(ditchDealerDoneRef);
 					if (ditchDealerDone === false) {
 						checkIndex(seats.value);
 						if (selectedSeatIndex.value === 2) {
 							storeGame.ditchDealer(seats.value, room.value);
 							await storePot.initialPot(seats.value, room.value);
-
-							set(roomDealerRef, true);
-							storeCards.dealingCards(seats.value, room.value);
-							await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
-							await storeGame.evaluateMaxPot(seats.value, room.value);
-							set(roomPhaseRef, "preflop");
+							const newSeats = await getDB(seatsRef);
+							const playersWithChips = newSeats.reduce((count, seat) => {
+								if (seat.noChips === "") {
+									count++;
+								}
+								return count;
+							}, 0);
+							if (playersWithChips >= 3) {
+								/*if (seatsInfo.noChips) {
+								console.log(seatsInfo.playerLeaveSeat);
+								for (const seatIndex of seatsInfo.playerLeaveSeat) {
+									selectedSeatIndex.value = storeSeat.standUpFromSeat(
+										seatIndex,
+										seats.value,
+										room.value
+									);
+								}
+								const freeSeats = await getDB(freeSeatsRef);
+								await set(
+									freeSeatsRef,
+									freeSeats + seatsInfo.playerLeaveSeat.length
+								);
+							} else {*/
+								set(ditchDealerDoneRef, true);
+								storeCards.dealingCards(seats.value, room.value);
+								await storeGame.firstTurnPlayer(
+									seats.value,
+									room.value,
+									"turn"
+								);
+								await storeGame.evaluateMaxPot(seats.value, room.value);
+								set(roomPhaseRef, "preflop");
+							}
 						}
 					}
 				} else {
@@ -168,10 +208,9 @@ onMounted(async () => {
 				}
 			}
 		});
-
 		/*onPlayersSit("Rooms", room.value, async (roomData) => {
-			const roomDealerRef = refDB(`rooms/${room.value}/ditchDealerDone`);
-			const ditchDealerDone = await getDB(roomDealerRef);
+			const ditchDealerDoneRef = refDB(`rooms/${room.value}/ditchDealerDone`);
+			const ditchDealerDone = await getDB(ditchDealerDoneRef);
 			const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
 
 			if (roomData.data().seat === 0) {
@@ -180,7 +219,7 @@ onMounted(async () => {
 					if (selectedSeatIndex.value === 2) {
 						storeGame.ditchDealer(seats.value, room.value);
 						await storePot.initialPot(seats.value, room.value);
-						set(roomDealerRef, true);
+						set(ditchDealerDoneRef, true);
 						storeCards.dealingCards(seats.value, room.value);
 						await storeGame.firstTurnPlayer(seats.value, room.value, "turn");
 						await storeGame.evaluateMaxPot(seats.value, room.value);
@@ -238,6 +277,7 @@ const standUpSeat = async (seatIndex) => {
 		);
 		const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
 		const freeSeats = await getDB(freeSeatsInRoomRef);
+		console.log(freeSeats);
 		set(freeSeatsInRoomRef, freeSeats + 1);
 		/*const number = await numberSeats("Rooms", room.value);
 		let seat = number.data().seat + 1;
