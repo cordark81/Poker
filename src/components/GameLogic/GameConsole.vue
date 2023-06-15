@@ -12,7 +12,7 @@
 			/>
 			<ButtonConsole
 				v-if="storeGame.verifySimilarPots(seats) === false"
-				@click="logicCall()"
+				@click="storeConsole.callConsole(seats, room, index)"
 				:text="'Call'"
 				class="mt-2"
 				:color="classGrayColor"
@@ -79,6 +79,7 @@ import { useConsoleStore } from "../../stores/console";
 import { useGameStore } from "../../stores/game";
 import { usePotStore } from "../../stores/pot";
 import ButtonConsole from "./ButtonConsole.vue";
+import { refDB, getDB } from "../../utils/firebase";
 
 const storeConsole = useConsoleStore();
 const storeGame = useGameStore();
@@ -93,11 +94,13 @@ const classGrayColor =
 const classRedColor =
 	"w-24 flex text-red-100 justify-center transition duration-200 ease-in-out transform px-4 py-2  border-b-4 border-red-500 hover:border-b-2 bg-gradient-to-t from-red-400  via-red-600 to-red-200 rounded-2xl hover:translate-y-px";
 
-onMounted(() => {
+onMounted(async () => {
+	const seatsRef = refDB(`rooms/${props.room}/seats`);
+	const newSeats = await getDB(seatsRef);
 	storeGame.noConsoleWithNoPlay(props.seats, props.room, props.index);
-	let potmax = storePot.potMax(props.seats, true);
-	let chipsInGame = props.seats[props.index].chipsInGame;
-	let potPlayer = props.seats[props.index].potPlayer;
+	let potmax = storePot.potMax(newSeats, true);
+	let chipsInGame = newSeats[props.index].chipsInGame;
+	let potPlayer = newSeats[props.index].potPlayer;
 
 	if (potmax - potPlayer >= chipsInGame) {
 		bet.value = chipsInGame;
@@ -116,11 +119,11 @@ const props = defineProps({
 	seats: Array,
 });
 
-const emits = defineEmits(["logicCall"]);
+/*const emits = defineEmits(["logicCall"]);
 
 const logicCall = () => {
 	emits("logicCall");
-};
+};*/
 </script>
 
 <style lang="scss" scoped></style>

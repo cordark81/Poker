@@ -389,6 +389,7 @@ export const useGameStore = defineStore("gameStore", () => {
 
 		const updatedRoom = {
 			countRound: 1,
+			endGame: "",
 			freeSeats: freeSeats,
 			ditchDealerDone: false,
 			messages: message,
@@ -443,6 +444,11 @@ export const useGameStore = defineStore("gameStore", () => {
 		});
 	};
 
+	const resetEndGame = async (room) => {
+		const endGameRef = refDB(`rooms/${room}/endGame`);
+		set(endGameRef, "");
+	};
+
 	const resetGameWithWinner = async (seats, room, indexWinner) => {
 		const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
 		const seatRef = refDB(`rooms/${room}/seats`);
@@ -460,10 +466,10 @@ export const useGameStore = defineStore("gameStore", () => {
 		let newSeats = await getDB(seatRef);
 		await resetAllIn(newSeats, room);
 		resetNoPlay(seats, room);
-		await firstTurnPlayer(newSeats, room, "turn");
 		newSeats = await getDB(seatRef);
 		await storePot.resetPotPlayer(newSeats, room);
 		resetCountRound(room);
+		resetEndGame(room);
 		await storePot.initialPot(newSeats, room);
 		newSeats = await getDB(seatRef);
 		const playersWithChips = newSeats.reduce((count, seat) => {
@@ -473,6 +479,7 @@ export const useGameStore = defineStore("gameStore", () => {
 			return count;
 		}, 0);
 		if (playersWithChips >= 3) {
+			await firstTurnPlayer(newSeats, room, "turn");
 			await storeCards.dealingCards(newSeats, room);
 			await evaluateMaxPot(newSeats, room);
 			set(phaseGameRef, "preflop");
@@ -574,6 +581,7 @@ export const useGameStore = defineStore("gameStore", () => {
 	const finishGameSpecialsAllIn = async (seats, room) => {
 		const countRoundRef = refDB(`rooms/${room}/countRound`);
 		const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
+		const endGameRef = refDB(`rooms/${room}/endGame`);
 		const phaseGame = await getDB(phaseGameRef);
 		const countRound = await getDB(countRoundRef);
 
@@ -592,6 +600,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			}
 			indexWinner = await showWinnerAfterRiver(seats, room);
+			set(endGameRef, "*");
 			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		} else if (phaseGame === "flop") {
 			for (let i = 1; i < phase.length; i++) {
@@ -603,6 +612,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			}
 			indexWinner = await showWinnerAfterRiver(seats, room);
+			set(endGameRef, "*");
 			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		} else if (phaseGame === "turn") {
 			for (let i = 2; i < phase.length; i++) {
@@ -614,6 +624,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			}
 			indexWinner = await showWinnerAfterRiver(seats, room);
+			set(endGameRef, "*");
 			setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 		}
 	};
@@ -643,6 +654,8 @@ export const useGameStore = defineStore("gameStore", () => {
 		countRound,
 		moveTurn
 	) => {
+		const endGameRef = refDB(`rooms/${room}/endGame`);
+
 		if (moveTurn) {
 			if (phaseInGame === "preflop" && countRound >= seats.length) {
 				storeConsole.phaseChangeWithoutBet(seats, room, "flop", phaseInGameRef);
@@ -657,6 +670,7 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			} else if (phaseInGame === "river") {
 				indexWinner = await showWinnerAfterRiver(seats, room);
+				set(endGameRef, "*");
 				setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 			} else {
 				moveTurnLeft(seats, room);
@@ -675,12 +689,14 @@ export const useGameStore = defineStore("gameStore", () => {
 				);
 			} else if (phaseInGame === "river") {
 				indexWinner = await showWinnerAfterRiver(seats, room);
+				set(endGameRef, "*");
 				setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
 			}
 		}
 	};
 
 	return {
+		showWinnerAfterRiver,
 		noConsoleWithNoPlay,
 		checkPhaseChange,
 		checkNoFinishGameWithoutSpeak,

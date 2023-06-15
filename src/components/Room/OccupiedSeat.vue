@@ -6,6 +6,7 @@
 			:user="seat.user"
 			:handCards="handCards"
 			:seats="seats"
+			:room="room"
 			class="flex justify-center"
 		/>
 		<div

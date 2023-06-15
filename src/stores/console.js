@@ -9,8 +9,171 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 	const storePot = usePotStore();
 	const storeCards = useCardsStore();
 
+	const callConsole = async (seatsInitial, room, index) => {
+		const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+		const countRoundRef = refDB(`rooms/${room}/countRound`);
+		const endGameRef = refDB(`rooms/${room}/endGame`);
+
+		const phaseInGame = await getDB(phaseInGameRef);
+		const countRound = await getDB(countRoundRef);
+
+		if (
+			seatsInitial[index].chipsInGame <= storePot.potMax(seatsInitial, true)
+		) {
+			await allInConsole(seatsInitial, room, index);
+		} else {
+			await ajustBet(seatsInitial, room, index, 1);
+
+			const seatsWithoutFold = seatsInitial.filter((seat) => seat.fold === "");
+			const turnIndex = seatsWithoutFold.findIndex((item) => item.turn === "*");
+			const leftIndex =
+				(turnIndex + seatsWithoutFold.length + 1) % seatsWithoutFold.length;
+
+			if (
+				seatsWithoutFold[leftIndex].maxPot ===
+				"*" /*el maxPot esta a la izquierda sin contar fold(se le pasa el newSeats)*/
+			) {
+				const seatsWithoutFoldWithInitialSeats = seatsInitial.filter(
+					(seat) => seat.fold === ""
+				);
+				const onlyOnePlayerContinue = seatsWithoutFoldWithInitialSeats.filter(
+					(seat) => seat.chipsInGame !== 0
+				);
+				if (
+					onlyOnePlayerContinue.length ===
+					1 /*todos los jugadores tienen el chips in game a 0 menos 1 sin contar fold(se le pasa el viejoSeat)*/
+				) {
+					storeGame.finishGameSpecialsAllIn(seatsInitial, room);
+				} else {
+					if (phaseInGame === "river" /*fase es river*/) {
+						const indexWinner = await storeGame.showWinnerAfterRiver(
+							seatsInitial,
+							room
+						);
+						set(endGameRef, "*");
+						setTimeout(
+							() =>
+								storeGame.resetGameWithWinner(seatsInitial, room, indexWinner),
+							7000
+						);
+					} else {
+						storeGame.checkPhaseChange(
+							seatsInitial,
+							room,
+							phaseInGameRef,
+							phaseInGame,
+							countRound,
+							true
+						); /*cambiamos de fase*/
+					}
+				}
+			} else {
+				await storeGame.moveTurnLeft(seatsInitial, room);
+			}
+
+			/*if (storeGame.verifySimilarPots(seats.value)) {
+			console.log("las apuestas son iguales");
+			const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+			const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+			const phaseInGame = await getDB(phaseInGameRef);
+			const countRound = await getDB(countRoundRef);
+			if (storeGame.checkFinishGameWithOnePlayerOnly(seats.value)) {
+				console.log("checkea que solo queda un jugador con fichas");
+				storeGame.finishGameSpecialsAllIn(seats.value, room);
+			} else {
+				storeGame.checkPhaseChange(
+					seats.value,
+					room,
+					phaseInGameRef,
+					phaseInGame,
+					countRound,
+					true
+				);
+				/*if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"flop",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "flop") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"turn",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "turn") {
+					storeConsole.phaseChangeWithoutBet(
+						seats.value,
+						room,
+						"river",
+						phaseInGameRef
+					);
+				} else if (phaseInGame === "river") {
+				} else {
+					storeGame.moveTurnLeft(seats.value, room);
+				}*/
+			/*}
+		} else {
+			console.log("las apuestas no son iguales");
+			if (storeGame.checkPotWithFoldOrAllIn(seats.value, false)) {
+				console.log("chaeckea que el pot de los jugadores no all in es igual");
+				const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+				const countRoundRef = refDB(`rooms/${room}/countRound`);
+
+				const phaseInGame = await getDB(phaseInGameRef);
+				const countRound = await getDB(countRoundRef);
+				if (storeGame.checkFinishGameWithOnePlayerOnly(seats.value)) {
+					console.log("checkea que solo queda un jugador con fichas");
+					storeGame.finishGameSpecialsAllIn(seats.value, room);
+				} else {
+					storeGame.checkPhaseChange(
+						seats.value,
+						room,
+						phaseInGameRef,
+						phaseInGame,
+						countRound,
+						false
+					);
+					/*if (phaseInGame === "preflop" && countRound >= seats.value.length) {
+						storeConsole.phaseChangeWithoutBet(
+							seats.value,
+							room,
+							"flop",
+							phaseInGameRef
+						);
+					} else if (phaseInGame === "flop") {
+						storeConsole.phaseChangeWithoutBet(
+							seats.value,
+							room,
+							"turn",
+							phaseInGameRef
+						);
+					} else if (phaseInGame === "turn") {
+						storeConsole.phaseChangeWithoutBet(
+							seats.value,
+							room,
+							"river",
+							phaseInGameRef
+						);
+					} else if (phaseInGame === "river") {
+					}
+				}
+			}
+			console.log(
+				"chaeckea que el pot de los jugadores no all in no es igual y pasa a la izq"
+			);
+			storeGame.moveTurnLeft(seats.value, room);
+		}*/
+		}
+	};
+
 	const checkConsole = async (seats, room) => {
 		const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+		const endGameRef = refDB(`rooms/${room}/endGame`);
+
 		const phaseInGame = await getDB(phaseInGameRef);
 		if (storeGame.verifySimilarPots(seats)) {
 			if (phaseInGame === "preflop") {
@@ -32,7 +195,8 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 					storeGame.moveTurnLeft(seats, room);
 				}
 			} else if (phaseInGame === "river") {
-				indexWinner = await storeGame.showWinnerAfterRiver(seats, room);
+				const indexWinner = await storeGame.showWinnerAfterRiver(seats, room);
+				set(endGameRef, "*");
 				setTimeout(
 					() => storeGame.resetGameWithWinner(seats, room, indexWinner),
 					7000
@@ -151,6 +315,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 		const countRoundRef = refDB(`rooms/${room}/countRound`);
 		const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
 		const noPlayRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
+		const endGameRef = refDB(`rooms/${room}/endGame`);
 
 		const potPlayer = await getDB(potPlayerCallingRef);
 		const chipsInGame = await getDB(chipsInGameRef);
@@ -210,10 +375,11 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 						storeGame.finishGameSpecialsAllIn(newSeats, room);
 					} else {
 						if (phaseInGame === "river" /*fase es river*/) {
-							indexWinner = await storeGame.showWinnerAfterRiver(
+							const indexWinner = await storeGame.showWinnerAfterRiver(
 								newSeats,
 								room
 							);
+							set(endGameRef, "*");
 							setTimeout(
 								() =>
 									storeGame.resetGameWithWinner(newSeats, room, indexWinner),
@@ -328,6 +494,7 @@ export const useConsoleStore = defineStore("consoleStore", () => {
 	};
 
 	return {
+		callConsole,
 		foldConsole,
 		checkConsole,
 		raiseConsole,

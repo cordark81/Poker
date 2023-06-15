@@ -48,9 +48,9 @@
 						v-if="
 							seat.turn === '*' &&
 							seat.user === storeUser.user.displayName &&
-							storeGame.allPlayerNoPlay(seats) === false
+							storeGame.allPlayerNoPlay(seats) === false &&
+							endGameBoolean === false
 						"
-						@logicCall="logicCallConsole(seats, room, index)"
 						:room="room"
 						:index="index"
 						:seats="seats"
@@ -130,6 +130,7 @@ const showModal = ref(false);
 const potRoom = ref(0);
 const tableCards = ref([]);
 const modalNoChips = ref(false);
+const endGameBoolean = ref(false);
 
 onMounted(async () => {
 	const roomRef = refDB(`rooms/${room.value}`);
@@ -143,6 +144,9 @@ onMounted(async () => {
 				seats.value = roomData.seats;
 				potRoom.value = roomData.pot;
 				tableCards.value = roomData.tableCards;
+				roomData.endGame === "*"
+					? (endGameBoolean.value = true)
+					: (endGameBoolean.value = false);
 				checkIndex(seats.value);
 				const noChipsRef = refDB(
 					`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`
@@ -298,13 +302,67 @@ const findSeatIndexByUser = (username) => {
 	return seats.value.findIndex((seat) => seat.user === username);
 };
 
-const logicCallConsole = async (seatsF, room, index) => {
-	if (seatsF[index].chipsInGame <= storePot.potMax(seatsF, true)) {
-		await storeConsole.allInConsole(seatsF, room, index);
-	} else {
-		await storeConsole.ajustBet(seatsF, room, index, 1);
+const logicCallConsole = async (seatsInitial, room, index) => {
+	const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
+	const countRoundRef = refDB(`rooms/${room}/countRound`);
+	const endGameRef = refDB(`rooms/${room}/endGame`);
 
-		if (storeGame.verifySimilarPots(seats.value)) {
+	const phaseInGame = await getDB(phaseInGameRef);
+	const countRound = await getDB(countRoundRef);
+
+	if (seatsInitial[index].chipsInGame <= storePot.potMax(seatsInitial, true)) {
+		await storeConsole.allInConsole(seatsInitial, room, index);
+	} else {
+		await storeConsole.ajustBet(seatsInitial, room, index, 1);
+
+		const seatsWithoutFold = seatsInitial.filter((seat) => seat.fold === "");
+		const turnIndex = seatsWithoutFold.findIndex((item) => item.turn === "*");
+		const leftIndex =
+			(turnIndex + seatsWithoutFold.length + 1) % seatsWithoutFold.length;
+
+		if (
+			seatsWithoutFold[leftIndex].maxPot ===
+			"*" /*el maxPot esta a la izquierda sin contar fold(se le pasa el newSeats)*/
+		) {
+			const seatsWithoutFoldWithInitialSeats = seatsInitial.filter(
+				(seat) => seat.fold === ""
+			);
+			const onlyOnePlayerContinue = seatsWithoutFoldWithInitialSeats.filter(
+				(seat) => seat.chipsInGame !== 0
+			);
+			if (
+				onlyOnePlayerContinue.length ===
+				1 /*todos los jugadores tienen el chips in game a 0 menos 1 sin contar fold(se le pasa el viejoSeat)*/
+			) {
+				storeGame.finishGameSpecialsAllIn(seatsInitial, room);
+			} else {
+				if (phaseInGame === "river" /*fase es river*/) {
+					const indexWinner = await storeGame.showWinnerAfterRiver(
+						seatsInitial,
+						room
+					);
+					set(endGameRef, "*");
+					setTimeout(
+						() =>
+							storeGame.resetGameWithWinner(seatsInitial, room, indexWinner),
+						7000
+					);
+				} else {
+					storeGame.checkPhaseChange(
+						seatsInitial,
+						room,
+						phaseInGameRef,
+						phaseInGame,
+						countRound,
+						true
+					); /*cambiamos de fase*/
+				}
+			}
+		} else {
+			await storeGame.moveTurnLeft(seatsInitial, room);
+		}
+
+		/*if (storeGame.verifySimilarPots(seats.value)) {
 			console.log("las apuestas son iguales");
 			const phaseInGameRef = refDB(`rooms/${room}/phaseGame`);
 			const countRoundRef = refDB(`rooms/${room}/countRound`);
@@ -348,7 +406,7 @@ const logicCallConsole = async (seatsF, room, index) => {
 				} else {
 					storeGame.moveTurnLeft(seats.value, room);
 				}*/
-			}
+		/*}
 		} else {
 			console.log("las apuestas no son iguales");
 			if (storeGame.checkPotWithFoldOrAllIn(seats.value, false)) {
@@ -392,14 +450,14 @@ const logicCallConsole = async (seatsF, room, index) => {
 							phaseInGameRef
 						);
 					} else if (phaseInGame === "river") {
-					}*/
+					}
 				}
 			}
 			console.log(
 				"chaeckea que el pot de los jugadores no all in no es igual y pasa a la izq"
 			);
 			storeGame.moveTurnLeft(seats.value, room);
-		}
+		}*/
 	}
 };
 
