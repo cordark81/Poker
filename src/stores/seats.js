@@ -27,7 +27,7 @@ export const useSeatsStore = defineStore('seatsStore', () => {
     }
   };
 
-  //Levanta al jugador de su asiento y devueve un -1 para dejar el asiento liobre en nuestra lógica
+  //Levanta al jugador de su asiento y devueve un -1 para dejar el asiento libre en nuestra lógica
   const standUpFromSeat = (seatIndex, seats, room) => {
     const seat = seats[seatIndex];
     if (seat.user === storeUser.user.displayName) {
