@@ -133,15 +133,12 @@ onMounted(async () => {
         roomData.endGame === '*' ? (endGameBoolean.value = true) : (endGameBoolean.value = false);
         checkIndex(seats.value);
         // eslint-disable-next-line max-len
-        const noChipsRef = refDB(`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`);
-        //Esta pendiente de cualquier cambio en noChips
-        onValue(noChipsRef, async (noChips) => {
-          const noChipsValue = await noChips.val();
-          console.log(noChipsValue);
-          if (noChipsValue === '*') {
-            modalNoChips.value = true;
-          }
-        });
+        //Comprueba si tienes fichas, si no las tienes, aparece el mensaje
+        if (seats.value[selectedSeatIndex.value].noChips && seats.value[selectedSeatIndex.value].noChips === "*") {
+          modalNoChips.value = true;
+        } else {
+          modalNoChips.value = false;
+        }
       }
     });
     //Esta pendiente de cualquier cambio en freeSeats
@@ -179,7 +176,8 @@ onMounted(async () => {
           }
         } else {
           console.log('faltan jugadores');
-          storeGame.resetGame(room.value);
+          await storeGame.resetGame(room.value);
+          //modalNoChips.value === false;
         }
       }
     });
@@ -205,10 +203,13 @@ const sitIn = async (seatIndex) => {
     if (obj.selected !== -1) {
       selectedSeatIndex.value = obj.selected;
       showModal.value = obj.modal;
-      await storeGame.asignChipsInGame(room.value, seatIndex);
-      const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
-      const freeSeats = await getDB(freeSeatsInRoomRef);
-      set(freeSeatsInRoomRef, freeSeats - 1);
+      // Restar freeSets solo si el asiento seleccionado no estaba ocupado
+      if (!obj.modal) {
+        await storeGame.asignChipsInGame(room.value, seatIndex);
+        const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
+        const freeSeats = await getDB(freeSeatsInRoomRef);
+        set(freeSeatsInRoomRef, freeSeats - 1);
+      }
     }
   } catch (error) {
     console.log(error.message);
@@ -222,7 +223,6 @@ const standUpSeat = async (seatIndex) => {
     selectedSeatIndex.value = storeSeat.standUpFromSeat(seatIndex, seats.value, room.value);
     const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
     const freeSeats = await getDB(freeSeatsInRoomRef);
-    console.log(freeSeats);
     set(freeSeatsInRoomRef, freeSeats + 1);
   } catch (error) {
     console.log(error.message);

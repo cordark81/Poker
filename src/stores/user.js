@@ -15,6 +15,7 @@ import {
   updatePassword,
   browserSessionPersistence,
 } from '@firebase/auth';
+import {refDB, getDB, set} from '../utils/firebase';
 
 export const useUserStore = defineStore('userStore', () => {
 
@@ -26,9 +27,33 @@ export const useUserStore = defineStore('userStore', () => {
   const loginWithGoogle = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-    const {user} = await signInWithPopup(auth, provider);
+    const { user } = await signInWithPopup(auth, provider);
     if (user) {
       user.value = auth.currentUser;
+      const userRef = refDB(`users/${user.value.uid}`);
+      const snapshot = await getDB(userRef);
+  
+      if (snapshot !== null) {
+        // El usuario ya existe en la base de datos
+        const userData = snapshot;
+        user.value.name = userData.name || user.value.displayName || '';
+        user.value.photoURL = user.value.photoURL || '';
+        user.value.chips = userData.chips || 0;
+      } else {
+        // Es la primera vez que el usuario inicia sesión
+        const userData = {
+          name: user.value.displayName || '',
+          photoURL: user.value.photoURL || '',
+          chips: 1000
+        };
+        set(userRef, userData);
+        user.value.name = userData.name;
+        user.value.photoURL = userData.photoURL;
+        user.value.chips = userData.chips;
+      }
+  
+      // Otros pasos después del login
+      // ...
     } else {
       alert('No se pudo iniciar sesión');
     }
