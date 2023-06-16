@@ -4,6 +4,8 @@ import {ref} from 'vue';
 import {refDB, set} from '../utils/firebase';
 
 export const useCardsStore = defineStore('cardsStore', () => {
+
+  //Baraja de 52 cartas
   const cards = [
     'Ah',
     '2h',
@@ -59,16 +61,16 @@ export const useCardsStore = defineStore('cardsStore', () => {
     'Ks',
   ];
 
-
   const gameCards = ref(cards);
   const tableCards = ref([]);
-  const results = ref([]);
   const winner = ref('');
 
+  //Reseteamos la baraja con una baraja nueva para reponer las cartas
   const resetDeck = () => {
     gameCards.value = [...cards];
   };
 
+  //Repartimos las cartas a todos los jugadores
   const dealingCards = async (seats, room) => {
     for (let index = 0; index < seats.length; index++) {
       const cardsHand = [];
@@ -88,6 +90,7 @@ export const useCardsStore = defineStore('cardsStore', () => {
     console.log(gameCards.value);
   };
 
+  //Elimina las cartas que tienes en la mano
   const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
@@ -95,68 +98,13 @@ export const useCardsStore = defineStore('cardsStore', () => {
     });
   };
 
-  const checkCards = async (cardsPlayers) => {
-    // { cards: cards, nameUser: nameUser }
-
-    const jugadoresEmpate = [];
-    const evalueCardsPlayer = [];
-
-    for (const element of cardsPlayers) {
-      const prueba = await evaluate(element.hand.concat(tableCards.value));
-      evalueCardsPlayer.push({
-        evaluacion: prueba,
-        nameUser: element.nameUser,
-      });
-    }
-
-    const menorRanking = evalueCardsPlayer.reduce((minElemento, elemento) => {
-      const evaluacion = elemento.evaluacion[0];
-
-      return evaluacion < minElemento.evaluacion[0] ? elemento : minElemento;
-    });
-
-    console.log(evalueCardsPlayer);
-    evalueCardsPlayer.forEach((element) => {
-      results.value.push({
-        player: element.nameUser,
-        ranking: element.evaluacion[0],
-        hand: element.evaluacion[1],
-      });
-    });
-
-    results.value.forEach((resultado) => {
-      if (resultado.ranking === menorRanking.evaluacion[0]) {
-        jugadoresEmpate.push(resultado);
-      }
-    });
-
-    if (jugadoresEmpate.length > 1) {
-      let mensajeEmpate = 'Empate entre los jugadores: ';
-      let mensajeManoGanadora = '';
-
-      jugadoresEmpate.forEach((jugador, index) => {
-        mensajeEmpate += jugador.player;
-
-        if (index !== jugadoresEmpate.length - 1) {
-          mensajeEmpate += ', ';
-        }
-
-        if (index === 0) {
-          mensajeManoGanadora = jugador.hand;
-        }
-      });
-
-      winner.value = mensajeEmpate + ' con ' + mensajeManoGanadora;
-    } else {
-      winner.value = 'El ' + jugadoresEmpate[0].player + ' ha ganado con ' + jugadoresEmpate[0].hand;
-    }
-  };
-
+  //Elimina las cartas comunes de la mesa
   const deleteCardsTable = (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
     set(tableCardsRef, []);
   };
 
+  //Carga el sonido
   const loadSound = (url) => {
     return new Promise((resolve, reject) => {
       const audio = new Audio();
@@ -166,6 +114,7 @@ export const useCardsStore = defineStore('cardsStore', () => {
     });
   };
 
+  //Lanza el sonido cargado
   const playSound = (audio) => {
     return new Promise((resolve, reject) => {
       audio.play();
@@ -178,7 +127,6 @@ export const useCardsStore = defineStore('cardsStore', () => {
     gameCards,
     tableCards,
     winner,
-    checkCards,
     dealingCards,
     deleteCards,
     deleteCardsTable,

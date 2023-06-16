@@ -36,6 +36,7 @@ onBeforeMount(() => {
   getRooms();
 });
 
+//Esta pendiente de cambios de la coleccion rooms para actualizar el componente
 const getRooms = () => {
   const roomsRef = collection(db, 'Rooms');
   onSnapshot(roomsRef, (querySnapshot) => {

@@ -196,6 +196,7 @@ const emits = defineEmits(['leaveSeat']);
 onMounted(() => {
   const allInRef = refDB(`rooms/${props.room}/seats/${props.index}/allIn`);
 
+  //El onValue se encarga de comprobar si el usuario esta allIn para ponerle el token de allIn
   onValue(allInRef, async (snapshot) => {
     const allInData = await snapshot.val();
     if (allInData) {
@@ -206,6 +207,7 @@ onMounted(() => {
   });
 });
 
+//Cuando dejas el asiento recoje las fichas y se las devuelve al pull del usuario
 const leaveSeat = () => {
   storeGame.collectChips(props.room, props.index);
   emits('leaveSeat');

@@ -43,6 +43,8 @@ const router = createRouter({
   ],
 });
 
+/*Con este guard comprobamos que el usuario este autenticado para darle acceso, 
+ademas si refrescamos vuelve a poner los credenciales del usuario*/
 router.beforeEach(async (to, from, next) => {
   const store = useUserStore();
 

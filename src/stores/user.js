@@ -17,10 +17,12 @@ import {
 } from '@firebase/auth';
 
 export const useUserStore = defineStore('userStore', () => {
+
   const user = ref(null);
 
   const isLoggedIn = computed(() => user.value !== null);
 
+  //Inicio de sesion con Google
   const loginWithGoogle = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
@@ -32,6 +34,8 @@ export const useUserStore = defineStore('userStore', () => {
     }
   };
 
+  /*Login con correo y contraseña, y mantiene ll apersistencia de sesion a nivel sesión, 
+  esto permite loggear a varias personas en un mismo ordenador*/
   const doLogin = async (email, password) => {
     const auth = getAuth();
     await setPersistence(auth, browserSessionPersistence);
@@ -39,6 +43,7 @@ export const useUserStore = defineStore('userStore', () => {
     user.value = auth.currentUser;
   };
 
+  //Realiza el registro con correo electronico
   const doRegister = async (name, email, password) => {
     const auth = getAuth();
     await createUserWithEmailAndPassword(auth, email, password);
@@ -48,11 +53,13 @@ export const useUserStore = defineStore('userStore', () => {
     });
   };
 
+  //Realiza la desconexion del objeto auth del usuario
   const doLogout = async () => {
     await signOut(getAuth());
     user.value = null;
   };
 
+  //Cambiar los datos del usuario (para una futura implementacion)
   const updateProfileUser = async (name, email, password) => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -70,6 +77,7 @@ export const useUserStore = defineStore('userStore', () => {
     }
   };
 
+  //Obtiene a tiempo real el usuario que esta autentificado
   const getCurrentUser = () => {
     return new Promise((resolve, reject) => {
       const unsubcribe = onAuthStateChanged(
@@ -84,6 +92,7 @@ export const useUserStore = defineStore('userStore', () => {
     });
   };
 
+  //Recuperación de contraseña en caso de olvido recibiendo le email registrado
   const doReset = async (email) => {
     await sendPasswordResetEmail(getAuth(), email);
   };

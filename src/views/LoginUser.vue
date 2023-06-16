@@ -140,6 +140,7 @@ const forgotPasswordEmail = ref('');
 const showForgotPasswordModal = ref(false);
 const errorMessage = ref('');
 
+//Interpreta los mensajes de error de firebase para mostrarselos al usuario de manera entendible
 const getMessageError = (errorCode) => {
   switch (errorCode) {
     case 'auth/invalid-email':
@@ -153,8 +154,11 @@ const getMessageError = (errorCode) => {
       return 'La contraseña ingresada es incorrecta.';
   }
 };
+
+//Resetea los campos del formulario
 const resetFields = () => (password.value = email.value = '');
 
+//Recoge el mensaje de erro de firebase y lo interpreta
 const showErrorNotification = (error) => {
   const message = getMessageError(error.code);
   errorMessage.value = message;
@@ -163,7 +167,7 @@ const showErrorNotification = (error) => {
   }, 5000);
 };
 
-// Uso de la función showErrorNotification
+//Login del usuario con correo y contraseña
 const doLogin = async () => {
   try {
     await storeUser.doLogin(email.value, password.value);
@@ -177,6 +181,7 @@ const doLogin = async () => {
   }
 };
 
+//Login del usuario con Google
 const loginGoogle = async () => {
   try {
     await storeUser.loginWithGoogle();
@@ -187,6 +192,7 @@ const loginGoogle = async () => {
   }
 };
 
+//Recoge el correo electronico introducido y ejecuta el reseteo de contraseña
 const submitForgotPassword = async () => {
   try {
     await storeUser.doReset(forgotPasswordEmail.value);

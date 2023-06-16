@@ -7,10 +7,12 @@ import {useConsoleStore} from './console';
 import axios from 'axios';
 
 export const useGameStore = defineStore('gameStore', () => {
+
   const storeCards = useCardsStore();
   const storePot = usePotStore();
   const storeConsole = useConsoleStore();
 
+  //Pasa de fase en funcion de la fase en la que este y reparte un numero de cartas determinado
   const gamePhase = async (phase, room) => {
     switch (phase) {
       case 'flop':
@@ -32,6 +34,7 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   };
 
+  //Asigna una carta a la mesa y la elimina de la baraja original
   const drawCardTable = async (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
     let tableCards = await getDB(tableCardsRef);
@@ -47,17 +50,18 @@ export const useGameStore = defineStore('gameStore', () => {
     console.log(storeCards.gameCards);
   };
 
+  //Evalua las manos de los jugadores haciendo una conexion a nuestra API
   const evaluate = async (hand) => {
     const cadena = hand.join('');
     try {
       const response = await axios.post(`http://localhost:3005/evaluate/${cadena}`);
       return response.data;
     } catch (error) {
-      console.error(error);
-      throw error;
+      console.error(error.message);
     }
   };
 
+  //Nos muestra el ganador/es en el chat de la sala, por defecto se le ha asignado una foto de un bot
   const showWinnerAfterRiver = async (seats, room) => {
     const potRef = refDB(`rooms/${room}/pot`);
     const pot = await getDB(potRef);
@@ -67,7 +71,8 @@ export const useGameStore = defineStore('gameStore', () => {
     const winners = await checkWinner(seatsWithoutFold, room);
     let indexWinner = -1;
 
-    await Promise.all(
+    try {
+      await Promise.all(
         winners.winners.map(async (winner) => {
           console.log(winner);
 
@@ -82,17 +87,22 @@ export const useGameStore = defineStore('gameStore', () => {
           const textWinner = `¡¡¡Ganador: ${userWinner} con ${descriptionWinner} ganó ${pot} fichas!!!`;
           const message = {
             photoUser:
-            'https://www.primedope.com/wp-content/uploads/Robot-playing-GTO-Poker-400x335.webp',
+              'https://www.primedope.com/wp-content/uploads/Robot-playing-GTO-Poker-400x335.webp',
             text: textWinner,
             user: 'PokerBot',
           };
 
           await push(refDB(`rooms/${room}/messages`), message);
         }),
-    );
-    return indexWinner;
+      );
+      return indexWinner;
+    } catch (error) {
+      console.log(error.message);
+    }
   };
-
+  
+  //Genera el formato necesario para que funcione l aconsulta a la API
+  //El formato seria las dos cartas del jugador mas las tres de la mesa y asi con cada jugador en la mesa
   const checkWinner = async (seats, room) => {
     try {
       let allCardsInGame = [];
@@ -105,17 +115,17 @@ export const useGameStore = defineStore('gameStore', () => {
       });
 
       const results = await evaluate(allCardsInGame);
-      console.log(results);
       return results;
     } catch (error) {
-      console.error(error);
+      console.log(error.message);
     }
   };
 
+  //Sortea las posiciones dealer, sb y bb par asignar las apuestas iniciales
   const ditchDealer = (seats, room) => {
     const raffleWinner = Math.floor(Math.random() * seats.length);
 
-    // Asignaciones segun el sorteo a los insices correspondientes
+    // Asignaciones segun el sorteo a los indices correspondientes
     seats[raffleWinner].dealer = 'dealer';
     seats[(raffleWinner + 1) % seats.length].dealer = 'sb';
     seats[(raffleWinner + 2) % seats.length].dealer = 'bb';
@@ -134,6 +144,7 @@ export const useGameStore = defineStore('gameStore', () => {
     set(roomRef, bb);
   };
 
+  //Resetea las posiciones respecto al dealer
   const deleteDealer = (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/dealer`);
@@ -141,6 +152,7 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
+  //Mueve a la izquierda el dealer al terminar la partida
   const moveDealerLeft = async (seats, room) => {
     const dealerIndex = seats.findIndex((item) => item.dealer === 'dealer');
     const sbIndex = (dealerIndex + seats.length - 1) % seats.length;
@@ -166,6 +178,7 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   };
 
+  //Asigna las fichas con las que te sientas en la mesa en funcion del valor que marca la sala
   const asignChipsInGame = async (room, index) => {
     let enterChips = 0;
     let chipsInGame = 0;
@@ -174,14 +187,14 @@ export const useGameStore = defineStore('gameStore', () => {
     const chipsRef = refDB('users/' + auth.currentUser.uid + '/chips', 0);
 
     try {
-      const chips = await getDB(chipsRef); // Cambio de 'once' a 'get'
-      // chips = snapshot.val();
+      const chips = await getDB(chipsRef);
 
       enterChips = await getEntryChips('Rooms', room);
       enterChips = enterChips.data().enterChips;
 
       chipsInGame = chips - enterChips;
 
+      //Comprueba que solo lo ejecute un solo jugador
       if (isFirstTime) {
         isFirstTime = false;
         const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
@@ -189,11 +202,11 @@ export const useGameStore = defineStore('gameStore', () => {
         await set(chipsRef, chipsInGame);
       }
     } catch (error) {
-      // Manejo de errores
       console.error(error.message);
     }
   };
 
+  //Recoge las fichas que te quedan al levantarte y te las asigna a tu total de fichas
   const collectChips = async (room, index) => {
     let totalChips = 0;
     let isFirstTime = true;
@@ -209,6 +222,7 @@ export const useGameStore = defineStore('gameStore', () => {
 
       totalChips = userPartyChips + userChips;
 
+      //Comprueba que solo lo ejecute un solo jugador
       if (isFirstTime) {
         isFirstTime = false;
         await set(userRef, totalChips);
@@ -216,11 +230,11 @@ export const useGameStore = defineStore('gameStore', () => {
 
       await set(chipsRef, 0);
     } catch (error) {
-      console.log('Error:', error);
+      console.log(error.message);
     }
   };
-  // Preparado para el comienzo de la segunda fase
-  // Añadimos el parametro route para poder usar la funcion en varias situaciones
+
+  // Asigna el turno en funcion del nuevo dealer
   const firstTurnPlayer = async (seat, room, route) => {
     console.log(seat);
     const seats = seat;
@@ -237,13 +251,14 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   };
 
+  //Recupera el indice del jugador con la apuesta mas alta
   const evaluateMaxPot = async (seats, room) => {
-    // Saca el indice del pot mas alto
     const maxPotIndex = storePot.potMax(seats, false);
     const turnRef = refDB(`rooms/${room}/seats/${maxPotIndex}/maxPot`);
     set(turnRef, '*');
   };
 
+  //Comprueba si el pot de todos los jugadores es igual
   const verifySimilarPots = (seats) => {
     let areEqual = true;
     let firstPot = null;
@@ -263,6 +278,7 @@ export const useGameStore = defineStore('gameStore', () => {
     return areEqual;
   };
 
+  //Muevev el turno a la izquierda y suma un contador a la ronda
   const moveTurnLeft = async (seats, room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     let countRound = await getDB(countRoundRef);
@@ -290,25 +306,15 @@ export const useGameStore = defineStore('gameStore', () => {
       }
     }
   };
-
+  
+  //No enseña la consola si el jugador no tiene potestad de hablar
   const noConsoleWithNoPlay = (seats, room, index) => {
     if (seats[index].noPlay === '*') {
       moveTurnLeft(seats, room);
     }
-  };
+  }; 
 
-  const moveTurnLeftWithoutCount = async (seats, room) => {
-    console.log('sin contador');
-    const turnIndex = seats.findIndex((item) => item.turn === '*');
-    const newTurnIndex = (turnIndex + seats.length + 1) % seats.length;
-
-    const turnRef = refDB(`rooms/${room}/seats/${turnIndex}/turn`);
-    const newTurnRef = refDB(`rooms/${room}/seats/${newTurnIndex}/turn`);
-
-    set(turnRef, '');
-    set(newTurnRef, '*');
-  };
-
+  //Comprueba si tienes al jugador con la apuesta mas alta a la izquierda devolviendo "" o "*"
   const evaluateMaxPotLeft = (seats, room) => {
     const turnIndex = seats.findIndex((item) => item.turn === '*');
     const maxPotIndexLeft = (turnIndex + seats.length + 1) % seats.length;
@@ -318,6 +324,7 @@ export const useGameStore = defineStore('gameStore', () => {
     return maxpot;
   };
 
+  //Resetea la partida cuando un jugador se levanta
   const resetGame = async (room) => {
     const roomMessageRef = refDB(`rooms/${room}/messages`);
     const roomSeatsRef = refDB(`rooms/${room}/seats`);
@@ -363,6 +370,7 @@ export const useGameStore = defineStore('gameStore', () => {
     storeCards.resetDeck();
   };
 
+  //Resetea el turno de los jugadores
   const resetTurn = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/turn`);
@@ -370,6 +378,7 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
+  //Resetea las fichas de los jugadores
   const resetChipsInGame = (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
@@ -377,6 +386,7 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
+  //Resetea el fold de los jugadores
   const resetFolds = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/fold`);
@@ -384,6 +394,7 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
+  //Resetea el noPlay
   const resetNoPlay = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
@@ -391,89 +402,60 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
+  //Resetea el endGame
   const resetEndGame = async (room) => {
     const endGameRef = refDB(`rooms/${room}/endGame`);
     set(endGameRef, '');
   };
 
+  //Resetea la partida cuando hay un gandor y empieza una nueva mano
   const resetGameWithWinner = async (seats, room, indexWinner) => {
     const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
     const seatRef = refDB(`rooms/${room}/seats`);
+    try {
+      await storeCards.deleteCards(seats, room);
 
-    await storeCards.deleteCards(seats, room);
-
-    storeCards.deleteCardsTable(room);
-    await storePot.potToPlayerWin(room, indexWinner);
-    await storePot.resetPot(room);
-    await storePot.resetMaxPot(seats, room);
-    storeCards.resetDeck();
-    await resetFolds(seats, room);
-    await resetTurn(seats, room);
-    await moveDealerLeft(seats, room);
-    let newSeats = await getDB(seatRef);
-    await resetAllIn(newSeats, room);
-    resetNoPlay(seats, room);
-    newSeats = await getDB(seatRef);
-    await storePot.resetPotPlayer(newSeats, room);
-    resetCountRound(room);
-    resetEndGame(room);
-    await storePot.initialPot(newSeats, room);
-    newSeats = await getDB(seatRef);
-    const playersWithChips = newSeats.reduce((count, seat) => {
-      if (seat.noChips === '') {
-        count++;
+      storeCards.deleteCardsTable(room);
+      await storePot.potToPlayerWin(room, indexWinner);
+      await storePot.resetPot(room);
+      await storePot.resetMaxPot(seats, room);
+      storeCards.resetDeck();
+      await resetFolds(seats, room);
+      await resetTurn(seats, room);
+      await moveDealerLeft(seats, room);
+      let newSeats = await getDB(seatRef);
+      await resetAllIn(newSeats, room);
+      resetNoPlay(seats, room);
+      newSeats = await getDB(seatRef);
+      await storePot.resetPotPlayer(newSeats, room);
+      resetCountRound(room);
+      resetEndGame(room);
+      await storePot.initialPot(newSeats, room);
+      newSeats = await getDB(seatRef);
+      const playersWithChips = newSeats.reduce((count, seat) => {
+        if (seat.noChips === '') {
+          count++;
+        }
+        return count;
+      }, 0);
+      if (playersWithChips >= 3) {
+        await firstTurnPlayer(newSeats, room, 'turn');
+        await storeCards.dealingCards(newSeats, room);
+        await evaluateMaxPot(newSeats, room);
+        set(phaseGameRef, 'preflop');
       }
-      return count;
-    }, 0);
-    if (playersWithChips >= 3) {
-      await firstTurnPlayer(newSeats, room, 'turn');
-      await storeCards.dealingCards(newSeats, room);
-      await evaluateMaxPot(newSeats, room);
-      set(phaseGameRef, 'preflop');
+    } catch (error) {
+      console.log(error.message);
     }
   };
 
-  const checkFoldAndAllIn = async (seats, room, index, foldAndAllIn) => {
-    const seatRef = refDB(`rooms/${room}/seats/${index}`);
-    const seat = await getDB(seatRef);
-    if (allPlayerFoldAndAllIn(seats)) {
-      if (foldAndAllIn) {
-        if (seat.fold === '*') {
-          moveTurnLeftWithoutCount(seats, room);
-
-          return false;
-        }
-        return true;
-      } else {
-        if (seat.allIn === '*') {
-          moveTurnLeftWithoutCount(seats, room);
-          return false;
-        }
-        return true;
-      }
-    } else {
-      return false;
-    }
-  };
-
-  const allPlayerFoldAndAllIn = (seats) => {
-    const filteredArray = seats.filter((item) => item.fold === '' && item.allIn === '');
-
-    console.log(filteredArray.length);
-    return filteredArray.length !== 0;
-  };
-
+  //Resetea el turno de fase
   const resetCountRound = async (room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     set(countRoundRef, 1);
   };
-  /* pèndiente eliminar, si no usa*/
-  const getChipsInGame = async (room, index) => {
-    const chipsInGameRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
-    const chipsInGame = await getDB(chipsInGameRef);
-    return chipsInGame;
-  };
 
+  //Muestra el ganador en el caht cuando solo queda un jugador sin fold
   const showWinner = async (winner, pot, room) => {
     const textWinner = `¡¡¡Ganador: ${winner.user} ganó ${pot} fichas!!!`;
     const message = {
@@ -486,6 +468,7 @@ export const useGameStore = defineStore('gameStore', () => {
     await push(refDB(`rooms/${room}/messages`), message);
   };
 
+  //Comprueba si todos los pot son iguales sin contar fold o allIn dependiendo de la variable booleana
   // true para fold
   // false para All in
   const checkPotWithFoldOrAllIn = (seats, foldOrAllIn) => {
@@ -499,6 +482,7 @@ export const useGameStore = defineStore('gameStore', () => {
     return filteredArray.every((item) => item.potPlayer === filteredArray[0].potPlayer);
   };
 
+  //Resetea los allIn
   const resetAllIn = async (seats, room) => {
     seats.forEach((seat, index) => {
       const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
@@ -506,15 +490,17 @@ export const useGameStore = defineStore('gameStore', () => {
     });
   };
 
-  const allPlayerAllIn = (seats) => seats.every((item) => item.allIn === '*');
-
+  //Comprueba si ningun jugador tiene potestad de hablar
   const allPlayerNoPlay = (seats) => seats.every((item) => item.noPlay === '*');
 
+  //Comprueba todos los que estan allIn sin contar los fold
   const checkFoldIfAllIn = (seats) => {
     const filteredArray = seats.filter((item) => item.fold !== '*');
     return filteredArray.every((item) => item.allIn === '*');
   };
 
+  /*Resolucion automatica de juego dependiendo de la fase en la que nos encontremos, 
+  llegando a ello despues de dictaminar que ningún jugador tiene potestad de hablar*/
   const finishGameSpecialsAllIn = async (seats, room) => {
     const countRoundRef = refDB(`rooms/${room}/countRound`);
     const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
@@ -525,47 +511,36 @@ export const useGameStore = defineStore('gameStore', () => {
     let indexWinner = -1;
 
     const phase = ['flop', 'turn', 'river'];
-    console.log(phaseGame);
-
-    if (phaseGame === 'preflop' && countRound >= seats.length) {
-      for (let i = 0; i < phase.length; i++) {
-        await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
+    try {
+      if (phaseGame === 'preflop' && countRound >= seats.length) {
+        for (let i = 0; i < phase.length; i++) {
+          await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
+        }
+        indexWinner = await showWinnerAfterRiver(seats, room);
+        set(endGameRef, '*');
+        setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+      } else if (phaseGame === 'flop') {
+        for (let i = 1; i < phase.length; i++) {
+          await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
+        }
+        indexWinner = await showWinnerAfterRiver(seats, room);
+        set(endGameRef, '*');
+        setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+      } else if (phaseGame === 'turn') {
+        for (let i = 2; i < phase.length; i++) {
+          await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
+        }
+        indexWinner = await showWinnerAfterRiver(seats, room);
+        set(endGameRef, '*');
+        setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
       }
-      indexWinner = await showWinnerAfterRiver(seats, room);
-      set(endGameRef, '*');
-      setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
-    } else if (phaseGame === 'flop') {
-      for (let i = 1; i < phase.length; i++) {
-        await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
-      }
-      indexWinner = await showWinnerAfterRiver(seats, room);
-      set(endGameRef, '*');
-      setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
-    } else if (phaseGame === 'turn') {
-      for (let i = 2; i < phase.length; i++) {
-        await storeConsole.phaseChangeWithoutBet(seats, room, phase[i], phaseGameRef);
-      }
-      indexWinner = await showWinnerAfterRiver(seats, room);
-      set(endGameRef, '*');
-      setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+    } catch (error) {
+      console.log(error.message);
     }
   };
-  const checkFinishGameWithOnePlayerOnly = (seats) => {
-    const filteredArray = seats.filter((item) => item.fold === '' && item.allIn === '');
 
-    console.log(filteredArray.length);
-    return filteredArray.length === 1;
-  };
-
-  const checkNoFinishGameWithoutSpeak = (seats) => {
-    const filteredArray = seats.filter(
-        (item) => item.fold === '' && item.allIn === '' && item.potPlayer === 0,
-    );
-
-    console.log(filteredArray.length);
-    return filteredArray.length === 1;
-  };
-
+  /*Comprueba a que fase tiene que cambiar dependiendo del parametro pasado, 
+  es modulable dependiendo de si queremos aplicar el else o no*/
   const checkPhaseChange = async (
       seats,
       room,
@@ -575,44 +550,43 @@ export const useGameStore = defineStore('gameStore', () => {
       moveTurn,
   ) => {
     const endGameRef = refDB(`rooms/${room}/endGame`);
-
-    if (moveTurn) {
-      if (phaseInGame === 'preflop' && countRound >= seats.length) {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'flop', phaseInGameRef);
-      } else if (phaseInGame === 'flop') {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'turn', phaseInGameRef);
-      } else if (phaseInGame === 'turn') {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'river', phaseInGameRef);
-      } else if (phaseInGame === 'river') {
-        indexWinner = await showWinnerAfterRiver(seats, room);
-        set(endGameRef, '*');
-        setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+    try {
+      if (moveTurn) {
+        if (phaseInGame === 'preflop' && countRound >= seats.length) {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'flop', phaseInGameRef);
+        } else if (phaseInGame === 'flop') {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'turn', phaseInGameRef);
+        } else if (phaseInGame === 'turn') {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'river', phaseInGameRef);
+        } else if (phaseInGame === 'river') {
+          indexWinner = await showWinnerAfterRiver(seats, room);
+          set(endGameRef, '*');
+          setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+        } else {
+          moveTurnLeft(seats, room);
+        }
       } else {
-        moveTurnLeft(seats, room);
+        if (phaseInGame === 'preflop' && countRound >= seats.length) {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'flop', phaseInGameRef);
+        } else if (phaseInGame === 'flop') {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'turn', phaseInGameRef);
+        } else if (phaseInGame === 'turn') {
+          storeConsole.phaseChangeWithoutBet(seats, room, 'river', phaseInGameRef);
+        } else if (phaseInGame === 'river') {
+          indexWinner = await showWinnerAfterRiver(seats, room);
+          set(endGameRef, '*');
+          setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
+        }
       }
-    } else {
-      if (phaseInGame === 'preflop' && countRound >= seats.length) {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'flop', phaseInGameRef);
-      } else if (phaseInGame === 'flop') {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'turn', phaseInGameRef);
-      } else if (phaseInGame === 'turn') {
-        storeConsole.phaseChangeWithoutBet(seats, room, 'river', phaseInGameRef);
-      } else if (phaseInGame === 'river') {
-        indexWinner = await showWinnerAfterRiver(seats, room);
-        set(endGameRef, '*');
-        setTimeout(() => resetGameWithWinner(seats, room, indexWinner), 7000);
-      }
+    } catch (error) {
+      console.log(error.message);
     }
   };
 
   return {
-    allPlayerAllIn,
     allPlayerNoPlay,
     asignChipsInGame,
-    checkFinishGameWithOnePlayerOnly,
-    checkFoldAndAllIn,
     checkFoldIfAllIn,
-    checkNoFinishGameWithoutSpeak,
     checkPhaseChange,
     checkPotWithFoldOrAllIn,
     collectChips,
@@ -623,7 +597,6 @@ export const useGameStore = defineStore('gameStore', () => {
     finishGameSpecialsAllIn,
     firstTurnPlayer,
     gamePhase,
-    getChipsInGame,
     moveDealerLeft,
     moveTurnLeft,
     noConsoleWithNoPlay,

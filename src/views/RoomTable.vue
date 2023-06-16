@@ -122,6 +122,7 @@ onMounted(async () => {
   const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
   const seatsRef = refDB(`rooms/${room.value}/seats`);
   try {
+    //Esta pendiente de cualquier cambio en la sala
     onValue(roomRef, async (snapshot) => {
       const roomData = await snapshot.val();
       if (roomData) {
@@ -133,6 +134,7 @@ onMounted(async () => {
         checkIndex(seats.value);
         // eslint-disable-next-line max-len
         const noChipsRef = refDB(`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`);
+        //Esta pendiente de cualquier cambio en noChips
         onValue(noChipsRef, async (noChips) => {
           const noChipsValue = await noChips.val();
           console.log(noChipsValue);
@@ -142,18 +144,22 @@ onMounted(async () => {
         });
       }
     });
+    //Esta pendiente de cualquier cambio en freeSeats
     onValue(freeSeatsRef, async (freeSeats) => {
       const ditchDealerDoneRef = refDB(`rooms/${room.value}/ditchDealerDone`);
       if (freeSeats) {
         const numberFreeSeats = await freeSeats.val();
+        //Comprueba si el numero de asientos libres es igual a 0 para iniciar la partida
         if (numberFreeSeats === 0) {
           const ditchDealerDone = await getDB(ditchDealerDoneRef);
           if (ditchDealerDone === false) {
             checkIndex(seats.value);
+            //Hacemos que solo reparta el indice 2
             if (selectedSeatIndex.value === 2) {
               storeGame.ditchDealer(seats.value, room.value);
               await storePot.initialPot(seats.value, room.value);
               const newSeats = await getDB(seatsRef);
+              //Comprueba cuantos jugadores tienen fichas
               const playersWithChips = newSeats.reduce((count, seat) => {
                 if (seat.noChips === '') {
                   count++;
@@ -162,6 +168,7 @@ onMounted(async () => {
               }, 0);
               if (playersWithChips >= 3) {
                 set(ditchDealerDoneRef, true);
+                //Y ya realiza el reparto correspondiente
                 storeCards.dealingCards(seats.value, room.value);
                 // eslint-disable-next-line max-len
                 await storeGame.firstTurnPlayer(seats.value, room.value, 'turn');
@@ -181,6 +188,7 @@ onMounted(async () => {
   }
 });
 
+//Actualiza la variable selectedSeatIndex con nuestro indice de asiento
 const checkIndex = (seats) => {
   seats.forEach((seat, index) => {
     if (seat.user === storeUser.user.displayName) {
@@ -189,6 +197,7 @@ const checkIndex = (seats) => {
   });
 };
 
+//Sienta al jugador y ademas resta uno a las plazas libres
 const sitIn = async (seatIndex) => {
   try {
     // eslint-disable-next-line max-len
@@ -206,6 +215,7 @@ const sitIn = async (seatIndex) => {
   }
 };
 
+//Levanta al jugador y ademas le suma uno a las plazas libres
 const standUpSeat = async (seatIndex) => {
   try {
     // eslint-disable-next-line max-len
@@ -219,6 +229,7 @@ const standUpSeat = async (seatIndex) => {
   }
 };
 
+//Al cerrar la sala, levanta al jugador que esta sentado
 const leaveRoom = () => {
   const seatIndex = findSeatIndexByUser(storeUser.user.displayName);
   if (seatIndex !== -1) {
@@ -226,6 +237,7 @@ const leaveRoom = () => {
   }
 };
 
+//Devuelve el indice segun el nombre de usuario
 const findSeatIndexByUser = (username) => {
   return seats.value.findIndex((seat) => seat.user === username);
 };

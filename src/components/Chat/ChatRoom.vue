@@ -62,6 +62,7 @@ onMounted(() => {
   const messagesRef = refDB(`rooms/${props.room}/messages`);
 
   try {
+    //onValue se encarga de estar siempre pendiente de cambios en la ruta que se le pasa por parametro
     onValue(messagesRef, async (snapshot) => {
       const roomData = await snapshot.val();
       if (roomData) {
@@ -81,6 +82,7 @@ onUpdated(() => {
   }
 });
 
+//Se encarga de bajar automaticamente el chat hacia abajo al detectar una nueva entrada
 const scrollToBottom = () => {
   const container = scrollContainer.value;
   if (container) {
@@ -88,6 +90,7 @@ const scrollToBottom = () => {
   }
 };
 
+//Se encarga de añadir mensajes al nodo messages
 const sendMessage = async () => {
   const message = {
     text: text.value,

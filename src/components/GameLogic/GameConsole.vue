@@ -91,6 +91,7 @@ const props = defineProps({
   seats: Array,
 });
 
+//Asignamos los parametros del boton bet (max y min) en funcion de los calculos oportunos
 onMounted(async () => {
   const seatsRef = refDB(`rooms/${props.room}/seats`);
   const newSeats = await getDB(seatsRef);

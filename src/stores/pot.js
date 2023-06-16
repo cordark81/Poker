@@ -3,12 +3,14 @@ import {defineStore} from 'pinia';
 import {refDB, getDB, set} from '../utils/firebase';
 import {useGameStore} from './game';
 
-// Necesario usar bucle for ya que el forEach generaba una callback que hacia que las funciones bet no fuesen secuenciales
 export const usePotStore = defineStore('potStore', () => {
+
   const storeGame = useGameStore();
 
+  // Necesario usar bucle for ya que el forEach generaba una callback que hacia que las funciones bet no fuesen secuenciales
   const initialPot = async (seats, room) => {
     let countNoChips = 0;
+    //Comprobamos si algun jugador que no disponga de fichas para cubrir la apuesta
     for (let index = 0; index < seats.length; index++) {
       const noChipsRef = refDB(`rooms/${room}/seats/${index}/noChips`);
       const seat = seats[index];
@@ -30,6 +32,7 @@ export const usePotStore = defineStore('potStore', () => {
       }
     }
     if (countNoChips === 0) {
+      //Asigna la apuesta inicial en funcion de como haya caido el sorteo de dealer
       for (let index = 0; index < seats.length; index++) {
         const allInRef = refDB(`rooms/${room}/seats/${index}/allIn`);
         const noPlayRef = refDB(`rooms/${room}/seats/${index}/noPlay`);
@@ -53,7 +56,7 @@ export const usePotStore = defineStore('potStore', () => {
 
   // Funcion dinamica para distintos grados de apuesta
   const bet = async (chips, room, index, betInGame, seats) => {
-    // Referencia rutas a base de datos dinamica
+
     const chipsRef = refDB(`rooms/${room}/seats/${index}/chipsInGame`);
     const potRoomRef = refDB(`rooms/${room}/pot`);
     const potPlayerRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
@@ -62,23 +65,22 @@ export const usePotStore = defineStore('potStore', () => {
     let updatePot = await getDB(potRoomRef);
     let potPlayer = await getDB(potPlayerRef);
 
-    // Operaciones
     chipsInGame -= chips;
     updatePot += chips;
     potPlayer += chips;
 
-    // Actualizacion de la base de datos
     set(chipsRef, chipsInGame);
     set(potRoomRef, updatePot);
     set(potPlayerRef, potPlayer);
 
+    //Si este parametro viene true, mueve turno
     if (betInGame) {
       storeGame.moveTurnLeft(seats, room);
     }
   };
 
   // true para sacar el jugador que tiene el pot maximo
-  // false para sacer el index del jugador con el pot maximo
+  // false para sacar el index del jugador con el pot maximo
   const potMax = (seats, potOrIndex) => {
     if (potOrIndex) {
       const maxPot = Math.max(...seats.map((seat) => seat.potPlayer));
@@ -92,6 +94,7 @@ export const usePotStore = defineStore('potStore', () => {
     return maxIndex;
   };
 
+  //Resetea el pot de todos los players
   const resetPotPlayer = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/potPlayer`);
@@ -99,11 +102,13 @@ export const usePotStore = defineStore('potStore', () => {
     });
   };
 
+  //Resetea el pot de la mesa
   const resetPot = async (room) => {
     const roomRef = refDB(`rooms/${room}/pot`);
     set(roomRef, 0);
   };
 
+  //Reseteamos el maxPot
   const resetMaxPot = async (seats, room) => {
     seats.forEach((seat, index) => {
       const roomRef = refDB(`rooms/${room}/seats/${index}/maxPot`);
@@ -111,18 +116,15 @@ export const usePotStore = defineStore('potStore', () => {
     });
   };
 
+  //Asigna el pot acumulado en la mesa al jugador ganador
   const potToPlayerWin = async (room, indexPlayerWin) => {
     const chipsInGameRef = refDB(`rooms/${room}/seats/${indexPlayerWin}/chipsInGame`);
     const potRef = refDB(`rooms/${room}/pot`);
-    const roomRef = refDB(`rooms/${room}/seats`);
 
     const chipsInGame = await getDB(chipsInGameRef);
     const pot = await getDB(potRef);
 
     set(chipsInGameRef, chipsInGame + pot);
-
-    const roomP = await getDB(roomRef);
-    console.log(roomP);
   };
 
   return {

@@ -84,18 +84,18 @@ const store = useUserStore();
 const router = useRouter();
 const userChips = ref(0);
 
+//Desconecta la sesion autenticada
 const logOut = async () => {
   try {
     await store.doLogout();
-    console.log('desconectado');
     router.push('/');
   } catch (error) {
     console.log(error.message);
   }
 };
 
+//Abre la vista de tienda para comprar monedas
 const openCoinStore = () => {
-  console.log('abriendo coin store');
   window.open('/coin-store', '_blank', 'width=500,height=500');
 };
 

@@ -32,6 +32,7 @@ const props = defineProps({
 
 onMounted(async () => {
   const endGameRef = refDB(`rooms/${props.room}/endGame`);
+  //Este onValue esta pendiente de ver si se ha acabado el juego para enseñar las cartas de todos los jugadores
   onValue(endGameRef, async (endGame) => {
     const endGameValue = await endGame.val();
     // eslint-disable-next-line max-len

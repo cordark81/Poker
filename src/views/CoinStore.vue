@@ -62,6 +62,7 @@ import {auth, set, refDB, get} from '../utils/firebase';
 const amount = ref(1);
 const paymentMethod = ref('creditCard');
 
+//Compra de minedas
 const buyCoins = async () => {
   // Obtener una referencia al nodo de monedas del usuario
   const userCoinsRef = refDB('users/' + auth.currentUser.uid + '/chips');
