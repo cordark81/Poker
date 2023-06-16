@@ -64,7 +64,7 @@ export const useGameStore = defineStore('gameStore', () => {
   //Nos muestra el ganador/es en el chat de la sala, por defecto se le ha asignado una foto de un bot
   const showWinnerAfterRiver = async (seats, room) => {
     const potRef = refDB(`rooms/${room}/pot`);
-    const pot = await getDB(potRef);
+    let pot = await getDB(potRef);
 
     const seatsWithoutFold = seats.filter((seat) => seat.fold === '');
 
@@ -77,8 +77,8 @@ export const useGameStore = defineStore('gameStore', () => {
 
           const cardsWinner = winner.cardPool.map((card) => card.value + card.suit);
           indexWinner.push(seats.findIndex((seat, index) => {
-            return seat.hand && seat.hand.every((card) => cardsWinner.includes(card));
-          }))
+            return seat.hand && seat.hand.includes(...cardsWinner);
+          }));
           console.log(indexWinner)
           const userWinner = seats[indexWinner.length-1].user;
           const descriptionWinner = winner.descr;
