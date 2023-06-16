@@ -1,3 +1,4 @@
+<!-- eslint-disable max-len -->
 <template>
   <div class="flex justify-center items-center border-2 border-amber-500 rounded-3xl profileUser">
     <div class="h-56 mx-4 w-5/6 rounded-3xl shadow-md sm:w-80 sm:mx-0 flex justify-between items-center">
@@ -26,10 +27,11 @@
 
 
 <script setup>
-import { useRouter } from "vue-router";
-import { useUserStore } from "../../stores/user";
-import { ref, watchEffect } from "vue";
-import { onValue, auth, refDB } from "../../utils/firebase";
+
+import {useRouter} from 'vue-router';
+import {useUserStore} from '../../stores/user';
+import {ref, watchEffect} from 'vue';
+import {onValue, auth, refDB} from '../../utils/firebase';
 
 const store = useUserStore();
 const router = useRouter();
@@ -42,8 +44,8 @@ const saludar = () => {
 const logOut = async () => {
   try {
     await store.doLogout();
-    console.log("desconectado");
-    router.push("/");
+    console.log('desconectado');
+    router.push('/');
   } catch (error) {
     console.log(error.message);
   }
@@ -56,7 +58,7 @@ const openCoinStore = () => {
 
 watchEffect(async () => {
   if (store.user) {
-    const userRef = await refDB("users/" + auth.currentUser.uid + "/chips", 0);
+    const userRef = await refDB('users/' + auth.currentUser.uid + '/chips', 0);
     onValue(userRef, (snapshot) => {
       userChips.value = snapshot.val();
     });
@@ -64,10 +66,9 @@ watchEffect(async () => {
 });
 </script>
 
-
 <style scoped>
 .profileUser {
-  background-image: url("../../assets/images/palos.jpg");
+  background-image: url('../../assets/images/palos.jpg');
   background-size: cover;
   background-position: center;
 }

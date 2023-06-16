@@ -1,5 +1,5 @@
-import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import {defineStore} from 'pinia';
+import {ref, computed} from 'vue';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -10,27 +10,26 @@ import {
   updateProfile,
   signOut,
   setPersistence,
-  browserLocalPersistence,
   onAuthStateChanged,
   updateEmail,
   updatePassword,
-  browserSessionPersistence
-} from "@firebase/auth";
+  browserSessionPersistence,
+} from '@firebase/auth';
 
-export const useUserStore = defineStore("userStore", () => {
+export const useUserStore = defineStore('userStore', () => {
   const user = ref(null);
 
   const isLoggedIn = computed(() => user.value !== null);
 
   const loginWithGoogle = async () => {
-      const auth = getAuth();
-      const provider = new GoogleAuthProvider();
-      const { user } = await signInWithPopup(auth, provider);
-      if (user) {
-        user.value = auth.currentUser;
-      } else {
-        alert("No se pudo iniciar sesión");
-      }
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    const {user} = await signInWithPopup(auth, provider);
+    if (user) {
+      user.value = auth.currentUser;
+    } else {
+      alert('No se pudo iniciar sesión');
+    }
   };
 
   const doLogin = async (email, password) => {
@@ -54,52 +53,50 @@ export const useUserStore = defineStore("userStore", () => {
     user.value = null;
   };
 
-  const updateProfileUser = async (name,email,password) =>{
+  const updateProfileUser = async (name, email, password) => {
     const auth = getAuth();
     const user = auth.currentUser;
 
-    if (name){
-      await updateProfile(user,{
+    if (name) {
+      await updateProfile(user, {
         displayName: name,
-      })
+      });
     }
-    if (email){
-      await updateEmail(user, email)
+    if (email) {
+      await updateEmail(user, email);
     }
-    if (password){
-      await updatePassword(user,password)
+    if (password) {
+      await updatePassword(user, password);
     }
-  }
+  };
 
   const getCurrentUser = () => {
     return new Promise((resolve, reject) => {
       const unsubcribe = onAuthStateChanged(
-        getAuth(),
-        (users) => {
-          unsubcribe();
-          user.value = users;
-          resolve(users);
-        },
-        reject
+          getAuth(),
+          (users) => {
+            unsubcribe();
+            user.value = users;
+            resolve(users);
+          },
+          reject,
       );
     });
   };
 
-  const doReset = async(email) =>{
-    await sendPasswordResetEmail(getAuth(),email)    
-  }
-
-
+  const doReset = async (email) => {
+    await sendPasswordResetEmail(getAuth(), email);
+  };
 
   return {
-    user,
     isLoggedIn,
+    user,
     doLogin,
-    loginWithGoogle,
-    doRegister,
     doLogout,
+    doRegister,
+    doReset,
     getCurrentUser,
+    loginWithGoogle,
     updateProfileUser,
-    doReset
   };
 });

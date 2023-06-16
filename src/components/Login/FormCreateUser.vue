@@ -1,3 +1,4 @@
+<!-- eslint-disable max-len -->
 <template>
 	<div class="flex flex-col items-center justify-center">
 	  <h1 class="text-white text-4xl font-bold mb-6">Registro de Usuario</h1>
