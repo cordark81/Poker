@@ -1,104 +1,73 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
-import { refDB, set } from "../utils/firebase";
+/* eslint-disable max-len */
+import {defineStore} from 'pinia';
+import {ref} from 'vue';
+import {refDB, set} from '../utils/firebase';
 
-export const useCardsStore = defineStore("cardsStore", () => {
+export const useCardsStore = defineStore('cardsStore', () => {
   const cards = [
-    "Ah",
-    "2h",
-    "3h",
-    "4h",
-    "5h",
-    "6h",
-    "7h",
-    "8h",
-    "9h",
-    "Th",
-    "Jh",
-    "Qh",
-    "Kh",
-    "Ad",
-    "2d",
-    "3d",
-    "4d",
-    "5d",
-    "6d",
-    "7d",
-    "8d",
-    "9d",
-    "Td",
-    "Jd",
-    "Qd",
-    "Kd",
-    "Ac",
-    "2c",
-    "3c",
-    "4c",
-    "5c",
-    "6c",
-    "7c",
-    "8c",
-    "9c",
-    "Tc",
-    "Jc",
-    "Qc",
-    "Kc",
-    "As",
-    "2s",
-    "3s",
-    "4s",
-    "5s",
-    "6s",
-    "7s",
-    "8s",
-    "9s",
-    "Ts",
-    "Js",
-    "Qs",
-    "Ks",
+    'Ah',
+    '2h',
+    '3h',
+    '4h',
+    '5h',
+    '6h',
+    '7h',
+    '8h',
+    '9h',
+    'Th',
+    'Jh',
+    'Qh',
+    'Kh',
+    'Ad',
+    '2d',
+    '3d',
+    '4d',
+    '5d',
+    '6d',
+    '7d',
+    '8d',
+    '9d',
+    'Td',
+    'Jd',
+    'Qd',
+    'Kd',
+    'Ac',
+    '2c',
+    '3c',
+    '4c',
+    '5c',
+    '6c',
+    '7c',
+    '8c',
+    '9c',
+    'Tc',
+    'Jc',
+    'Qc',
+    'Kc',
+    'As',
+    '2s',
+    '3s',
+    '4s',
+    '5s',
+    '6s',
+    '7s',
+    '8s',
+    '9s',
+    'Ts',
+    'Js',
+    'Qs',
+    'Ks',
   ];
 
-  /*const dealtCards = ref([]);*/
+
   const gameCards = ref(cards);
   const tableCards = ref([]);
   const results = ref([]);
-  const winner = ref("");
-  /*
-  const loadSound = (url) => {
-    return new Promise((resolve, reject) => {
-      const audio = new Audio(url);
-      audio.addEventListener('canplaythrough', () => resolve(audio));
-      audio.addEventListener('error', reject);
-    });
-  };*/
-
-  /*const addCards = (cardHand, player, room) =>
-		dealtCards.value.push({ hand: cardHand, nameUser: player, room: room });*/
+  const winner = ref('');
 
   const resetDeck = () => {
     gameCards.value = [...cards];
   };
-  /*
-  const dealingCards = async (seats, room) => {
-    // Cargar el sonido antes de la ejecución
-    //
-
-    seats.forEach((element, index) => {
-      let cardsHand = [];
-      let pos = Math.floor(Math.random() * gameCards.value.length);
-      cardsHand.push(gameCards.value[pos]);
-      gameCards.value.splice(pos, 1);
-      pos = Math.floor(Math.random() * gameCards.value.length);
-      cardsHand.push(gameCards.value[pos]);
-      gameCards.value.splice(pos, 1);
-      element.hand = cardsHand;
-      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
-      set(roomRef, element.hand);
-
-      // Reproducir el sonido al repartir cada carta
-      // cardSound.play();
-    });
-  };*/
 
   const dealingCards = async (seats, room) => {
     for (let index = 0; index < seats.length; index++) {
@@ -111,14 +80,12 @@ export const useCardsStore = defineStore("cardsStore", () => {
         const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
         set(roomRef, cardsHand);
 
-        const cardSound = await loadSound(
-          "/src/assets/sounds/Dealing-cards-sound.mp3"
-        );
-        console.log(cardSound);
+        const cardSound = await loadSound('/src/assets/sounds/Dealing-cards-sound_cut.mp3');
         await playSound(cardSound);
       }
       seats[index].hand = cardsHand;
     }
+    console.log(gameCards.value);
   };
 
   const deleteCards = async (seats, room) => {
@@ -129,10 +96,10 @@ export const useCardsStore = defineStore("cardsStore", () => {
   };
 
   const checkCards = async (cardsPlayers) => {
-    //{ cards: cards, nameUser: nameUser }
+    // { cards: cards, nameUser: nameUser }
 
-    let jugadoresEmpate = [];
-    let evalueCardsPlayer = [];
+    const jugadoresEmpate = [];
+    const evalueCardsPlayer = [];
 
     for (const element of cardsPlayers) {
       const prueba = await evaluate(element.hand.concat(tableCards.value));
@@ -164,14 +131,14 @@ export const useCardsStore = defineStore("cardsStore", () => {
     });
 
     if (jugadoresEmpate.length > 1) {
-      let mensajeEmpate = "Empate entre los jugadores: ";
-      let mensajeManoGanadora = "";
+      let mensajeEmpate = 'Empate entre los jugadores: ';
+      let mensajeManoGanadora = '';
 
       jugadoresEmpate.forEach((jugador, index) => {
         mensajeEmpate += jugador.player;
 
         if (index !== jugadoresEmpate.length - 1) {
-          mensajeEmpate += ", ";
+          mensajeEmpate += ', ';
         }
 
         if (index === 0) {
@@ -179,31 +146,15 @@ export const useCardsStore = defineStore("cardsStore", () => {
         }
       });
 
-      winner.value = mensajeEmpate + " con " + mensajeManoGanadora;
+      winner.value = mensajeEmpate + ' con ' + mensajeManoGanadora;
     } else {
-      winner.value =
-        "El " +
-        jugadoresEmpate[0].player +
-        " ha ganado con " +
-        jugadoresEmpate[0].hand;
+      winner.value = 'El ' + jugadoresEmpate[0].player + ' ha ganado con ' + jugadoresEmpate[0].hand;
     }
   };
 
   const deleteCardsTable = (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
     set(tableCardsRef, []);
-  };
-
-  // Para recargar las barajas en la base de datos en caso de corrupción
-  const upDecksFirebase = () => {
-    const deckClubsRef = refDB(`rooms/Clubs/deck`);
-    const deckDiamondsRef = refDB(`rooms/Diamonds/deck`);
-    const deckHeartRef = refDB(`rooms/Heart/deck`);
-    const deckSpadesRef = refDB(`rooms/Spades/deck`);
-    set(deckClubsRef, cards.value);
-    set(deckDiamondsRef, cards.value);
-    set(deckHeartRef, cards.value);
-    set(deckSpadesRef, cards.value);
   };
 
   const loadSound = (url) => {
@@ -227,11 +178,10 @@ export const useCardsStore = defineStore("cardsStore", () => {
     gameCards,
     tableCards,
     winner,
+    checkCards,
     dealingCards,
     deleteCards,
-    checkCards,
     deleteCardsTable,
-    upDecksFirebase,
     resetDeck,
   };
 });
