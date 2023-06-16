@@ -121,7 +121,6 @@
     </div>
   </div>
   <CreateUser v-show="dialog" @closeModal="dialog = false" />
-
 </template>
 
 <script setup>
@@ -137,10 +136,9 @@ const password = ref('');
 const dialog = ref(false);
 const router = useRouter();
 const storeUser = useUserStore();
-const forgotPasswordEmail = ref("");
+const forgotPasswordEmail = ref('');
 const showForgotPasswordModal = ref(false);
 const errorMessage = ref('');
-
 
 const getMessageError = (errorCode) => {
   switch (errorCode) {
@@ -157,7 +155,6 @@ const getMessageError = (errorCode) => {
 };
 const resetFields = () => (password.value = email.value = '');
 
-
 const showErrorNotification = (error) => {
   const message = getMessageError(error.code);
   errorMessage.value = message;
@@ -168,7 +165,6 @@ const showErrorNotification = (error) => {
 
 // Uso de la función showErrorNotification
 const doLogin = async () => {
-
   try {
     await storeUser.doLogin(email.value, password.value);
     console.log('Estás logeado');
@@ -179,6 +175,7 @@ const doLogin = async () => {
     showErrorNotification(error);
     resetFields();
   }
+};
 
 const loginGoogle = async () => {
   try {
@@ -202,7 +199,6 @@ const submitForgotPassword = async () => {
     showErrorNotification(error);
     errorMessage.value = error.message;
   }
-
 };
 
 </script>

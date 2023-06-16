@@ -135,7 +135,6 @@ onMounted(async () => {
         const noChipsRef = refDB(`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`);
         onValue(noChipsRef, async (noChips) => {
           const noChipsValue = await noChips.val();
-          console.log(noChipsValue);
           if (noChipsValue === '*') {
             modalNoChips.value = true;
           }
@@ -191,15 +190,18 @@ const checkIndex = (seats) => {
 
 const sitIn = async (seatIndex) => {
   try {
-    // eslint-disable-next-line max-len
     const obj = storeSeat.sitInSeat(seatIndex, selectedSeatIndex.value, seats.value, room.value);
     if (obj.selected !== -1) {
       selectedSeatIndex.value = obj.selected;
       showModal.value = obj.modal;
-      await storeGame.asignChipsInGame(room.value, seatIndex);
-      const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
-      const freeSeats = await getDB(freeSeatsInRoomRef);
-      set(freeSeatsInRoomRef, freeSeats - 1);
+
+      // Restar freeSets solo si el asiento seleccionado no estaba ocupado
+      if (!obj.modal) {
+        const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
+        const freeSeats = await getDB(freeSeatsInRoomRef);
+        set(freeSeatsInRoomRef, freeSeats - 1);
+        await storeGame.asignChipsInGame(room.value, seatIndex);
+      }
     }
   } catch (error) {
     console.log(error.message);
