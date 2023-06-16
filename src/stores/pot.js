@@ -118,13 +118,18 @@ export const usePotStore = defineStore('potStore', () => {
 
   //Asigna el pot acumulado en la mesa al jugador ganador
   const potToPlayerWin = async (room, indexPlayerWin) => {
-    const chipsInGameRef = refDB(`rooms/${room}/seats/${indexPlayerWin}/chipsInGame`);
     const potRef = refDB(`rooms/${room}/pot`);
 
-    const chipsInGame = await getDB(chipsInGameRef);
     const pot = await getDB(potRef);
+    
+    for (let i = 0; i < indexPlayerWin.length; i++){
+      const chipsInGameRef = refDB(`rooms/${room}/seats/${indexPlayerWin[i]}/chipsInGame`);
+    
+      const chipsInGame = await getDB(chipsInGameRef);
 
-    set(chipsInGameRef, chipsInGame + pot);
+      set(chipsInGameRef, chipsInGame + Math.round(pot/indexPlayerWin.length));
+    }
+    
   };
 
   return {
