@@ -3,7 +3,7 @@
   <div class="flex justify-center items-center border-2 border-amber-500 rounded-3xl profileUser">
     <div class="h-56 w-72 absolute flex justify-center items-center">
       <img
-        v-if="store.user.photoURL"
+        v-if="store.user && store.user.photoURL"
         class="object-cover h-28 w-28 rounded-full border-2 border-black"
         :src="store.user.photoURL"
         alt="profile"
@@ -66,7 +66,7 @@
         </div>
 
         <div class="w-full h-1/2 flex flex-col justify-center items-center">
-          <h1 class="text-gray-700 font-bold">{{ store.user.displayName }}</h1>
+          <h1 class="text-gray-700 font-bold">{{ store.user ? store.user.displayName : '' }}</h1>
         </div>
       </div>
     </div>

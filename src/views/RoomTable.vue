@@ -135,6 +135,7 @@ onMounted(async () => {
         const noChipsRef = refDB(`rooms/${room.value}/seats/${selectedSeatIndex.value}/noChips`);
         onValue(noChipsRef, async (noChips) => {
           const noChipsValue = await noChips.val();
+          console.log(noChipsValue);
           if (noChipsValue === '*') {
             modalNoChips.value = true;
           }
