@@ -3,54 +3,37 @@
   <div class="h-screen bg-green-600 background-table">
     <div class="w-1/5 text-center flex">
       <h1
-        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto"
-      >
+        class="background-room text-black mt-5 ml-5 p-7 rounded-2xl border-2 border-amber-400 font-extrabold text-4xl text-white my-auto">
         Sala {{ room }}
       </h1>
     </div>
 
     <div class="flex justify-center items-center flex-wrap h-80">
-      <div
-        v-for="(seat, index) in seats"
-        :key="index"
-        :class="[
-          'h-52',
-          'flex',
-          'justify-center',
-          'w-1/2',
-          'md:w-1/3',
-          'lg:w-1/4',
-          'xl:w-1/4',
-          'items-end',
-          { 'pb-40': index === 1 }
-        ]"
-      >
+      <div v-for="(seat, index) in seats" :key="index" :class="[
+        'h-52',
+        'flex',
+        'justify-center',
+        'w-1/2',
+        'md:w-1/3',
+        'lg:w-1/4',
+        'xl:w-1/4',
+        'items-end',
+        { 'pb-40': index === 1 }
+      ]">
         <div v-if="seat.user" class="">
-          <OccupiedSeat
-            @leaveSeat="standUpSeat(index)"
-            :seat="seat"
-            :index="index"
-            :room="room"
-            :seats="seats"
-            :handCards="seat.hand"
-          />
+          <OccupiedSeat @leaveSeat="standUpSeat(index)" :seat="seat" :index="index" :room="room" :seats="seats"
+            :handCards="seat.hand" />
         </div>
         <div v-else>
           <Seats v-if="!seat.user" @occupeSeat="sitIn(index)" :room="room" :index="index" />
         </div>
 
         <div>
-          <GameConsole
-            v-if="
-              seat.turn === '*' &&
-              seat.user === storeUser.user.displayName &&
-              storeGame.allPlayerNoPlay(seats) === false &&
-              endGameBoolean === false
-            "
-            :room="room"
-            :index="index"
-            :seats="seats"
-          />
+          <GameConsole v-if="seat.turn === '*' &&
+            seat.user === storeUser.user.displayName &&
+            storeGame.allPlayerNoPlay(seats) === false &&
+            endGameBoolean === false
+            " :room="room" :index="index" :seats="seats" />
         </div>
       </div>
 
@@ -59,14 +42,11 @@
     <div>
       <CardsTable class="flex justify-center" :tableCards="tableCards" />
     </div>
-    <div
-      class="flex justify-center"
-      :class="{
-        'mt-28':
-          tableCards === null || typeof tableCards === 'undefined' || tableCards.length === 0,
-        'mt-9': tableCards !== null && typeof tableCards !== 'undefined' && tableCards.length !== 0
-      }"
-    >
+    <div class="flex justify-center" :class="{
+      'mt-28':
+        tableCards === null || typeof tableCards === 'undefined' || tableCards.length === 0,
+      'mt-9': tableCards !== null && typeof tableCards !== 'undefined' && tableCards.length !== 0
+    }">
       <div>
         <div class="shadow-inner bg-green-900 bg-opacity-75 rounded-3xl p-2 px-5">
           <p class="text-white inline">{{ potRoom }}</p>
@@ -80,19 +60,18 @@
 
 <script setup>
 
-import {useCardsStore} from '../stores/cards';
-import {useUserStore} from '../stores/user';
-import {useSeatsStore} from '../stores/seats';
-import {useGameStore} from '../stores/game';
-import {usePotStore} from '../stores/pot';
-import {ref, onMounted} from 'vue';
-import {useRouter, onBeforeRouteLeave} from 'vue-router';
+import { useCardsStore } from '../stores/cards';
+import { useUserStore } from '../stores/user';
+import { useSeatsStore } from '../stores/seats';
+import { useGameStore } from '../stores/game';
+import { usePotStore } from '../stores/pot';
+import { ref, onMounted } from 'vue';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import {
   onValue,
-  refDB,
-  getDB,
   set,
-} from '../utils/firebase';
+} from '@firebase/database';
+import { refDB, getDB } from '../utils/firebase'
 import Chat from '../components/Chat/ChatRoom.vue';
 import Seats from '../components/Room/SeatsInRoom.vue';
 import OccupiedSeat from '../components/Room/OccupiedSeat.vue';
@@ -134,11 +113,11 @@ onMounted(async () => {
         checkIndex(seats.value);
         // eslint-disable-next-line max-len
         //Comprueba si tienes fichas, si no las tienes, aparece el mensaje
-        if(seats.value[selectedSeatIndex.value]){
+        if (seats.value[selectedSeatIndex.value]) {
           if (seats.value[selectedSeatIndex.value].noChips === "*") {
-          modalNoChips.value = true;
+            modalNoChips.value = true;
           } else {
-          modalNoChips.value = false;
+            modalNoChips.value = false;
           }
         }
       }

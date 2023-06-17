@@ -8,10 +8,8 @@
       <div>{{ freeSeats }} asientos libres</div>
     </div>
     <div class="flex h-2/3 items-end justify-center">
-      <button
-        @click="joinRoom"
-        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold"
-      >
+      <button @click="joinRoom"
+        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">
         Unirse a la sala
       </button>
     </div>
@@ -20,17 +18,14 @@
 
 <script setup>
 
-import {defineEmits, onMounted, ref} from 'vue';
+import { defineEmits, onMounted, ref } from 'vue';
 import {
   ref as rtdbRef,
-  database,
   get,
-  auth,
-  onAuthStateChanged,
-  refDB,
   onValue,
-} from '../../utils/firebase';
-
+} from '@firebase/database';
+import { onAuthStateChanged } from '@firebase/auth';
+import { refDB, database, auth } from '../../utils/firebase'
 const freeSeats = ref();
 
 const props = defineProps({

@@ -1,12 +1,12 @@
 /* eslint-disable max-len */
-import {defineStore} from 'pinia';
-import {ref} from 'vue';
-import {getDB, refDB, set} from '../utils/firebase';
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { set } from '@firebase/database'
+import { refDB, getDB } from '../utils/firebase'
 
 export const useCardsStore = defineStore('cardsStore', () => {
-
   //Baraja de 52 cartas
-  const  deck = ref([
+  const deck = ref([
     'Ah',
     '2h',
     '3h',
@@ -58,78 +58,78 @@ export const useCardsStore = defineStore('cardsStore', () => {
     'Ts',
     'Js',
     'Qs',
-    'Ks',
-  ]);
+    'Ks'
+  ])
 
-  const winner = ref('');
+  const winner = ref('')
 
   //Reseteamos la baraja con una baraja nueva para reponer las cartas
   const resetDeck = (room) => {
-    const deckRef = refDB(`rooms/${room}/deck`);
-    
-    set(deckRef,{...deck.value});
-  };
+    const deckRef = refDB(`rooms/${room}/deck`)
+
+    set(deckRef, { ...deck.value })
+  }
 
   //Repartimos las cartas a todos los jugadores
   const dealingCards = async (seats, room) => {
-    const deckRef = refDB(`rooms/${room}/deck`);
-    const deck = await getDB(deckRef);
+    const deckRef = refDB(`rooms/${room}/deck`)
+    const deck = await getDB(deckRef)
     for (let index = 0; index < seats.length; index++) {
-      const cardsHand = [];
+      const cardsHand = []
       for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
-        const pos = Math.floor(Math.random() * deck.length);
-        const card = deck.splice(pos, 1)[0];
-        cardsHand.push(card);
+        const pos = Math.floor(Math.random() * deck.length)
+        const card = deck.splice(pos, 1)[0]
+        cardsHand.push(card)
 
-        const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
-        set(handRef, cardsHand);
+        const handRef = refDB(`rooms/${room}/seats/${index}/hand`)
+        set(handRef, cardsHand)
 
-        const cardSound = await loadSound('/src/assets/sounds/Dealing-cards-sound_cut.mp3');
-        await playSound(cardSound);
-      }      
+        const cardSound = await loadSound('/src/assets/sounds/Dealing-cards-sound_cut.mp3')
+        await playSound(cardSound)
+      }
     }
-    set(deckRef,deck);    
-  };
+    set(deckRef, deck)
+  }
 
   //Elimina las cartas que tienes en la mano
   const deleteCards = async (seats, room) => {
     seats.forEach((element, index) => {
-      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
-      set(roomRef, []);
-    });
-  };
+      const roomRef = refDB(`rooms/${room}/seats/${index}/hand`)
+      set(roomRef, [])
+    })
+  }
 
   //Elimina las cartas comunes de la mesa
   const deleteCardsTable = (room) => {
-    const tableCardsRef = refDB(`rooms/${room}/tableCards`);
-    set(tableCardsRef, []);
-  };
+    const tableCardsRef = refDB(`rooms/${room}/tableCards`)
+    set(tableCardsRef, [])
+  }
 
   //Carga el sonido
   const loadSound = (url) => {
     return new Promise((resolve, reject) => {
-      const audio = new Audio();
-      audio.src = url;
-      audio.oncanplaythrough = () => resolve(audio);
-      audio.onerror = reject;
-    });
-  };
+      const audio = new Audio()
+      audio.src = url
+      audio.oncanplaythrough = () => resolve(audio)
+      audio.onerror = reject
+    })
+  }
 
   //Lanza el sonido cargado
   const playSound = (audio) => {
     return new Promise((resolve, reject) => {
-      audio.play();
-      audio.onended = resolve;
-      audio.onerror = reject;
-    });
-  };
+      audio.play()
+      audio.onended = resolve
+      audio.onerror = reject
+    })
+  }
 
   return {
     deck,
     winner,
     dealingCards,
-    deleteCards,    
+    deleteCards,
     deleteCardsTable,
-    resetDeck,
-  };
-});
+    resetDeck
+  }
+})
