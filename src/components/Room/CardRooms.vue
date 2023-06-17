@@ -8,10 +8,8 @@
       <div>{{ freeSeats }} asientos libres</div>
     </div>
     <div class="flex h-2/3 items-end justify-center">
-      <button
-        @click="joinRoom"
-        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold"
-      >
+      <button @click="joinRoom"
+        class="w-28 h-8 bg-green-500 hover:bg-green-400 rounded-full shadow-lg text-white text-sm mt-2 font-bold">
         Unirse a la sala
       </button>
     </div>
@@ -20,17 +18,14 @@
 
 <script setup>
 
-import {defineEmits, onMounted, ref} from 'vue';
+import { defineEmits, onMounted, ref } from 'vue';
 import {
   ref as rtdbRef,
-  database,
   get,
-  auth,
-  onAuthStateChanged,
-  refDB,
   onValue,
-} from '../../utils/firebase';
-
+} from '@firebase/database';
+import { onAuthStateChanged } from '@firebase/auth';
+import { refDB, database, auth } from '../../utils/firebase'
 const freeSeats = ref();
 
 const props = defineProps({
@@ -45,47 +40,53 @@ const emits = defineEmits('closeModal, openModal');
 onMounted(() => {
   const freeSeatsRef = refDB(`rooms/${props.roomName}/freeSeats`);
 
+  //Esta pendiente del numero de asientos libres que hay para empezar la partida
   onValue(freeSeatsRef, async (freeSeatsValue) => {
     freeSeats.value = await freeSeatsValue.val();
     console.log(freeSeats.value);
   });
 });
 
+//Se encarga de gestionar la entrada a la sala
 const joinRoom = () => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      const userId = user.uid;
-      const userRef = rtdbRef(database, `users/${userId}/chips`);
+  try {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userId = user.uid;
+        const userRef = rtdbRef(database, `users/${userId}/chips`);
 
-      // Obtener el valor de las fichas del usuario
-      get(userRef)
+        // Obtener el valor de las fichas del usuario
+        get(userRef)
           .then((snapshot) => {
             const chips = snapshot.val();
 
             // Verificar si el usuario tiene suficientes fichas
             if (chips >= props.range) {
-            // El usuario tiene suficientes fichas, puedes unirlo a la sala
+              // El usuario tiene suficientes fichas, puedes unirlo a la sala
               window.open(
-                  `/room/${props.roomName}`,
-                  '_blank',
-                  'toolbar=no,location=no,menubar=no,status=no',
+                `/room/${props.roomName}`,
+                '_blank',
+                'toolbar=no,location=no,menubar=no,status=no',
               );
             } else {
-            // eslint-disable-next-line max-len
-            // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
+              // eslint-disable-next-line max-len
+              // El usuario no tiene suficientes fichas, muestra una alerta con la cantidad de fichas disponibles
               emits('openModal');
             }
           })
           .catch((error) => {
-          // Manejar errores en la obtención de las fichas del usuario
+            // Manejar errores en la obtención de las fichas del usuario
             console.error(error);
           })
           .finally(() => {
-          // Desuscribirse de los cambios de autenticación
+            // Desuscribirse de los cambios de autenticación
             unsubscribe();
           });
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 </script>
