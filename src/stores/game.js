@@ -468,7 +468,7 @@ export const useGameStore = defineStore('gameStore', () => {
   }
 
   //Muestra el ganador en el caht cuando solo queda un jugador sin fold
-  const showWinner = async (winner, pot, room) => {
+  const showWinner = async (winner, pot, room, indexWinner) => {
     const textWinner = `¡¡¡Ganador: ${winner.user} ganó ${pot} fichas!!!`
     const message = {
       photoUser:
@@ -476,6 +476,10 @@ export const useGameStore = defineStore('gameStore', () => {
       text: textWinner,
       user: 'PokerBot'
     }
+    const chipsInGameRef = refDB(`rooms/${room}/seats/${indexWinner}/chipsInGame`)
+    const chipsInGame = await getDB(chipsInGameRef)
+
+    set(chipsInGameRef, chipsInGame + pot)
 
     await push(refDB(`rooms/${room}/messages`), message)
   }
