@@ -1,12 +1,12 @@
 /* eslint-disable max-len */
 import {defineStore} from 'pinia';
 import {ref} from 'vue';
-import {refDB, set} from '../utils/firebase';
+import {getDB, refDB, set} from '../utils/firebase';
 
 export const useCardsStore = defineStore('cardsStore', () => {
 
   //Baraja de 52 cartas
-  const cards = [
+  const  deck = ref([
     'Ah',
     '2h',
     '3h',
@@ -59,35 +59,36 @@ export const useCardsStore = defineStore('cardsStore', () => {
     'Js',
     'Qs',
     'Ks',
-  ];
+  ]);
 
-  const gameCards = ref(cards);
-  const tableCards = ref([]);
   const winner = ref('');
 
   //Reseteamos la baraja con una baraja nueva para reponer las cartas
-  const resetDeck = () => {
-    gameCards.value = [...cards];
+  const resetDeck = (room) => {
+    const deckRef = refDB(`rooms/${room}/deck`);
+    
+    set(deckRef,{...deck.value});
   };
 
   //Repartimos las cartas a todos los jugadores
   const dealingCards = async (seats, room) => {
+    const deckRef = refDB(`rooms/${room}/deck`);
+    const deck = await getDB(deckRef);
     for (let index = 0; index < seats.length; index++) {
       const cardsHand = [];
       for (let cardIndex = 0; cardIndex < 2; cardIndex++) {
-        const pos = Math.floor(Math.random() * gameCards.value.length);
-        const card = gameCards.value.splice(pos, 1)[0];
+        const pos = Math.floor(Math.random() * deck.length);
+        const card = deck.splice(pos, 1)[0];
         cardsHand.push(card);
 
-        const roomRef = refDB(`rooms/${room}/seats/${index}/hand`);
-        set(roomRef, cardsHand);
+        const handRef = refDB(`rooms/${room}/seats/${index}/hand`);
+        set(handRef, cardsHand);
 
         const cardSound = await loadSound('/src/assets/sounds/Dealing-cards-sound_cut.mp3');
         await playSound(cardSound);
-      }
-      seats[index].hand = cardsHand;
+      }      
     }
-    console.log(gameCards.value);
+    set(deckRef,deck);    
   };
 
   //Elimina las cartas que tienes en la mano
@@ -124,11 +125,10 @@ export const useCardsStore = defineStore('cardsStore', () => {
   };
 
   return {
-    gameCards,
-    tableCards,
+    deck,
     winner,
     dealingCards,
-    deleteCards,
+    deleteCards,    
     deleteCardsTable,
     resetDeck,
   };

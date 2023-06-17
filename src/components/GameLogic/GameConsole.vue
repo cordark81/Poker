@@ -59,6 +59,7 @@
         :color="classRedColor"
         class="mt-2"
       />
+      <button class="text-white" @click="storePot.potToPlayerWin(room,[])">prueba</button>
     </div>
   </div>
 </template>

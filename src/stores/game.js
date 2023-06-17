@@ -37,17 +37,23 @@ export const useGameStore = defineStore('gameStore', () => {
   //Asigna una carta a la mesa y la elimina de la baraja original
   const drawCardTable = async (room) => {
     const tableCardsRef = refDB(`rooms/${room}/tableCards`);
+    const deckRef = refDB(`rooms/${room}/deck`);
+    const deck = await getDB(deckRef);
+
     let tableCards = await getDB(tableCardsRef);
-    const pos = Math.floor(Math.random() * storeCards.gameCards.length);
-
-    if (tableCards === null) {
-      tableCards = [];
+    
+    if(tableCards === null){
+      tableCards=[];
     }
-    tableCards.push(storeCards.gameCards[pos]);
-    storeCards.gameCards.splice(pos, 1);
-
+    
+    const pos = Math.floor(Math.random() * deck.length);
+        
+    tableCards.push(deck[pos]);
+    deck.splice(pos,1);
+    
     set(tableCardsRef, tableCards);
-    console.log(storeCards.gameCards);
+    set(deckRef, deck);
+    
   };
 
   //Evalua las manos de los jugadores haciendo una conexion a nuestra API
@@ -64,27 +70,31 @@ export const useGameStore = defineStore('gameStore', () => {
   //Nos muestra el ganador/es en el chat de la sala, por defecto se le ha asignado una foto de un bot
   const showWinnerAfterRiver = async (seats, room) => {
     const potRef = refDB(`rooms/${room}/pot`);
-    const pot = await getDB(potRef);
+    let pot = await getDB(potRef);
 
     const seatsWithoutFold = seats.filter((seat) => seat.fold === '');
 
     const winners = await checkWinner(seatsWithoutFold, room);
     let indexWinner = [];
 
+    pot = Math.round(pot / winners.winners.length);
+    
     try {
       await Promise.all(
-        winners.winners.map(async (winner) => {
+        winners.winners.map(async (winner,indexW) => {
 
           const cardsWinner = winner.cardPool.map((card) => card.value + card.suit);
-          indexWinner.push(seats.findIndex((seat, index) => {
-            return seat.hand && seat.hand.every((card) => cardsWinner.includes(card));
-          }))
-          console.log(indexWinner)
-          const userWinner = seats[indexWinner.length-1].user;
+          //const hand = ["As","2s","Ah","2h","3s","4s"];
+          
+          const index = seats.findIndex((seat) => seat.hand && seat.hand.every(card => cardsWinner.includes(card)));  
+          
+          if(index!==-1){
+            indexWinner.push(index);
+          }          
+          
+          const userWinner = seats[indexWinner[indexW]].user;
           const descriptionWinner = winner.descr;
-          if (winners.winners.length > 1) {
-            pot = Math.round(pot / winners.winners.length);
-          }
+         
           const textWinner = `¡¡¡Ganador: ${userWinner} con ${descriptionWinner} ganó ${pot} fichas!!!`;
           const message = {
             photoUser:
@@ -103,7 +113,7 @@ export const useGameStore = defineStore('gameStore', () => {
   };
   
   //Genera el formato necesario para que funcione l aconsulta a la API
-  //El formato seria las dos cartas del jugador mas las tres de la mesa y asi con cada jugador en la mesa
+  //El formato seria las dos cartas del jugador mas las cinco de la mesa y asi con cada jugador en la mesa
   const checkWinner = async (seats, room) => {
     try {
       let allCardsInGame = [];
@@ -114,8 +124,11 @@ export const useGameStore = defineStore('gameStore', () => {
       seats.forEach((seat) => {
         allCardsInGame = allCardsInGame.concat(seat.hand.concat(tableCards));
       });
-
+      
+      //const arrayTest = ["As","2s","3h","4d","5d","8d","9d","Ah","2h","3h","4d","5d","8d","9d","3s","4s","3h","4d","5d","8d","9d"]
       const results = await evaluate(allCardsInGame);
+      //const results = await evaluate(arrayTest);
+            
       return results;
     } catch (error) {
       console.log(error.message);
@@ -237,10 +250,8 @@ export const useGameStore = defineStore('gameStore', () => {
 
   // Asigna el turno en funcion del nuevo dealer
   const firstTurnPlayer = async (seat, room, route) => {
-    console.log(seat);
-    const seats = seat;
-    console.log(seats);
 
+    const seats = seat;
     const bbIndex = seats.findIndex((item) => item.dealer === 'bb');
     const turnIndex = (bbIndex + seats.length + 1) % seats.length;
 
@@ -352,7 +363,7 @@ export const useGameStore = defineStore('gameStore', () => {
         potPlayer: 0,
         turn: '',
         allIn: '',
-        user: element.user,
+        user: element.user,        
       };
     });
 
@@ -365,6 +376,7 @@ export const useGameStore = defineStore('gameStore', () => {
       phaseGame: 'offGame',
       pot: 0,
       seats: seatReset,
+      deck:{...storeCards.deck}
     };
 
     set(roomRef, updatedRoom);
@@ -413,9 +425,9 @@ export const useGameStore = defineStore('gameStore', () => {
   const resetGameWithWinner = async (seats, room, indexWinner) => {
     const phaseGameRef = refDB(`rooms/${room}/phaseGame`);
     const seatRef = refDB(`rooms/${room}/seats`);
+    
     try {
       await storeCards.deleteCards(seats, room);
-
       storeCards.deleteCardsTable(room);
       await storePot.potToPlayerWin(room, indexWinner);
       await storePot.resetPot(room);

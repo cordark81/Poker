@@ -134,10 +134,12 @@ onMounted(async () => {
         checkIndex(seats.value);
         // eslint-disable-next-line max-len
         //Comprueba si tienes fichas, si no las tienes, aparece el mensaje
-        if (seats.value[selectedSeatIndex.value].noChips && seats.value[selectedSeatIndex.value].noChips === "*") {
+        if(seats.value[selectedSeatIndex.value]){
+          if (seats.value[selectedSeatIndex.value].noChips === "*") {
           modalNoChips.value = true;
-        } else {
+          } else {
           modalNoChips.value = false;
+          }
         }
       }
     });

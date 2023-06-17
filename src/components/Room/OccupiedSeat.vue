@@ -162,7 +162,7 @@
               class="w-full h-full rounded-full"
             />
           </div>
-          <div v-if="allInToken === true" class="w-12 h-12 amber-500 ml-69 mt-6">
+          <div v-if="allInToken === true" class="w-12 h-12 amber-500 -ml-24 mt-6">
             <img src="../../assets/images/all-in-removebg-preview.png" alt="" />
           </div>
         </div>
