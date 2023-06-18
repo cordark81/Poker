@@ -1,26 +1,9 @@
 /* eslint-disable max-len */
 import { getDatabase } from 'firebase/database'
 import { initializeApp } from 'firebase/app'
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut
-} from 'firebase/auth'
-import { collection, doc, getDoc, onSnapshot, getFirestore } from 'firebase/firestore'
-import {
-  get,
-  off,
-  onChildAdded,
-  onValue,
-  push,
-  runTransaction,
-  set,
-  update,
-  ref
-} from 'firebase/database'
+import { getAuth } from 'firebase/auth'
+import { doc, getDoc, onSnapshot, getFirestore } from 'firebase/firestore'
+import { get, set, ref } from 'firebase/database'
 import 'firebase/database'
 
 const firebaseConfig = {

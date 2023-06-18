@@ -599,6 +599,46 @@ export const useGameStore = defineStore('gameStore', () => {
     }
   }
 
+  const processStartGame = async (seats, room, freeSeats, selectedSeatIndex) => {
+    const ditchDealerDoneRef = refDB(`rooms/${room}/ditchDealerDone`)
+    const seatsRef = refDB(`rooms/${room}/seats`)
+    const roomPhaseRef = refDB(`rooms/${room}/phaseGame`)
+    if (freeSeats) {
+      const numberFreeSeats = await freeSeats.val()
+      //Comprueba si el numero de asientos libres es igual a 0 para iniciar la partida
+      if (numberFreeSeats === 0) {
+        const ditchDealerDone = await getDB(ditchDealerDoneRef)
+        if (ditchDealerDone === false) {
+          //Hacemos que solo reparta el indice 2
+          if (selectedSeatIndex === 2) {
+            ditchDealer(seats, room)
+            await storePot.initialPot(seats, room)
+            const newSeats = await getDB(seatsRef)
+            //Comprueba cuantos jugadores tienen fichas
+            const playersWithChips = newSeats.reduce((count, seat) => {
+              if (seat.noChips === '') {
+                count++
+              }
+              return count
+            }, 0)
+            if (playersWithChips >= 3) {
+              set(ditchDealerDoneRef, true)
+              //Y ya realiza el reparto correspondiente
+              storeCards.dealingCards(seats, room)
+              // eslint-disable-next-line max-len
+              await firstTurnPlayer(seats, room, 'turn')
+              await evaluateMaxPot(seats, room)
+              set(roomPhaseRef, 'preflop')
+            }
+          }
+        }
+      } else {
+        console.log('faltan jugadores')
+        //await resetGame(room)
+      }
+    }
+  }
+
   return {
     allPlayerNoPlay,
     asignChipsInGame,
@@ -616,6 +656,7 @@ export const useGameStore = defineStore('gameStore', () => {
     moveDealerLeft,
     moveTurnLeft,
     noConsoleWithNoPlay,
+    processStartGame,
     resetChipsInGame,
     resetFolds,
     resetGame,

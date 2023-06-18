@@ -70,7 +70,7 @@ const openCoinStore = () => {
 
 watchEffect(async () => {
   if (store.user) {
-    const userRef = await refDB('users/' + auth.currentUser.uid + '/chips', 0);
+    const userRef = refDB('users/' + auth.currentUser.uid + '/chips', 0);
     onValue(userRef, (snapshot) => {
       userChips.value = snapshot.val();
     });
