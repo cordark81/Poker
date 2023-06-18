@@ -1,11 +1,13 @@
 /* eslint-disable max-len */
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import { useGameStore } from './game'
 import { set } from '@firebase/database'
 import { refDB } from '../utils/firebase'
 
 export const useSeatsStore = defineStore('seatsStore', () => {
   const storeUser = useUserStore()
+  const storeGame = useGameStore()
 
   //Sienta al jugador en la mesa
   const sitInSeat = (seatIndex, selectedSeatIndex, seats, room) => {
@@ -35,6 +37,7 @@ export const useSeatsStore = defineStore('seatsStore', () => {
       seat.photoUser = null
       const roomRef = refDB(`rooms/${room}/seats/${seatIndex}`)
       set(roomRef, seat)
+      storeGame.resetGame(room)
       return -1
     }
   }

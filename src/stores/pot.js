@@ -14,6 +14,7 @@ export const usePotStore = defineStore('potStore', () => {
     for (let index = 0; index < seats.length; index++) {
       const noChipsRef = refDB(`rooms/${room}/seats/${index}/noChips`)
       const seat = seats[index]
+
       if (seat.dealer === 'bb') {
         if (seat.chipsInGame - 10 < 0) {
           countNoChips++
@@ -31,6 +32,7 @@ export const usePotStore = defineStore('potStore', () => {
         }
       }
     }
+
     if (countNoChips === 0) {
       //Asigna la apuesta inicial en funcion de como haya caido el sorteo de dealer
       for (let index = 0; index < seats.length; index++) {

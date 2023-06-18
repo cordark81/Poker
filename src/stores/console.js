@@ -13,6 +13,7 @@ export const useConsoleStore = defineStore('consoleStore', () => {
     const phaseInGameRef = refDB(`rooms/${room}/phaseGame`)
     const countRoundRef = refDB(`rooms/${room}/countRound`)
     const endGameRef = refDB(`rooms/${room}/endGame`)
+    const seatsRef = refDB(`rooms/${room}/seats`)
 
     const phaseInGame = await getDB(phaseInGameRef)
     const countRound = await getDB(countRoundRef)
@@ -30,7 +31,8 @@ export const useConsoleStore = defineStore('consoleStore', () => {
 
         //Comprobamos si el maxPot esta a la izquierda sin contar los fold
         if (seatsWithoutFold[leftIndex].maxPot === '*') {
-          const seatsWithoutFoldWithInitialSeats = seatsInitial.filter((seat) => seat.fold === '')
+          const newSeats = await getDB(seatsRef)
+          const seatsWithoutFoldWithInitialSeats = newSeats.filter((seat) => seat.fold === '')
           const onlyOnePlayerContinue = seatsWithoutFoldWithInitialSeats.filter(
             (seat) => seat.chipsInGame !== 0
           )
@@ -132,7 +134,7 @@ export const useConsoleStore = defineStore('consoleStore', () => {
       if (checkPlayerWithoutFold(newSeats) === 1) {
         const indexWinner = findFoldedPlayerIndex(newSeats)
         const chipsForWinner = await getDB(potRef)
-        await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room)
+        await storeGame.showWinner(newSeats[indexWinner], chipsForWinner, room, indexWinner)
         setTimeout(() => storeGame.resetGameWithWinner(newSeats, room, indexWinner), 2000)
       } else {
         //Comprobamos si todos los pot son iguales sin contar a los fold
@@ -226,7 +228,8 @@ export const useConsoleStore = defineStore('consoleStore', () => {
         const leftIndex = (turnIndex + seatsWithoutFold.length + 1) % seatsWithoutFold.length
         //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold
         if (seatsWithoutFold[leftIndex].maxPot === '*') {
-          const seatsWithoutFoldWithInitialSeats = seatsInitial.filter((seat) => seat.fold === '')
+          newSeats = await getDB(seatsRef)
+          const seatsWithoutFoldWithInitialSeats = newSeats.filter((seat) => seat.fold === '')
           const onlyOnePlayerContinue = seatsWithoutFoldWithInitialSeats.filter(
             (seat) => seat.chipsInGame !== 0
           )

@@ -32,8 +32,7 @@
           <GameConsole v-if="seat.turn === '*' &&
             seat.user === storeUser.user.displayName &&
             storeGame.allPlayerNoPlay(seats) === false &&
-            endGameBoolean === false
-            " :room="room" :index="index" :seats="seats" />
+            endGameBoolean === false" :room="room" :index="index" :seats="seats" />
         </div>
       </div>
 
@@ -54,7 +53,8 @@
       </div>
     </div>
     <ModalInSeat v-show="showModal" @closeModal="showModal = false" />
-    <ModalNoChips v-show="modalNoChips" @closeModal="modalNoChips = false" />
+    <ModalNoChips v-if="modalNoChips" @closeModal="modalNoChips = false" @standUpSeat="standUpSeat(selectedSeatIndex)"
+      @addChips="modalNoChips = false" :room="room" :index="selectedSeatIndex" />
   </div>
 </template>
 
@@ -98,8 +98,8 @@ const endGameBoolean = ref(false);
 onMounted(async () => {
   const roomRef = refDB(`rooms/${room.value}`);
   const freeSeatsRef = refDB(`rooms/${room.value}/freeSeats`);
-  const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
-  const seatsRef = refDB(`rooms/${room.value}/seats`);
+  //const roomPhaseRef = refDB(`rooms/${room.value}/phaseGame`);
+  // const seatsRef = refDB(`rooms/${room.value}/seats`);
   try {
     //Esta pendiente de cualquier cambio en la sala
     onValue(roomRef, async (snapshot) => {
@@ -114,16 +114,14 @@ onMounted(async () => {
         // eslint-disable-next-line max-len
         //Comprueba si tienes fichas, si no las tienes, aparece el mensaje
         if (seats.value[selectedSeatIndex.value]) {
-          if (seats.value[selectedSeatIndex.value].noChips === "*") {
-            modalNoChips.value = true;
-          } else {
-            modalNoChips.value = false;
-          }
+          seats.value[selectedSeatIndex.value].noChips === "*" ?
+            modalNoChips.value = true : modalNoChips.value = false;
         }
       }
     });
     //Esta pendiente de cualquier cambio en freeSeats
     onValue(freeSeatsRef, async (freeSeats) => {
+      storeGame.processStartGame(seats.value, room.value, freeSeats, selectedSeatIndex.value);/*
       const ditchDealerDoneRef = refDB(`rooms/${room.value}/ditchDealerDone`);
       if (freeSeats) {
         const numberFreeSeats = await freeSeats.val();
@@ -158,9 +156,8 @@ onMounted(async () => {
         } else {
           console.log('faltan jugadores');
           await storeGame.resetGame(room.value);
-          //modalNoChips.value === false;
         }
-      }
+      }*/
     });
   } catch (error) {
     console.log(error.message);
