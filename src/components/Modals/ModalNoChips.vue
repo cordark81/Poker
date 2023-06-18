@@ -19,7 +19,7 @@
 
                     <!-- Zona para introducir el formulario -->
 
-                    <div v-if="enoughtChipsInPool && enoughtChipsInPool === false"
+                    <div v-if="typeof enoughtChipsInPool !== 'undefined' && enoughtChipsInPool === false"
                       class="flex justify-center items-center h-screen">
                       <form class="w-96 p-8 border-2 border-amber-400 bg-black rounded-lg shadow-lg"
                         @submit.prevent="closeModalAfterAddChips">
@@ -45,7 +45,7 @@
                         </div>
                       </form>
                     </div>
-                    <div v-else-if="enoughtChipsInPool && enoughtChipsInPool === true"
+                    <div v-else-if="typeof enoughtChipsInPool !== 'undefined' && enoughtChipsInPool === true"
                       class="flex justify-center items-center h-screen">
                       <div
                         class="flex justify-center items-center flex-col w-96 p-8 border-2 border-amber-400 bg-black rounded-lg shadow-lg">
@@ -121,7 +121,7 @@ onMounted(async () => {
   console.log(chipsMax.value)
   console.log(chipsMin.value)
 
-  chipsMax < chipsMin ? enoughtChipsInPool.value = true : enoughtChipsInPool.value = false;
+  chipsMax.value < chipsMin.value ? enoughtChipsInPool.value = true : enoughtChipsInPool.value = false;
   console.log(enoughtChipsInPool.value);
 
 })

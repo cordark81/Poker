@@ -53,7 +53,7 @@
       </div>
     </div>
     <ModalInSeat v-show="showModal" @closeModal="showModal = false" />
-    <ModalNoChips v-if="modalNoChips" @closeModal="modalNoChips = false" @standUpSeat="standUpSeat(selectedSeatIndex)"
+    <ModalNoChips v-if="modalNoChips" @closeModal="modalNoChips = false" @standUpSeat="standUpSeatWithoutChips(selectedSeatIndex)"
       @addChips="modalNoChips = false" :room="room" :index="selectedSeatIndex" />
   </div>
 </template>
@@ -71,7 +71,7 @@ import {
   onValue,
   set,
 } from '@firebase/database';
-import { refDB, getDB } from '../utils/firebase'
+import { refDB, getDB, getEntryChips, auth } from '../utils/firebase'
 import Chat from '../components/Chat/ChatRoom.vue';
 import Seats from '../components/Room/SeatsInRoom.vue';
 import OccupiedSeat from '../components/Room/OccupiedSeat.vue';
@@ -176,6 +176,12 @@ const checkIndex = (seats) => {
 //Sienta al jugador y ademas resta uno a las plazas libres
 const sitIn = async (seatIndex) => {
   try {
+    let enterChips = await getEntryChips('Rooms', room.value);
+    enterChips = enterChips.data().enterChips;
+    const userChipsRef = refDB('users/' + auth.currentUser.uid + '/chips', 0)
+    const userChips = await getDB(userChipsRef);
+    console.log(userChips);
+    if(userChips>=enterChips){
     // eslint-disable-next-line max-len
     const obj = storeSeat.sitInSeat(seatIndex, selectedSeatIndex.value, seats.value, room.value);
     if (obj.selected !== -1) {
@@ -188,6 +194,9 @@ const sitIn = async (seatIndex) => {
         const freeSeats = await getDB(freeSeatsInRoomRef);
         set(freeSeatsInRoomRef, freeSeats - 1);
       }
+    }}
+    else{
+      console.log("no tienes suficientes fichas")
     }
   } catch (error) {
     console.log(error.message);
@@ -202,6 +211,16 @@ const standUpSeat = async (seatIndex) => {
     const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
     const freeSeats = await getDB(freeSeatsInRoomRef);
     set(freeSeatsInRoomRef, freeSeats + 1);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+//Levanta al jugador sin sumar a las plazas libres
+const standUpSeatWithoutChips = async (seatIndex) => {
+  try {
+    // eslint-disable-next-line max-len
+    selectedSeatIndex.value = storeSeat.standUpFromSeat(seatIndex, seats.value, room.value);
   } catch (error) {
     console.log(error.message);
   }
