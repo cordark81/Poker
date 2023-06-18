@@ -16,34 +16,50 @@
               <div class="mx-10 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                   <div class="w-full text-center">
-                    <div>
-                      <!-- Zona para introducir el formulario -->
-                      <div class="flex justify-center items-center h-screen coinStore">
-                        <form class="w-96 p-8 border-2 border-amber-400 bg-black rounded-lg shadow-lg"
-                          @submit.prevent="closeModalAfterAddChips">
-                          <h1 class="text-white">No tienes suficientes fichas para empezar la partida, puedes añadir
-                            fichas de tu
-                            pool o levantarte</h1>
-                          <div class="mb-6 flex flex-row justify-center mt-5">
-                            <label for="amount"
-                              class="block mb-2 mr-10 mt-2 text-lg font-medium text-white">Cantidad:</label>
-                            <input type="number" id="amount"
-                              class="w-28 h-8 px-4 py-3 border text-right border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                              v-model="amount" :min="chipsMin" :max="chipsMax" />
-                          </div>
-                          <div class="flex justify-end">
-                            <button type="button" @click="closeModalAndStandUp"
-                              class="flex-1 mr-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">
-                              Leventarse
-                            </button>
-                            <button type="submit"
-                              class="flex-1 ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:scale-105 transform">
-                              Añadir
-                            </button>
-                          </div>
-                        </form>
+
+                    <!-- Zona para introducir el formulario -->
+
+                    <div v-if="enoughtChipsInPool && enoughtChipsInPool === false"
+                      class="flex justify-center items-center h-screen">
+                      <form class="w-96 p-8 border-2 border-amber-400 bg-black rounded-lg shadow-lg"
+                        @submit.prevent="closeModalAfterAddChips">
+                        <h1 class="text-white">No tienes suficientes fichas para empezar la partida, puedes añadir
+                          fichas de tu
+                          pool o levantarte</h1>
+                        <div class="mb-6 flex flex-row justify-center mt-5">
+                          <label for="amount"
+                            class="block mb-2 mr-10 mt-2 text-lg font-medium text-white">Cantidad:</label>
+                          <input type="number" id="amount"
+                            class="w-28 h-8 px-4 py-3 border text-right border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            v-model="amount" :min="chipsMin" :max="chipsMax" />
+                        </div>
+                        <div class="flex justify-end">
+                          <button type="button" @click="closeModalAndStandUp"
+                            class="flex-1 mr-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">
+                            Leventarse
+                          </button>
+                          <button type="submit"
+                            class="flex-1 ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:scale-105 transform">
+                            Añadir
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                    <div v-else-if="enoughtChipsInPool && enoughtChipsInPool === true"
+                      class="flex justify-center items-center h-screen">
+                      <div
+                        class="flex justify-center items-center flex-col w-96 p-8 border-2 border-amber-400 bg-black rounded-lg shadow-lg">
+                        <h1 class="text-white">No te quedan suficientes fichas en tu pool, dirígete al lobby para
+                          comprar mas y poder jugar</h1>
+
+                        <button type="button" @click="closeModalAndStandUp"
+                          class="bg-red-600 hover:bg-red-700 w-32 mt-10 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">
+                          Leventarse
+                        </button>
+
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -67,7 +83,7 @@ const storeGame = useGameStore();
 const chipsMax = ref();
 const chipsMin = ref();
 const amount = ref();
-const enoughtChipsInPool = ref(true);
+const enoughtChipsInPool = ref();
 
 const emits = defineEmits(['closeModal', 'standUpSeat', 'addChips']);
 
@@ -93,19 +109,20 @@ onMounted(async () => {
   const seats = await getDB(seatsRef)
 
   let countNoChips = 0;
-  console.log(seats);
+
   seats.forEach(seat => {
     if (seat.noChips === "*") {
       countNoChips++
     }
   })
-  console.log(countNoChips);
 
   set(freeSeatsRef, countNoChips)
 
-  if (chipsMax < chipsMin) {
-    //si no tienes para cubrir chipsmin comprar fichas o levantar al jugador
-  }
+  console.log(chipsMax.value)
+  console.log(chipsMin.value)
+
+  chipsMax < chipsMin ? enoughtChipsInPool.value = true : enoughtChipsInPool.value = false;
+  console.log(enoughtChipsInPool.value);
 
 })
 
