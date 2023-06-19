@@ -1,3 +1,4 @@
+<!-- eslint-disable max-len -->
 <template>
   <div>
     <div class="flex">
@@ -10,7 +11,8 @@
 
 <script setup>
 
-const props = defineProps({
+defineProps({
   tableCards: Array,
 });
+
 </script>

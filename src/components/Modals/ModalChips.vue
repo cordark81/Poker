@@ -1,3 +1,4 @@
+<!-- eslint-disable max-len -->
 <template>
   <div>
     <transition enter-active-class="ease-out duration-300" enter-class="opacity-0" enter-to-class="opacity-100"
@@ -16,12 +17,16 @@
               <div class="mx-10 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                   <div class="w-full text-center">
-                    <div >
+                    <div>
                       <!-- Zona para introducir el formulario -->
-                      <h1 class="text-white">No tienes suficiente fichas para entrar a la sala, puedes pasar por nuestra tienda a comprar más o hablar con Angel
+                      <h1 class="text-white">
+                        No tienes suficiente fichas para entrar a la sala, puedes pasar por nuestra
+                        tienda a comprar más o hablar con Angel
                       </h1>
                       <button type="button" @click="closeModal"
-                        class="mt-2 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">Cerrar</button>
+                        class="mt-2 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">
+                        Cerrar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -36,19 +41,19 @@
 
 <script setup>
 
-import { defineEmits } from 'vue'
+import { defineEmits } from 'vue';
 
-const emits = defineEmits(["closeModal"])
+const emits = defineEmits(['closeModal']);
 
 const closeModal = () => {
-  emits("closeModal")
-}
+  emits('closeModal');
+};
 
 </script>
 
 <style scoped>
 .background-chips {
-  background-image: url("../../assets/images/palos.jpg");
+  background-image: url('../../assets/images/palos.jpg');
   background-size: cover;
   background-position: center;
 }

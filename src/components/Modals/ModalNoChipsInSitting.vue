@@ -6,7 +6,7 @@
       <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-        <div class="background-img fixed inset-0 z-10 overflow-y-auto flex items-center justify-center">
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center">
           <transition enter-active-class="ease-out duration-300"
             enter-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             enter-to-class="opacity-100 translate-y-0 sm:scale-100" leave-active-class="ease-in duration-200"
@@ -19,7 +19,14 @@
                   <div class="w-full text-center">
                     <div>
                       <!-- Zona para introducir el formulario -->
-                      <FormCreateUser @closeModal="closeModal" />
+                      <h1 class="text-white">
+                        No tienes suficiente fichas para sentarte a jugar, puedes pasar por nuestra
+                        tienda a comprar màs fichas.
+                      </h1>
+                      <button type="button" @click="closeModal"
+                        class="mt-2 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-105 transform">
+                        Cerrar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -34,7 +41,6 @@
 
 <script setup>
 
-import FormCreateUser from './FormCreateUser.vue';
 import { defineEmits } from 'vue';
 
 const emits = defineEmits(['closeModal']);
@@ -45,10 +51,5 @@ const closeModal = () => {
 
 </script>
 
-<style scoped>
-.background-img {
-  background-image: url('../../assets/images/palos.jpg');
-  background-size: cover;
-  background-position: center;
-}
-</style>
+
+
