@@ -53,18 +53,18 @@
       </div>
     </div>
     <ModalInSeat v-show="showModal" @closeModal="showModal = false" />
-    <ModalNoChips v-if="modalNoChips" @closeModal="modalNoChips = false" @standUpSeat="standUpSeatWithoutChips(selectedSeatIndex)"
-      @addChips="modalNoChips = false" :room="room" :index="selectedSeatIndex" />
+    <ModalNoChipsSitting v-show="ModalNoChipsInSitting" @closeModal="ModalNoChipsInSitting = false" />
+    <ModalNoChips v-if="modalNoChips" @closeModal="modalNoChips = false"
+      @standUpSeat="standUpSeatWithoutChips(selectedSeatIndex)" @addChips="modalNoChips = false" :room="room"
+      :index="selectedSeatIndex" />
   </div>
 </template>
 
 <script setup>
 
-import { useCardsStore } from '../stores/cards';
 import { useUserStore } from '../stores/user';
 import { useSeatsStore } from '../stores/seats';
 import { useGameStore } from '../stores/game';
-import { usePotStore } from '../stores/pot';
 import { ref, onMounted } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import {
@@ -77,15 +77,14 @@ import Seats from '../components/Room/SeatsInRoom.vue';
 import OccupiedSeat from '../components/Room/OccupiedSeat.vue';
 import ModalInSeat from '../components/Modals/ModalInSeat.vue';
 import ModalNoChips from '../components/Modals/ModalNoChips.vue';
+import ModalNoChipsSitting from '../components/Modals/ModalNoChipsInSitting.vue';
 import CardsTable from '../components/GameLogic/CardsTable.vue';
 import GameConsole from '../components/GameLogic/GameConsole.vue';
 
 const router = useRouter();
 const storeUser = useUserStore();
 const storeSeat = useSeatsStore();
-const storeCards = useCardsStore();
 const storeGame = useGameStore();
-const storePot = usePotStore();
 const room = ref(router.currentRoute.value.params.roomName);
 const seats = ref([]);
 const selectedSeatIndex = ref(-1);
@@ -93,6 +92,7 @@ const showModal = ref(false);
 const potRoom = ref(0);
 const tableCards = ref([]);
 const modalNoChips = ref(false);
+const ModalNoChipsInSitting = ref(false);
 const endGameBoolean = ref(false);
 
 onMounted(async () => {
@@ -121,43 +121,7 @@ onMounted(async () => {
     });
     //Esta pendiente de cualquier cambio en freeSeats
     onValue(freeSeatsRef, async (freeSeats) => {
-      storeGame.processStartGame(seats.value, room.value, freeSeats, selectedSeatIndex.value);/*
-      const ditchDealerDoneRef = refDB(`rooms/${room.value}/ditchDealerDone`);
-      if (freeSeats) {
-        const numberFreeSeats = await freeSeats.val();
-        //Comprueba si el numero de asientos libres es igual a 0 para iniciar la partida
-        if (numberFreeSeats === 0) {
-          const ditchDealerDone = await getDB(ditchDealerDoneRef);
-          if (ditchDealerDone === false) {
-            checkIndex(seats.value);
-            //Hacemos que solo reparta el indice 2
-            if (selectedSeatIndex.value === 2) {
-              storeGame.ditchDealer(seats.value, room.value);
-              await storePot.initialPot(seats.value, room.value);
-              const newSeats = await getDB(seatsRef);
-              //Comprueba cuantos jugadores tienen fichas
-              const playersWithChips = newSeats.reduce((count, seat) => {
-                if (seat.noChips === '') {
-                  count++;
-                }
-                return count;
-              }, 0);
-              if (playersWithChips >= 3) {
-                set(ditchDealerDoneRef, true);
-                //Y ya realiza el reparto correspondiente
-                storeCards.dealingCards(seats.value, room.value);
-                // eslint-disable-next-line max-len
-                await storeGame.firstTurnPlayer(seats.value, room.value, 'turn');
-                await storeGame.evaluateMaxPot(seats.value, room.value);
-                set(roomPhaseRef, 'preflop');
-              }
-            }
-          }
-        } else {
-          console.log('faltan jugadores');
-          await storeGame.resetGame(room.value);
-        }
-      }*/
+      storeGame.processStartGame(seats.value, room.value, freeSeats, selectedSeatIndex.value);
     });
   } catch (error) {
     console.log(error.message);
@@ -181,22 +145,23 @@ const sitIn = async (seatIndex) => {
     const userChipsRef = refDB('users/' + auth.currentUser.uid + '/chips', 0)
     const userChips = await getDB(userChipsRef);
     console.log(userChips);
-    if(userChips>=enterChips){
-    // eslint-disable-next-line max-len
-    const obj = storeSeat.sitInSeat(seatIndex, selectedSeatIndex.value, seats.value, room.value);
-    if (obj.selected !== -1) {
-      selectedSeatIndex.value = obj.selected;
-      showModal.value = obj.modal;
-      // Restar freeSets solo si el asiento seleccionado no estaba ocupado
-      if (!obj.modal) {
-        await storeGame.asignChipsInGame(room.value, seatIndex);
-        const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
-        const freeSeats = await getDB(freeSeatsInRoomRef);
-        set(freeSeatsInRoomRef, freeSeats - 1);
+    if (userChips >= enterChips) {
+      // eslint-disable-next-line max-len
+      const obj = storeSeat.sitInSeat(seatIndex, selectedSeatIndex.value, seats.value, room.value);
+      if (obj.selected !== -1) {
+        selectedSeatIndex.value = obj.selected;
+        showModal.value = obj.modal;
+        // Restar freeSets solo si el asiento seleccionado no estaba ocupado
+        if (!obj.modal) {
+          await storeGame.asignChipsInGame(room.value, seatIndex);
+          const freeSeatsInRoomRef = refDB(`rooms/${room.value}/freeSeats`);
+          const freeSeats = await getDB(freeSeatsInRoomRef);
+          set(freeSeatsInRoomRef, freeSeats - 1);
+        }
       }
-    }}
-    else{
-      console.log("no tienes suficientes fichas")
+    }
+    else {
+      ModalNoChipsInSitting.value = true;
     }
   } catch (error) {
     console.log(error.message);

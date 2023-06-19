@@ -118,11 +118,7 @@ onMounted(async () => {
 
   set(freeSeatsRef, countNoChips)
 
-  console.log(chipsMax.value)
-  console.log(chipsMin.value)
-
   chipsMax.value < chipsMin.value ? enoughtChipsInPool.value = true : enoughtChipsInPool.value = false;
-  console.log(enoughtChipsInPool.value);
 
 })
 
