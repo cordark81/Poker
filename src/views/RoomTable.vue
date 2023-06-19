@@ -39,7 +39,7 @@
       <Chat class="flex flex-col" :room="room" />
     </div>
     <div>
-      <CardsTable class="flex justify-center" :tableCards="tableCards" />
+      <CardsTable class="flex justify-center mt-10" :tableCards="tableCards" />
     </div>
     <div class="flex justify-center" :class="{
       'mt-28':

@@ -252,8 +252,11 @@ export const useGameStore = defineStore('gameStore', () => {
   const firstTurnPlayer = async (seat, room, route) => {
     const seats = seat
     const bbIndex = seats.findIndex((item) => item.dealer === 'bb')
-    const turnIndex = (bbIndex + seats.length + 1) % seats.length
-
+    
+    let turnIndex = (bbIndex + seats.length + 1) % seats.length
+    if (seats[turnIndex].noPlay === "*") { 
+      turnIndex = (bbIndex + seats.length + 2) % seats.length
+    }
     const ref = refDB(`rooms/${room}/seats/${turnIndex}/${route}`)
     set(ref, '*')
     if (route === 'maxPot') {
@@ -633,6 +636,7 @@ export const useGameStore = defineStore('gameStore', () => {
           }
         }
       } else {
+        set(ditchDealerDoneRef, false);
         console.log('faltan jugadores')
         //await resetGame(room)
       }

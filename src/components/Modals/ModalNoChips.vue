@@ -95,7 +95,7 @@ const props = defineProps({
 onBeforeMount(async () => {
 
   const dataRoom = await getEntryChips('Rooms', props.room)
-  const chipsRef = refDB('users/' + auth.currentUser.uid + '/chips')
+  const chipsRef = refDB('users/' + auth.currentUser.uid + '/chips', 0)
   const seatsRef = refDB(`rooms/${props.room}/seats`)
   const freeSeatsRef = refDB(`rooms/${props.room}/freeSeats`)
 
@@ -104,7 +104,6 @@ onBeforeMount(async () => {
 
   onValue(chipsRef, async (chips) => {
     chipsMax.value = await chips.val()
-    console.log(chipsMax.value);
   })
 
   const seats = await getDB(seatsRef)

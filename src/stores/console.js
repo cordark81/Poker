@@ -165,6 +165,8 @@ export const useConsoleStore = defineStore('consoleStore', () => {
   }
 
   const raiseConsole = async (seats, room, index) => {
+    const seatsRef = refDB(`rooms/${room}/seats`)
+    const maxPotRef = refDB(`rooms/${room}/seats/${index}/maxPot`)
     try {
       //Dobla la apuesta mas alta en juego
       if (seats[index].chipsInGame <= storePot.potMax(seats, true) * 2) {
@@ -172,6 +174,14 @@ export const useConsoleStore = defineStore('consoleStore', () => {
       } else {
         ajustBet(seats, room, index, 2)
         await storeGame.moveTurnLeft(seats, room)
+      }
+      const newSeats = await getDB(seatsRef)
+
+      const indexMaxPot = newSeats.findIndex((element) => element.maxPot === '*')
+      //Comprueba si la apuesta del jugador es mayor que la maxima apuesta en mesa
+      if (newSeats[index].potPlayer > newSeats[indexMaxPot].potPlayer) {
+        storePot.resetMaxPot(newSeats, room)
+        await set(maxPotRef, '*')
       }
     } catch (error) {
       console.log(error.message)
