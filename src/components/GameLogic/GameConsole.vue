@@ -21,7 +21,7 @@
         @click="storeConsole.foldConsole(seats, room, index)" :text="'Fold'" :color="classGrayColor" class="mt-2" />
       <ButtonConsole @click="storeConsole.allInConsole(seats, room, index)" :text="'ALL IN'" :color="classRedColor"
         class="mt-2" />
-      <button class="text-white" @click="storeGame.resetGame(room)">prueba</button>
+      <button class="text-black" @click="storeGame.resetGame(room)">prueba</button>
     </div>
   </div>
 </template>

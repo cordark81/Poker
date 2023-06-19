@@ -73,7 +73,7 @@
 
 <script setup>
 
-import { defineEmits, onMounted, ref } from 'vue';
+import { defineEmits, ref, onBeforeMount } from 'vue';
 import { refDB, getDB, auth, getEntryChips } from '../../utils/firebase';
 import { onValue, set } from '@firebase/database';
 import { useGameStore } from '../../stores/game';
@@ -92,7 +92,7 @@ const props = defineProps({
   index: Number,
 });
 
-onMounted(async () => {
+onBeforeMount(async () => {
 
   const dataRoom = await getEntryChips('Rooms', props.room)
   const chipsRef = refDB('users/' + auth.currentUser.uid + '/chips')
@@ -104,6 +104,7 @@ onMounted(async () => {
 
   onValue(chipsRef, async (chips) => {
     chipsMax.value = await chips.val()
+    console.log(chipsMax.value);
   })
 
   const seats = await getDB(seatsRef)

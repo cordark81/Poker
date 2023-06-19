@@ -73,28 +73,34 @@ export const useConsoleStore = defineStore('consoleStore', () => {
     try {
       //Comprueba que todos los pots son iguales
       if (storeGame.verifySimilarPots(seats)) {
+        const seatsWithoutFold = seats.filter((seat) => seat.fold === '')
+        const turnIndex = seatsWithoutFold.findIndex((item) => item.turn === '*')
+        const leftIndex = (turnIndex + seatsWithoutFold.length + 1) % seatsWithoutFold.length
         if (phaseInGame === 'preflop') {
           phaseChangeWithoutBet(seats, room, 'flop', phaseInGameRef)
         } else if (phaseInGame === 'flop') {
-          const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room)
-          //Comprobamos si el jugador con la apuesta maxima esta a la izquierda
-          if (maxPotLeft === '*') {
+          //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold esta a la izquierda
+          if (seatsWithoutFold[leftIndex].maxPot === '*') {
             phaseChangeWithoutBet(seats, room, 'turn', phaseInGameRef)
           } else {
             storeGame.moveTurnLeft(seats, room)
           }
         } else if (phaseInGame === 'turn') {
-          const maxPotLeft = await storeGame.evaluateMaxPotLeft(seats, room)
-          //Comprobamos si el jugador con la apuesta maxima esta a la izquierda
-          if (maxPotLeft === '*') {
+          //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold esta a la izquierda
+          if (seatsWithoutFold[leftIndex].maxPot === '*') {
             phaseChangeWithoutBet(seats, room, 'river', phaseInGameRef)
           } else {
             storeGame.moveTurnLeft(seats, room)
           }
         } else if (phaseInGame === 'river') {
-          const indexWinner = await storeGame.showWinnerAfterRiver(seats, room)
-          set(endGameRef, '*')
-          setTimeout(() => storeGame.resetGameWithWinner(seats, room, indexWinner), 7000)
+          //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold esta a la izquierda
+          if (seatsWithoutFold[leftIndex].maxPot === '*') {
+            const indexWinner = await storeGame.showWinnerAfterRiver(seats, room)
+            set(endGameRef, '*')
+            setTimeout(() => storeGame.resetGameWithWinner(seats, room, indexWinner), 7000)
+          } else {
+            storeGame.moveTurnLeft(seats, room)
+          }
         }
       } else {
         await storeGame.moveTurnLeft(seats, room)
@@ -226,7 +232,7 @@ export const useConsoleStore = defineStore('consoleStore', () => {
         const seatsWithoutFold = newSeats.filter((seat) => seat.fold === '')
         const turnIndex = seatsWithoutFold.findIndex((item) => item.turn === '*')
         const leftIndex = (turnIndex + seatsWithoutFold.length + 1) % seatsWithoutFold.length
-        //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold
+        //Comprueba si el jugador con la apuesta maxima sin contar los jugadores fold esta a la izquierda
         if (seatsWithoutFold[leftIndex].maxPot === '*') {
           newSeats = await getDB(seatsRef)
           const seatsWithoutFoldWithInitialSeats = newSeats.filter((seat) => seat.fold === '')
